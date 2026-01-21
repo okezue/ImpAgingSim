@@ -1,0 +1,16 @@
+#!/bin/bash
+# Quick progress monitor for robustness simulations
+echo "=== Robustness Simulation Progress ==="
+echo "Time: $(date)"
+echo ""
+echo "A3 Kappa scan files:"
+ls -lh output/robustness/results_kappa*.csv 2>/dev/null || echo "  (none yet)"
+echo ""
+echo "A3 Pi scan files:"
+ls -lh output/robustness/results_pi*.csv 2>/dev/null || echo "  (none yet)"
+echo ""
+echo "B2 Dense grid files:"
+ls -lh output/robustness/results_dense*.csv 2>/dev/null || echo "  (none yet)"
+echo ""
+echo "Active python processes:"
+pgrep -f "python3.*imp_aging" | wc -l | xargs echo "  Count:"
