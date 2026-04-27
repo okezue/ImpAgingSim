@@ -41,9 +41,9 @@ CONDA=/home/ubuntu/miniconda3/bin/conda
 PY=/home/ubuntu/miniconda3/envs/imp/bin/python
 
 if [ ! -d /home/ubuntu/miniconda3/envs/imp ]; then
-  echo "=== Creating imp env with openmm + CUDA 12.6 (compatible with driver 580.x / CUDA 13.0) ==="
+  echo "=== Creating imp env with openmm + CUDA 12.9 (matches openmm 8.5 conda-forge requirement; <13.0 driver max) ==="
   sudo -u ubuntu ${CONDA} create -n imp --override-channels -c conda-forge -y \
-    python=3.11 'openmm>=8.5' 'cuda-version=12.6' numpy scipy pandas matplotlib
+    python=3.11 'openmm>=8.5' 'cuda-version=12.9' numpy scipy pandas matplotlib
 fi
 
 echo "=== GPU + CUDA platform check ==="
