@@ -32,8 +32,9 @@ def build_openmm_system(types,mp):
     nbf.addPerParticleParameter("tA")
     nbf.setNonbondedMethod(mm.CustomNonbondedForce.CutoffPeriodic)
     nbf.setCutoffDistance(mp.lj_cutoff*mp.lj_sigma)
+    types_py=[1.0 if int(t)==1 else 0.0 for t in types]
     for k in range(N):
-        nbf.addParticle([float(types[k])])
+        nbf.addParticle([types_py[k]])
     bonds_list=bonded_pairs(mp.n_chains,mp.chain_length)
     nbf.createExclusionsFromBonds([(int(i),int(j)) for i,j in bonds_list],1)
     sys.addForce(nbf)
