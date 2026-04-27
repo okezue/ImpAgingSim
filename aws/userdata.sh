@@ -32,12 +32,17 @@ sudo -u ubuntu git clone https://github.com/okezue/ImpAgingSim.git || (cd ImpAgi
 cd ImpAgingSim
 sudo -u ubuntu git checkout "${GIT_REF}"
 sudo -u ubuntu pip3 install --user -r requirements.txt
-sudo -u ubuntu pip3 install --user openmm-cuda 2>/dev/null || true
+
+echo "=== GPU + CUDA platform check ==="
+nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv 2>&1 | head -3 || true
+sudo -u ubuntu python3 -c "import openmm as mm; print('platforms:', [mm.Platform.getPlatform(i).getName() for i in range(mm.Platform.getNumPlatforms())])" 2>&1
 
 PLATFORM_FLAG="--platform CUDA"
-if ! sudo -u ubuntu python3 -c "import openmm,openmm as mm;mm.Platform.getPlatformByName('CUDA')" 2>/dev/null; then
+if ! sudo -u ubuntu python3 -c "import openmm as mm;p=mm.Platform.getPlatformByName('CUDA');print('CUDA OK')" 2>&1 | tee -a /var/log/imp-bootstrap.log | grep -q "CUDA OK"; then
+  echo "WARNING: CUDA not available, falling back to CPU"
   PLATFORM_FLAG="--platform CPU"
 fi
+echo "PLATFORM_FLAG=${PLATFORM_FLAG}"
 
 mkdir -p /home/ubuntu/ImpAgingSim/output/melt
 chown -R ubuntu:ubuntu /home/ubuntu/ImpAgingSim
