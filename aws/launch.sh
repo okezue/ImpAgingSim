@@ -65,7 +65,13 @@ trap "rm -f ${RENDERED}" EXIT
 } > "${RENDERED}"
 
 EXTRA_ARGS=()
-[ -n "${SUBNET_ID}" ] && EXTRA_ARGS+=(--subnet-id "${SUBNET_ID}")
+if [ -n "${SUBNET_ID}" ]; then
+  EXTRA_ARGS+=(--subnet-id "${SUBNET_ID}")
+fi
+EXTRA_ARG_STR=""
+if [ ${#EXTRA_ARGS[@]} -gt 0 ]; then
+  EXTRA_ARG_STR="${EXTRA_ARGS[@]}"
+fi
 
 INSTANCE_ID=$(aws ec2 run-instances \
   --region "${REGION}" \
@@ -76,7 +82,7 @@ INSTANCE_ID=$(aws ec2 run-instances \
   --user-data "file://${RENDERED}" \
   --instance-initiated-shutdown-behavior terminate \
   --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${TAG_NAME}},{Key=Project,Value=ImpAgingSim}]" \
-  "${EXTRA_ARGS[@]}" \
+  ${EXTRA_ARG_STR} \
   --query 'Instances[0].InstanceId' --output text)
 
 echo "Launched: ${INSTANCE_ID}"
