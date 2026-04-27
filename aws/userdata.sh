@@ -63,31 +63,34 @@ chown -R ubuntu:ubuntu /home/ubuntu/ImpAgingSim
 run_kappa(){
   sudo -u ubuntu ${PY} -m melt.kappa_scan \
     --scan_id kscan_aws \
-    --kappas 0.0 0.2 0.4 0.6 0.8 1.0 \
-    --seeds 1 2 3 4 \
-    --n_chains 96 --chain_length 30 --box_size 18.0 \
+    --kappas 0.0 0.15 0.3 0.45 0.6 0.75 0.9 1.0 \
+    --seeds 1 2 3 4 5 \
+    --n_chains 144 --chain_length 40 --box_size 22.0 \
     --T_equilibrate 5.0 --T_quench 0.7 --lj_eps_AB 0.1 \
-    --n_steps 150000 --equilibration 20000 --snapshot_interval 1500 \
-    --grid_size 48 ${PLATFORM_FLAG}
+    --n_steps 250000 --equilibration 30000 --snapshot_interval 2000 \
+    --grid_size 56 ${PLATFORM_FLAG}
 }
 run_temperature(){
   sudo -u ubuntu ${PY} -m melt.temperature_scan \
     --scan_id tscan_aws \
-    --T_quenches 0.3 0.5 0.7 1.0 1.5 2.0 \
+    --T_quenches 0.25 0.35 0.5 0.65 0.8 1.0 1.3 1.7 \
     --sequences random block correlated \
-    --seeds 1 2 3 \
-    --n_chains 96 --chain_length 30 --box_size 18.0 \
+    --seeds 1 2 3 4 5 \
+    --n_chains 144 --chain_length 40 --box_size 22.0 \
     --lj_eps_AB 0.1 \
-    --n_steps 150000 --equilibration 20000 --snapshot_interval 1500 \
-    --grid_size 48 ${PLATFORM_FLAG}
+    --n_steps 250000 --equilibration 30000 --snapshot_interval 2000 \
+    --grid_size 56 ${PLATFORM_FLAG}
 }
 run_big(){
-  sudo -u ubuntu ${PY} -m melt.big_run \
-    --sequence correlated \
-    --n_chains 256 --chain_length 30 --box_size 24.0 \
-    --T_equilibrate 5.0 --T_quench 0.7 --lj_eps_AB 0.1 \
-    --n_steps 400000 --equilibration 50000 --snapshot_interval 4000 \
-    --grid_size 64 ${PLATFORM_FLAG}
+  for seq in correlated random block; do
+    sudo -u ubuntu ${PY} -m melt.big_run \
+      --sequence ${seq} \
+      --n_chains 400 --chain_length 50 --box_size 32.0 \
+      --T_equilibrate 5.0 --T_quench 0.7 --lj_eps_AB 0.1 \
+      --n_steps 500000 --equilibration 60000 --snapshot_interval 5000 \
+      --grid_size 80 \
+      --run_id big_${seq} ${PLATFORM_FLAG}
+  done
   for d in output/melt/big/big_*; do
     sudo -u ubuntu ${PY} -m melt.viz "$d" || true
   done
