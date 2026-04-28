@@ -112,8 +112,8 @@ After analysis with `melt/deep_analysis.py`:
 ### 1. Original κ-tuning hypothesis confirmed in true melt (chunkM)
 The IMP single-chain finding — **sequence correlation κ tunes microphase structure at fixed marginal coupling variance** — translates directly to multi-chain melts when the system is at high enough density to suppress chain-vacuum globule formation. At ρ≈1.0:
 
-- Raw S_AA peak grows **2.26×** from κ=0 to κ=1 at T_q=0.7
-- This is a clean, observable signature in the most basic experimental observable (S(k))
+- Raw S_AA peak grows **5.13×** from κ=0 to κ=1 at T_q=0.7 *(complete-data result; partial-data preview was 2.26×)*
+- Contrast peak grows **5.15×** — basically identical to raw, confirming this is a clean microphase signal not contaminated by globule artifacts
 - Not visible at ρ≈0.54 (baseline) where globule positions dominate the signal
 
 ### 2. Contrast observable (S_AA − S_AB) extracts the microphase signal at any density
@@ -142,6 +142,25 @@ Trajectory analysis on V1's 400-chain × 50-bead big runs:
 | random | 0.985 | 2.36× over random |
 
 Correlated and block sequences produce strong A-bead clustering within globules; random shows weaker but still elevated signal.
+
+### 5. Sub-block + intra-globule structure scales with κ (M/N/O trajectory recordings)
+Trajectory analysis on the 9 deep recordings (3 conditions × 3 κ values at T_q=0.7):
+
+| condition | Rg_A/Rg_full at κ=0 | Rg_A/Rg_full at κ=1 | Δ (chain compaction) |
+|---|---|---|---|
+| M high density | 0.994 | 0.864 | **13%** |
+| N soft LJ | 0.990 | 0.855 | **14%** |
+| O short chains | 0.915 | 0.780 | **22%** ← strongest |
+
+Direct geometric evidence that increasing κ drives A-beads to cluster within their own chain.
+
+| condition | intra-globule var enhancement κ=0 → κ=1 |
+|---|---|
+| N soft LJ | 2.23× → **3.49×** |
+| O short chains | 2.21× → **3.60×** |
+| M high density | — (no globules form, by design) |
+
+The absence of an intra-globule signal in M (high density) is an internal consistency check — globules don't form in a true melt, so there's nothing for the metric to measure. The structure-factor signal is correspondingly *strongest* there because no gas-liquid phase separation masks the microphase.
 
 ## Analysis artifacts
 
