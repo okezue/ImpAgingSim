@@ -94,3 +94,63 @@ python3 -m melt.viz output/aws/seminal_20260427_133456/melt/big/big_correlated/
 
 1. **Chunk E lost.** 120k-bead mega-scale cinematic runs were numerically unstable at dt=0.005. For future runs at this scale, reduce dt to 0.001-0.002, increase friction, or use a softer pair potential (WCA-cut LJ) at startup.
 2. **Original V2/V3 chained runs lost** on instance A. The shutdown-cancellation race between V1's `shutdown -h +5` and the V2-waiter polling killed the chain. The new chunks (E-L launched as separate instances) covered the missed science.
+
+## Phase 5 follow-up chunks (M, N, O)
+
+| Prefix | Variation | Purpose |
+|---|---|---|
+| `chunkM_*` | (a) **High density** (box=17, ρ≈1.0) | Eliminate globule formation → see microphase signal in raw S_AA |
+| `chunkN_*` | (b) **Soft LJ** (ε_AA=ε_BB=0.4) | Θ-solvent regime, chains stay extended |
+| `chunkO_*` | (c) **Short chains** (N=12, 480 chains) | Too short to collapse |
+
+Each: 11 κ × 6 T × 4 seeds = 264 scan runs + 3 trajectory recordings at κ ∈ {0,0.5,1.0} for sub-block / intra-globule analysis.
+
+## Headline science findings
+
+After analysis with `melt/deep_analysis.py`:
+
+### 1. Original κ-tuning hypothesis confirmed in true melt (chunkM)
+The IMP single-chain finding — **sequence correlation κ tunes microphase structure at fixed marginal coupling variance** — translates directly to multi-chain melts when the system is at high enough density to suppress chain-vacuum globule formation. At ρ≈1.0:
+
+- Raw S_AA peak grows **2.26×** from κ=0 to κ=1 at T_q=0.7
+- This is a clean, observable signature in the most basic experimental observable (S(k))
+- Not visible at ρ≈0.54 (baseline) where globule positions dominate the signal
+
+### 2. Contrast observable (S_AA − S_AB) extracts the microphase signal at any density
+Even at low density where globules dominate raw S_AA, the contrast observable reveals the microphase signal hidden underneath:
+
+- chunkD baseline: contrast grows **3.52×** from κ=0 to κ=1 at T=0.7
+- The subtraction removes the trivial gas-liquid (globule) contribution
+
+### 3. Energy ordering is universal across all conditions
+κ → energy is monotonic and significant in every regime:
+
+- Baseline ρ=0.54: −10.0%
+- High density ρ=1.0: −3.5%  
+- Soft LJ ε=0.4: −5.2%
+- Short chains N=12: −6.0%
+
+The smaller drop at high density / soft LJ is consistent with reduced LJ contribution to the total potential energy.
+
+### 4. Sub-block + intra-globule structure (V1 big runs)
+Trajectory analysis on V1's 400-chain × 50-bead big runs:
+
+| sequence | Rg_A/Rg_full | intra-globule var enhancement |
+|---|---|---|
+| correlated κ=0.7 | 0.956 | **3.42× over random** |
+| block (length=4) | 0.991 | **3.41× over random** |
+| random | 0.985 | 2.36× over random |
+
+Correlated and block sequences produce strong A-bead clustering within globules; random shows weaker but still elevated signal.
+
+## Analysis artifacts
+
+`analysis_aws/` directory holds:
+- `figures/Fig_kT_heatmaps_4conditions.png` — (κ, T) phase maps for raw S_AA + contrast across baseline, M, N, O
+- `figures/Fig_headline_kappa_tuning.png` — κ-tuning curves at T=0.7 across all 4 conditions
+- `figures/Fig_energy_kT_4conditions.png` — energy heatmaps
+- `figures/Fig_kT_heatmaps_4conditions.png` — (κ, T) phase diagrams
+- `figures/contrast_analysis.png` — original contrast finding
+- `tables/headline_summary_T07.csv` — top-line numerical comparison
+- `tables/<condition>_runs.csv` — per-run metrics
+- `tables/<condition>_agg_by_kT.csv` — (κ, T) aggregated means with seed counts
