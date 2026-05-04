@@ -2,10 +2,17 @@
 """Create comparison overlay figures for iid vs correlated ensembles."""
 
 import os
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-
+matplotlib.rcParams.update({
+    'font.size':11,'axes.labelsize':13,'axes.titlesize':13,
+    'legend.fontsize':9,'figure.dpi':200,'savefig.dpi':200,
+    'lines.linewidth':1.5,'lines.markersize':5,
+    'axes.grid':True,'grid.alpha':0.3,
+})
 def main():
     df = pd.read_csv("output/results.csv")
 

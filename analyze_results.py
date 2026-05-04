@@ -78,18 +78,14 @@ def disorder_average(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def compute_qnorm(agg: pd.DataFrame) -> pd.DataFrame:
-    """Add Q0 and Q_norm columns if lag==0 exists per (ensemble,epsilon,tw)."""
     agg = agg.copy()
-    # Map (ensemble,epsilon,tw) -> Q0 at lag=0
+    key = ["ensemble", "epsilon", "tw"]
     lag0 = agg[agg["lag"] == 0][["ensemble", "epsilon", "tw", "Q"]].rename(columns={"Q": "Q0"})
     if lag0.empty:
-        agg["Q0"] = np.nan
-        agg["Q_norm"] = np.nan
-        return agg
-
-    key = ["ensemble", "epsilon", "tw"]
+        ref = agg.loc[agg.groupby(key)["lag"].idxmin()][key + ["Q"]].rename(columns={"Q": "Q0"})
+        lag0 = ref
     agg = agg.merge(lag0, on=key, how="left")
-    agg["Q_norm"] = agg["Q"] / agg["Q0"]
+    agg["Q_norm"] = np.where(agg["Q0"] > 0, agg["Q"] / agg["Q0"], np.nan)
     return agg
 
 
@@ -244,25 +240,41 @@ def main() -> None:
             }
             per_tw_rows.append(row)
 
-        # Fit aging exponent mu from tau(tw) ~ tw^mu
         mu = float("nan")
         mu_se = float("nan")
         nfit = 0
+        mu_thresh = float(args.target)
+        thresholds_to_try = [float(args.target), 0.6, 0.8, 0.9]
+        seen = set()
+        thresholds_to_try = [t for t in thresholds_to_try if t not in seen and not seen.add(t)]
+        for thr in thresholds_to_try:
+            taus_trial: List[Tuple[int, float]] = []
+            for tw, sub in subc.groupby("tw"):
+                if tw == 0:
+                    continue
+                sub = sub.sort_values("lag")
+                lag = sub["lag"].to_numpy(dtype=float)
+                Qn = sub["Q_norm"].to_numpy(dtype=float) if "Q_norm" in sub.columns else np.full_like(lag, np.nan)
+                tr = first_crossing_tau(lag, Qn, target=thr, mono=bool(args.mono))
+                if math.isfinite(tr.tau):
+                    taus_trial.append((int(tw), float(tr.tau)))
+            if len(taus_trial) >= 2:
+                taus = taus_trial
+                mu_thresh = thr
+                break
         if len(taus) >= 2:
-            tws = np.array([t for t, _ in taus], dtype=float)
+            tws_arr = np.array([t for t, _ in taus], dtype=float)
             tauv = np.array([x for _, x in taus], dtype=float)
-            x = np.log(tws)
+            x = np.log(tws_arr)
             y = np.log(tauv)
             nfit = int(x.size)
-            # linear regression
-            A = np.vstack([x, np.ones_like(x)]).T
-            coef, *_ = np.linalg.lstsq(A, y, rcond=None)
+            A_mat = np.vstack([x, np.ones_like(x)]).T
+            coef, *_ = np.linalg.lstsq(A_mat, y, rcond=None)
             mu = float(coef[0])
-            # standard error
-            yhat = A @ coef
+            yhat = A_mat @ coef
             resid = y - yhat
             s2 = float(np.sum(resid**2) / max(1, nfit - 2))
-            xtx_inv = np.linalg.inv(A.T @ A)
+            xtx_inv = np.linalg.inv(A_mat.T @ A_mat)
             mu_se = float(math.sqrt(s2 * xtx_inv[0, 0])) if nfit > 2 else float("nan")
 
         cond_row: Dict[str, float] = {
@@ -271,6 +283,7 @@ def main() -> None:
             "mu": mu,
             "mu_se": mu_se,
             "mu_n": float(nfit),
+            "mu_threshold": mu_thresh,
         }
 
         # Optional nu fits (short-time) on disorder-averaged curves

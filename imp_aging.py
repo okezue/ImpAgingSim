@@ -231,6 +231,33 @@ def delta_energy_move(
     return float(np.sum(e_new - e_old))
 
 
+def compute_energy(pos,params,eta,sqrt_eps):
+    N=pos.shape[0]
+    dsq=dist_sq_matrix(pos)
+    dsq=np.maximum(dsq,1e-12)
+    np.fill_diagonal(dsq,1.0)
+    inv2=1.0/dsq
+    inv6=inv2*inv2*inv2
+    inv12=inv6*inv6
+    E_lj=params.R*inv12-params.A*inv6+sqrt_eps*eta*inv6
+    np.fill_diagonal(E_lj,0.0)
+    E_tot=0.5*np.sum(E_lj)
+    for i in range(N-1):
+        d2=float(np.sum((pos[i+1]-pos[i])**2))
+        E_tot+=params.h*d2
+    return E_tot
+
+
+def compute_Rg(pos):
+    cm=pos.mean(axis=0)
+    return float(np.sqrt(np.mean(np.sum((pos-cm)**2,axis=1))))
+
+
+def compute_ncontacts(pos,pair_i,pair_j,rc2):
+    dsq=dist_sq_matrix(pos)
+    return int(np.sum(dsq[pair_i,pair_j]<=rc2))
+
+
 def metropolis_sweep(
     pos: np.ndarray,
     beta: float,
@@ -291,37 +318,35 @@ def run_aging_trajectory(
     snapshot_times: Sequence[int],
     rng: np.random.Generator,
     bond_length: float = 1.0,
-) -> Dict[int, np.ndarray]:
-    """Run one independent trajectory and return snapshots at requested sweep times.
-
-    Times are measured in MC sweeps after the quench (t=0).
-    """
-    sqrt_epsilon = math.sqrt(max(0.0, epsilon))
-
-    # Init
+    pair_i: Optional[np.ndarray] = None,
+    pair_j: Optional[np.ndarray] = None,
+    rc2: float = 0.0,
+) -> Dict:
+    sqrt_eps = math.sqrt(max(0.0, epsilon))
     pos = init_random_walk(params.N, bond_length=bond_length, rng=rng)
-
-    # Pre-equilibrate at high T
     for _ in range(pre_sweeps):
-        metropolis_sweep(pos, beta0, step_size, params, eta, sqrt_epsilon, rng)
-
-    # Measurement phase at beta
+        metropolis_sweep(pos, beta0, step_size, params, eta, sqrt_eps, rng)
     want = set(int(t) for t in snapshot_times)
     snapshots: Dict[int, np.ndarray] = {}
-
+    energy: Dict[int, float] = {}
+    rg: Dict[int, float] = {}
+    nc: Dict[int, int] = {}
+    def _record(t, p):
+        snapshots[t] = p.copy()
+        energy[t] = compute_energy(p, params, eta, sqrt_eps)
+        rg[t] = compute_Rg(p)
+        if pair_i is not None and pair_j is not None:
+            nc[t] = compute_ncontacts(p, pair_i, pair_j, rc2)
     if 0 in want:
-        snapshots[0] = pos.copy()
-
+        _record(0, pos)
     for sweep in range(1, meas_sweeps + 1):
-        metropolis_sweep(pos, beta, step_size, params, eta, sqrt_epsilon, rng)
+        metropolis_sweep(pos, beta, step_size, params, eta, sqrt_eps, rng)
         if sweep in want:
-            snapshots[sweep] = pos.copy()
-
+            _record(sweep, pos)
     missing = want.difference(snapshots.keys())
     if missing:
         raise RuntimeError(f"Missing snapshots for times: {sorted(missing)[:10]} ...")
-
-    return snapshots
+    return {"snapshots":snapshots,"energy":energy,"Rg":rg,"n_contacts":nc}
 
 
 # -----------------------------
@@ -338,46 +363,55 @@ def contact_vector_from_dist_sq(
     return dsq[pair_i, pair_j] <= rc2
 
 
-def compute_Q_D4_for_trajectory(
+def compute_observables_for_trajectory(
     snapshots: Dict[int, np.ndarray],
     tw_list: Sequence[int],
     lag_list: Sequence[int],
     pair_i: np.ndarray,
     pair_j: np.ndarray,
     rc2: float,
-) -> Tuple[np.ndarray, np.ndarray]:
-    """Return Q and D4 arrays of shape (len(tw_list), len(lag_list))."""
-    # Cache distance matrices and contact vectors per snapshot time
+) -> Dict[str, np.ndarray]:
     times = sorted(snapshots.keys())
     dist_cache: Dict[int, np.ndarray] = {}
     cont_cache: Dict[int, np.ndarray] = {}
-
     for t in times:
         ds = dist_sq_matrix(snapshots[t])
         dist_cache[t] = ds
         cont_cache[t] = contact_vector_from_dist_sq(ds, pair_i, pair_j, rc2)
-
-    Q = np.empty((len(tw_list), len(lag_list)), dtype=np.float64)
-    D4 = np.empty((len(tw_list), len(lag_list)), dtype=np.float64)
-
-    for a, tw in enumerate(tw_list):
-        ds0 = dist_cache[int(tw)]
-        c0 = cont_cache[int(tw)]
-        for b, lag in enumerate(lag_list):
-            t2 = int(tw) + int(lag)
-            ds1 = dist_cache[t2]
-            c1 = cont_cache[t2]
-            D4[a, b] = float(np.mean((ds1 - ds0) ** 2))
-            Q[a, b] = float(np.mean(c0 & c1))
-
-    return Q, D4
+    ntw=len(tw_list)
+    nlag=len(lag_list)
+    Q=np.empty((ntw,nlag),dtype=np.float64)
+    D4=np.empty((ntw,nlag),dtype=np.float64)
+    MSD=np.empty((ntw,nlag),dtype=np.float64)
+    a2=np.empty((ntw,nlag),dtype=np.float64)
+    for a,tw in enumerate(tw_list):
+        ds0=dist_cache[int(tw)]
+        c0=cont_cache[int(tw)]
+        p0=snapshots[int(tw)]
+        for b,lag in enumerate(lag_list):
+            t2=int(tw)+int(lag)
+            ds1=dist_cache[t2]
+            c1=cont_cache[t2]
+            p1=snapshots[t2]
+            D4[a,b]=float(np.mean((ds1-ds0)**2))
+            Q[a,b]=float(np.mean(c0&c1))
+            disp=p1-p0
+            r2=np.sum(disp**2,axis=1)
+            MSD[a,b]=float(np.mean(r2))
+            r4=r2**2
+            mr2=float(np.mean(r2))
+            mr4=float(np.mean(r4))
+            if mr2>0:
+                a2[a,b]=0.6*mr4/(mr2*mr2)-1.0
+            else:
+                a2[a,b]=0.0
+    return {"Q":Q,"D4":D4,"MSD":MSD,"alpha2":a2}
 
 
 def log_lags(t_max: int, n_lags: int) -> np.ndarray:
-    """Integer log-spaced lags from 1..t_max (unique, sorted)."""
     raw = np.logspace(0.0, math.log10(float(t_max)), num=int(n_lags))
     lags = np.unique(np.clip(np.rint(raw).astype(int), 1, int(t_max)))
-    return lags
+    return np.concatenate([[0], lags])
 
 
 def build_snapshot_times(tw_list: Sequence[int], lag_list: Sequence[int]) -> List[int]:
@@ -429,51 +463,35 @@ def run_condition(
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2, sort_keys=True)
 
-    # CSV header (append mode; write header only if file empty)
     need_header = not os.path.exists(out_csv) or os.path.getsize(out_csv) == 0
-
     with open(out_csv, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         if need_header:
-            writer.writerow(
-                [
-                    "ensemble",
-                    "epsilon",
-                    "N",
-                    "kappa",
-                    "pi",
-                    "disorder_idx",
-                    "tw",
-                    "lag",
-                    "Q_mean",
-                    "chi4",
-                    "D4_mean",
-                    "D4_std",
-                    "n_traj",
-                    "n_pairs",
-                ]
-            )
-
+            writer.writerow([
+                "ensemble","epsilon","N","kappa","pi","disorder_idx",
+                "tw","lag","Q_mean","chi4","D4_mean","D4_std",
+                "n_traj","n_pairs",
+                "MSD_mean","alpha2_mean","energy_mean","Rg_mean","n_contacts_mean",
+            ])
         for d in range(run.n_disorder):
-            # Disorder realization
             rng_dis = np.random.default_rng(base_seed + 100000 * d + 123)
             sigma_seq: Optional[np.ndarray] = None
-
             if ensemble == "iid":
                 eta = generate_eta_iid(N, rng_dis)
             elif ensemble == "correlated":
                 eta, sigma_seq = generate_eta_correlated(N, pi=run.pi, kappa=run.kappa, rng=rng_dis)
             else:
                 raise ValueError(f"Unknown ensemble: {ensemble}")
-
-            # Trajectory ensemble at fixed disorder
             Q_list: List[np.ndarray] = []
             D4_list: List[np.ndarray] = []
-
+            MSD_list: List[np.ndarray] = []
+            a2_list: List[np.ndarray] = []
+            E_list: List[Dict[int,float]] = []
+            Rg_list: List[Dict[int,float]] = []
+            nc_list: List[Dict[int,int]] = []
             for tr in range(run.n_traj):
                 rng_tr = np.random.default_rng(base_seed + 100000 * d + 1000 * tr + 999)
-
-                snaps = run_aging_trajectory(
+                traj = run_aging_trajectory(
                     params=params,
                     eta=eta,
                     epsilon=run.epsilon,
@@ -485,52 +503,64 @@ def run_condition(
                     snapshot_times=snapshot_times,
                     rng=rng_tr,
                     bond_length=lj_rmin(params),
+                    pair_i=pair_i,
+                    pair_j=pair_j,
+                    rc2=rc2,
                 )
-
-                Q, D4 = compute_Q_D4_for_trajectory(
-                    snaps,
+                obs = compute_observables_for_trajectory(
+                    traj["snapshots"],
                     tw_list=run.tw_list,
                     lag_list=lag_list,
                     pair_i=pair_i,
                     pair_j=pair_j,
                     rc2=rc2,
                 )
-
-                Q_list.append(Q)
-                D4_list.append(D4)
-
-            # Aggregate over trajectories -> chi4
-            Q_arr = np.stack(Q_list, axis=0)  # (n_traj, n_tw, n_lag)
+                Q_list.append(obs["Q"])
+                D4_list.append(obs["D4"])
+                MSD_list.append(obs["MSD"])
+                a2_list.append(obs["alpha2"])
+                E_list.append(traj["energy"])
+                Rg_list.append(traj["Rg"])
+                nc_list.append(traj["n_contacts"])
+            Q_arr = np.stack(Q_list, axis=0)
             D_arr = np.stack(D4_list, axis=0)
-
+            MSD_arr = np.stack(MSD_list, axis=0)
+            a2_arr = np.stack(a2_list, axis=0)
             Q_mean = Q_arr.mean(axis=0)
-            Q2_mean = (Q_arr ** 2).mean(axis=0)
-            chi4 = n_pairs * (Q2_mean - Q_mean ** 2)
-
+            Q2_mean = (Q_arr**2).mean(axis=0)
+            chi4 = n_pairs*(Q2_mean-Q_mean**2)
             D4_mean = D_arr.mean(axis=0)
             D4_std = D_arr.std(axis=0, ddof=1) if run.n_traj > 1 else np.zeros_like(D4_mean)
-
-            # Write rows
+            MSD_mean = MSD_arr.mean(axis=0)
+            a2_mean = a2_arr.mean(axis=0)
             for a, tw in enumerate(run.tw_list):
+                tw_int=int(tw)
                 for b, lag in enumerate(lag_list):
-                    writer.writerow(
-                        [
-                            ensemble,
-                            float(run.epsilon),
-                            int(N),
-                            float(run.kappa) if ensemble == "correlated" else 0.0,
-                            float(run.pi) if ensemble == "correlated" else 0.0,
-                            int(d),
-                            int(tw),
-                            int(lag),
-                            float(Q_mean[a, b]),
-                            float(chi4[a, b]),
-                            float(D4_mean[a, b]),
-                            float(D4_std[a, b]),
-                            int(run.n_traj),
-                            int(n_pairs),
-                        ]
-                    )
+                    t2=tw_int+int(lag)
+                    E_m=float(np.mean([el[t2] for el in E_list]))
+                    Rg_m=float(np.mean([rl[t2] for rl in Rg_list]))
+                    nc_m=float(np.mean([nl[t2] for nl in nc_list]))
+                    writer.writerow([
+                        ensemble,
+                        float(run.epsilon),
+                        int(N),
+                        float(run.kappa) if ensemble=="correlated" else 0.0,
+                        float(run.pi) if ensemble=="correlated" else 0.0,
+                        int(d),
+                        int(tw),
+                        int(lag),
+                        float(Q_mean[a,b]),
+                        float(chi4[a,b]),
+                        float(D4_mean[a,b]),
+                        float(D4_std[a,b]),
+                        int(run.n_traj),
+                        int(n_pairs),
+                        float(MSD_mean[a,b]),
+                        float(a2_mean[a,b]),
+                        E_m,
+                        Rg_m,
+                        nc_m,
+                    ])
 
 
 def parse_args() -> argparse.Namespace:
