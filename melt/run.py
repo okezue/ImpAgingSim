@@ -2,7 +2,7 @@ from __future__ import annotations
 import argparse,os,time
 import numpy as np
 from .model import MeltParams,RunParams
-from .sequences import generate_random,generate_block,generate_alternating,generate_correlated
+from .sequences import generate_random,generate_block,generate_alternating,generate_correlated,generate_correlated_biased
 from .box import init_chains_in_box
 from .integrator import build_openmm_system,make_langevin_integrator,make_context,run_simulation,kinetic_temperature,minimize_energy
 from .io import make_run_dir,write_meta,open_csv,append_row,compute_mean_Rg,save_structure_factors,save_trajectory,save_density_grids
@@ -17,7 +17,9 @@ def build_sequence(kind,N,f_A,block_length,kappa,pi,rng):
     if kind=="alternating":
         return generate_alternating(N)
     if kind=="correlated":
-        return generate_correlated(N,kappa,pi,rng)
+        if abs(f_A-0.5)<1e-6:
+            return generate_correlated(N,kappa,pi,rng)
+        return generate_correlated_biased(N,kappa,pi,f_A,rng)
     raise ValueError(f"unknown sequence kind: {kind}")
 
 def execute(cfg):
