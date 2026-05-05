@@ -107,13 +107,38 @@ Both κ and $\epsilon_{AB}$ are independently and monotonically controlling the 
 ### Implication
 There is likely a true ODT-style ordering transition just outside the explored region — at $\kappa \to 1$ with $\epsilon_{AB} \to 0$ from above. A focused finite-size scaling study in this corner could establish the precise location and order of the transition.
 
-## 8. Composition asymmetry $f_A$ has minor effect
+## 8. Composition asymmetry $f_A$ — INVALIDATED then corrected (chunkCC)
 
-### Finding
-ChunkI sweeps $f_A \in \{0.2, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.8\}$ at multiple κ values. Contrast varies by only $\pm 10\%$ across this range at fixed κ, with at most a slight maximum near $f_A = 0.45$–$0.55$. The κ knob dominates the response.
+### ⚠️ Original chunkI finding INVALIDATED
+The original chunkI scan reported $f_A$-independent contrast (~$\pm 10\%$ across $f_A \in [0.2, 0.8]$). This was an **implementation artifact**: the original `generate_correlated()` function uses a symmetric two-state Markov chain with stationary distribution exactly 50/50, and silently ignores the `f_A` argument. Every chunkI run was effectively at $f_A = 0.5$ regardless of the requested value. The original Finding 8 conclusion is therefore not supported by the data and is excluded from the main narrative.
 
-### Intuition
-The microphase amplitude depends on having both species present and on their being able to cluster. As long as both fractions are above $\sim 0.2$, the system has enough material of both types to form domains, and the κ-controlled organisational mechanism remains operative. Only at extreme imbalance (close to $f_A=0$ or 1) would the minority species be diluted enough to disrupt microphase formation.
+### Corrected finding (chunkCC, biased generator)
+ChunkCC re-runs the (f_A, κ) phase diagram and the composition scan with the new `generate_correlated_biased(N, κ, π, f_A, rng)` function — an asymmetric Markov chain with detailed-balance transition probabilities $P(A \to B) = (1-\pi)(1-f_A)$, $P(B \to A) = (1-\pi)f_A$ chosen so the stationary distribution is exactly $f_A$.
+
+| $f_A$ | contrast at κ=0 | contrast at κ=1 | κ-amplification ratio |
+|---|---|---|---|
+| 0.2 | 0.0016 | 0.0118 | **7.4×** |
+| 0.4 | 0.0042 | 0.0277 | 6.6× |
+| 0.5 | 0.0051 | 0.0230 | 4.5× |
+| 0.7 | 0.0184 | 0.0415 | 2.3× |
+| 0.8 | 0.0244 | 0.0434 | **1.8×** |
+
+Two effects emerge with the corrected generator:
+
+1. **Raw contrast scales monotonically with $f_A$** — at κ=1, contrast is 3.7× larger at $f_A=0.8$ than at $f_A=0.2$. Partly a trivial volume effect (more A → more A–A correlation amplitude), partly because dense A regions support stronger microphase contrast directly.
+
+2. ==**The κ-tuning amplification ratio is strongest at minority-A composition.**== At $f_A=0.2$ the κ knob produces 7.4× growth in contrast; at $f_A=0.8$ only 1.8×. When A is rare, sequence correlation does the most work to organize it. This is the **actually-interesting finding** that was hidden behind the broken generator.
+
+### Intuition (corrected)
+Microphase formation requires assembling A-rich regions in a B-rich background. When $f_A$ is small (rare A), random placement gives essentially no A-clustering — adding κ produces a dramatic geometric reorganization (up to 7× contrast). When $f_A$ is large, A is everywhere; A–A neighbours form by chance with high probability, so the κ-driven coherent biasing produces only a marginal improvement.
+
+### Implementation note (technical appendix)
+`melt/sequences.py` now exposes both:
+
+- `generate_correlated(N, κ, π, rng)` — original symmetric implementation, kept bit-exact for back-compat with all earlier symmetric results.
+- `generate_correlated_biased(N, κ, π, f_A, rng)` — new asymmetric biased Markov chain.
+
+`melt/run.py:build_sequence` auto-dispatches: $f_A = 0.5$ → original symmetric (preserves all previously cited symmetric results); else → biased generator. All campaign results not involving the chunkC composition / chunkI (f_A, κ) scans are unaffected by this fix, since they were run at $f_A = 0.5$. ChunkW di-block findings used the `block` generator, also unaffected.
 
 ## 9. No memory of pre-quench temperature
 
