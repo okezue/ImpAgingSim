@@ -21,7 +21,7 @@ def generate_alternating(N):
 
 def generate_correlated(N,kappa,pi,rng):
     """SYMMETRIC correlated Markov sequence at f_A=0.5.
-    Does NOT take an f_A argument — the symmetric two-state chain on {+1,-1}
+    Does NOT take an f_A argument; the symmetric two-state chain on {+1,-1}
     with persistence pi has stationary distribution exactly 50/50.
     For asymmetric composition use generate_correlated_biased() below."""
     if not(0.0<=pi<=1.0):
@@ -41,10 +41,9 @@ def generate_correlated(N,kappa,pi,rng):
 def generate_correlated_biased(N,kappa,pi,f_A,rng):
     """Asymmetric correlated Markov sequence honoring f_A.
     Two-state Markov chain on {A=1, B=0} with stationary distribution P(A)=f_A
-    and effective persistence parametrized by pi.
+    and persistence controlled by pi.
     Detailed balance: f_A * P(A->B) = (1-f_A) * P(B->A).
-    With effective persistence parametrized as P(stay) = pi,
-    we set P(A->B) = (1-pi)/(1+f_A-(1-f_A)) clamped, see body."""
+    We use P(A->B)=(1-pi)*(1-f_A) and P(B->A)=(1-pi)*f_A."""
     if not(0.0<=pi<=1.0):
         raise ValueError(f"pi in [0,1], got {pi}")
     if not(0.0<=kappa<=1.0):

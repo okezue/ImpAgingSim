@@ -54,3 +54,14 @@ output/aws/
 
 # Plan files
 .claude/plans/
+
+# Manuscript directory not tracked
+paper/
+
+# LaTeX leftover
+*.log
+texput.log
+*.aux
+*.bbl
+*.blg
+*.out
