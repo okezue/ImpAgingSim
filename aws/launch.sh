@@ -73,6 +73,7 @@ if [ ${#EXTRA_ARGS[@]} -gt 0 ]; then
   EXTRA_ARG_STR="${EXTRA_ARGS[@]}"
 fi
 
+ROOT_VOLUME_GB="${ROOT_VOLUME_GB:-100}"
 INSTANCE_ID=$(aws ec2 run-instances \
   --region "${REGION}" \
   --image-id "${AMI_ID}" \
@@ -81,6 +82,7 @@ INSTANCE_ID=$(aws ec2 run-instances \
   --security-groups "${SECURITY_GROUP}" \
   --user-data "file://${RENDERED}" \
   --instance-initiated-shutdown-behavior terminate \
+  --block-device-mappings "[{\"DeviceName\":\"/dev/sda1\",\"Ebs\":{\"VolumeSize\":${ROOT_VOLUME_GB},\"VolumeType\":\"gp3\",\"DeleteOnTermination\":true}}]" \
   --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${TAG_NAME}},{Key=Project,Value=ImpAgingSim}]" \
   ${EXTRA_ARG_STR} \
   --query 'Instances[0].InstanceId' --output text)
