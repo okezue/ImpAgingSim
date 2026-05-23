@@ -27,13 +27,16 @@ def execute(cfg):
                   temperature=T_q_K,friction=cfg.friction,dt=cfg.dt)
     rp=RunParams(n_steps=cfg.n_steps,equilibration_steps=cfg.equilibration,
                  snapshot_interval=cfg.snapshot_interval,seed=cfg.seed)
+    run_id=cfg.run_id or f"run_{int(time.time())}_{cfg.sequence}_s{cfg.seed}"
+    rd=make_run_dir(cfg.out,run_id)
+    if os.path.exists(os.path.join(rd,"structure_factor.npz")) and getattr(cfg,"skip_if_cached",True):
+        print(f"  cached: {rd} (skipping)")
+        return rd
     rng=np.random.default_rng(cfg.seed)
     types=generate_per_chain(cfg.sequence,cfg.n_chains,cfg.chain_length,cfg.f_A,
                              cfg.block_length,cfg.kappa,cfg.pi,rng)
     N=cfg.n_chains*cfg.chain_length
     pos=init_chains_in_box(cfg.n_chains,cfg.chain_length,cfg.box_size,cfg.bond_r0,rng)
-    run_id=cfg.run_id or f"run_{int(time.time())}_{cfg.sequence}_s{cfg.seed}"
-    rd=make_run_dir(cfg.out,run_id)
     write_meta(rd,mp,rp,cfg.sequence,types,extra={"T_equilibrate_kelvin":float(T_eq_K),
                                                   "T_quench_kelvin":float(T_q_K),
                                                   "T_equilibrate_star":float(T_eq_star),

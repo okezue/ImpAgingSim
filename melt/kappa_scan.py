@@ -54,6 +54,9 @@ def main():
             cfg.seed=int(seed)
             cfg.out=os.path.join(a.out,scan_id)
             cfg.run_id=f"kappa{kappa:.2f}_s{seed}"
+            cached=os.path.join(cfg.out,cfg.run_id,"structure_factor.npz")
+            if os.path.exists(cached):
+                print(f"  [{k}/{n_total}] kappa={kappa} seed={seed} (cached, skipped)");continue
             t1=time.time()
             rd=execute(cfg)
             print(f"  [{k}/{n_total}] kappa={kappa} seed={seed} -> {rd}  ({time.time()-t1:.1f}s)")
