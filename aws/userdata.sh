@@ -28,8 +28,10 @@ apt-get update -y
 apt-get install -y git ffmpeg awscli wget
 
 cd /home/ubuntu
-sudo -u ubuntu git clone https://github.com/okezue/ImpAgingSim.git || (cd ImpAgingSim && sudo -u ubuntu git pull)
-cd ImpAgingSim
+REPO_URL="${REPO_URL:-https://github.com/okezue/PiMorph.git}"
+REPO_DIR="${REPO_DIR:-PiMorph}"
+sudo -u ubuntu git clone "${REPO_URL}" "${REPO_DIR}" || (cd "${REPO_DIR}" && sudo -u ubuntu git fetch --all && sudo -u ubuntu git reset --hard origin/${GIT_REF})
+cd "${REPO_DIR}"
 sudo -u ubuntu git checkout "${GIT_REF}"
 
 if [ ! -d /home/ubuntu/miniconda3 ]; then
@@ -57,8 +59,8 @@ if ! sudo -u ubuntu ${PY} -c "import openmm as mm;sys=mm.System();sys.addParticl
 fi
 echo "PLATFORM_FLAG=${PLATFORM_FLAG}"
 
-mkdir -p /home/ubuntu/ImpAgingSim/output/melt
-chown -R ubuntu:ubuntu /home/ubuntu/ImpAgingSim
+mkdir -p /home/ubuntu/${REPO_DIR}/output/melt
+chown -R ubuntu:ubuntu /home/ubuntu/${REPO_DIR}
 
 run_kappa(){
   sudo -u ubuntu ${PY} -m melt.kappa_scan \
@@ -104,17 +106,23 @@ run_smoke(){
     --out output/melt --run_id aws_smoke ${PLATFORM_FLAG}
   sudo -u ubuntu ${PY} -m melt.viz output/melt/aws_smoke || true
 }
+run_rerun(){
+  sudo -u ubuntu env PY="${PY}" PLATFORM_FLAG="${PLATFORM_FLAG}" \
+       S3_BUCKET="${S3_BUCKET}" REGION="${REGION}" \
+       bash aws/rerun_corrected.sh
+}
 
 case "${SCAN_KIND}" in
   smoke) run_smoke ;;
   kappa) run_kappa ;;
   temperature) run_temperature ;;
   big) run_big ;;
+  rerun) run_rerun ;;
   all) run_kappa; run_temperature; run_big ;;
   *) echo "unknown SCAN_KIND=${SCAN_KIND}"; exit 2 ;;
 esac
 
-cd /home/ubuntu/ImpAgingSim
+cd /home/ubuntu/${REPO_DIR}
 sudo -u ubuntu aws s3 sync output/ "s3://${S3_BUCKET}/$(date +%Y-%m-%d)_$(hostname -s)/" --region "${REGION}"
 
 shutdown -h +5

@@ -2,53 +2,53 @@ from __future__ import annotations
 import argparse,os,time
 import numpy as np
 from .model import MeltParams,RunParams
-from .sequences import generate_random,generate_block,generate_alternating,generate_correlated,generate_correlated_biased
+from .sequences import generate_per_chain
 from .box import init_chains_in_box
-from .integrator import build_openmm_system,make_langevin_integrator,make_context,run_simulation,kinetic_temperature,minimize_energy
+from .integrator import (build_openmm_system,make_langevin_integrator,make_context,run_simulation,
+                         kinetic_temperature_kelvin,kinetic_tstar,minimize_energy,
+                         tstar_to_kelvin,KB_KJMOLK)
 from .io import make_run_dir,write_meta,open_csv,append_row,compute_mean_Rg,save_structure_factors,save_trajectory,save_density_grids
 from .density import density_field_A,density_field_B
 from .observables import compute_all_observables
 
-def build_sequence(kind,N,f_A,block_length,kappa,pi,rng):
-    if kind=="random":
-        return generate_random(N,f_A,rng)
-    if kind=="block":
-        return generate_block(N,block_length,f_A)
-    if kind=="alternating":
-        return generate_alternating(N)
-    if kind=="correlated":
-        if abs(f_A-0.5)<1e-6:
-            return generate_correlated(N,kappa,pi,rng)
-        return generate_correlated_biased(N,kappa,pi,f_A,rng)
-    raise ValueError(f"unknown sequence kind: {kind}")
-
 def execute(cfg):
-    T_eq=getattr(cfg,"T_equilibrate",None)
-    if T_eq is None:T_eq=cfg.temperature
-    T_q=getattr(cfg,"T_quench",None)
-    if T_q is None:T_q=cfg.temperature
+    eps_ref=float(cfg.lj_eps_AA)
+    T_eq_star=getattr(cfg,"T_equilibrate",None)
+    if T_eq_star is None:T_eq_star=cfg.temperature
+    T_q_star=getattr(cfg,"T_quench",None)
+    if T_q_star is None:T_q_star=cfg.temperature
+    T_eq_K=tstar_to_kelvin(T_eq_star,eps_ref)
+    T_q_K=tstar_to_kelvin(T_q_star,eps_ref)
     mp=MeltParams(n_chains=cfg.n_chains,chain_length=cfg.chain_length,box_size=cfg.box_size,
                   bond_k=cfg.bond_k,bond_r0=cfg.bond_r0,
                   lj_eps_AA=cfg.lj_eps_AA,lj_eps_BB=cfg.lj_eps_BB,lj_eps_AB=cfg.lj_eps_AB,
+                  lj_eps_core=getattr(cfg,"lj_eps_core",1.0),
                   lj_sigma=cfg.lj_sigma,lj_cutoff=cfg.lj_cutoff,
-                  temperature=T_q,friction=cfg.friction,dt=cfg.dt)
+                  temperature=T_q_K,friction=cfg.friction,dt=cfg.dt)
     rp=RunParams(n_steps=cfg.n_steps,equilibration_steps=cfg.equilibration,
                  snapshot_interval=cfg.snapshot_interval,seed=cfg.seed)
     rng=np.random.default_rng(cfg.seed)
+    types=generate_per_chain(cfg.sequence,cfg.n_chains,cfg.chain_length,cfg.f_A,
+                             cfg.block_length,cfg.kappa,cfg.pi,rng)
     N=cfg.n_chains*cfg.chain_length
-    types=build_sequence(cfg.sequence,N,cfg.f_A,cfg.block_length,cfg.kappa,cfg.pi,rng)
     pos=init_chains_in_box(cfg.n_chains,cfg.chain_length,cfg.box_size,cfg.bond_r0,rng)
     run_id=cfg.run_id or f"run_{int(time.time())}_{cfg.sequence}_s{cfg.seed}"
     rd=make_run_dir(cfg.out,run_id)
-    write_meta(rd,mp,rp,cfg.sequence,types,extra={"T_equilibrate":float(T_eq),"T_quench":float(T_q)})
+    write_meta(rd,mp,rp,cfg.sequence,types,extra={"T_equilibrate_kelvin":float(T_eq_K),
+                                                  "T_quench_kelvin":float(T_q_K),
+                                                  "T_equilibrate_star":float(T_eq_star),
+                                                  "T_quench_star":float(T_q_star),
+                                                  "eps_ref_kjmol":eps_ref,
+                                                  "k_B_kjmolK":KB_KJMOLK})
     sys=build_openmm_system(types,mp)
-    integ=make_langevin_integrator(T_eq,cfg.friction,cfg.dt,seed=cfg.seed)
+    integ=make_langevin_integrator(T_eq_K,cfg.friction,cfg.dt,seed=cfg.seed)
     ctx=make_context(sys,integ,pos,cfg.box_size,platform_name=cfg.platform)
     minimize_energy(ctx)
     if cfg.equilibration>0:
         integ.step(cfg.equilibration)
-    if T_q!=T_eq:
-        integ.setTemperature(T_q)
+    if T_q_K!=T_eq_K:
+        from openmm import unit
+        integ.setTemperature(T_q_K*unit.kelvin)
     f,w=open_csv(rd)
     sf_steps=[];sf_k=None;sf_AA=[];sf_BB=[];sf_AB=[]
     traj_steps=[];traj_pos=[]
@@ -58,7 +58,8 @@ def execute(cfg):
     try:
         def cb(step,p_arr,v_arr,pe,ke):
             nonlocal sf_k
-            T_inst=kinetic_temperature(ke,N)
+            T_inst_K=kinetic_temperature_kelvin(ke,N)
+            T_inst_star=kinetic_tstar(ke,N,eps_ref)
             rg=compute_mean_Rg(p_arr,cfg.n_chains,cfg.chain_length)
             kstar=xi=Speak=float("nan")
             if cfg.compute_density:
@@ -74,7 +75,7 @@ def execute(cfg):
                     grid_steps.append(int(step));grid_phiA.append(phi_A);grid_phiB.append(phi_B)
             if save_traj:
                 traj_steps.append(int(step));traj_pos.append(p_arr.copy())
-            append_row(w,run_id,cfg.sequence,mp,cfg.kappa,cfg.pi,cfg.f_A,step,pe,ke,rg,T_inst,
+            append_row(w,run_id,cfg.sequence,mp,cfg.kappa,cfg.pi,cfg.f_A,step,pe,ke,rg,T_inst_star,
                        k_star=kstar,xi_AA=xi,S_AA_peak=Speak)
             f.flush()
         run_simulation(ctx,cfg.n_steps,cfg.snapshot_interval,callback=cb)
@@ -89,7 +90,7 @@ def execute(cfg):
     return rd
 
 def parse_args():
-    p=argparse.ArgumentParser(description="Multi-chain A/B copolymer melt BD")
+    p=argparse.ArgumentParser(description="Multi-chain A/B copolymer melt BD (reduced units)")
     p.add_argument("--out",type=str,default="output/melt")
     p.add_argument("--run_id",type=str,default=None)
     p.add_argument("--seed",type=int,default=12345)
@@ -107,11 +108,13 @@ def parse_args():
     p.add_argument("--lj_eps_AA",type=float,default=1.0)
     p.add_argument("--lj_eps_BB",type=float,default=1.0)
     p.add_argument("--lj_eps_AB",type=float,default=0.5)
+    p.add_argument("--lj_eps_core",type=float,default=1.0,
+                   help="WCA core depth, shared across all pairs (excluded volume)")
     p.add_argument("--lj_sigma",type=float,default=1.0)
     p.add_argument("--lj_cutoff",type=float,default=2.5)
-    p.add_argument("--temperature",type=float,default=1.0)
-    p.add_argument("--T_equilibrate",type=float,default=None)
-    p.add_argument("--T_quench",type=float,default=None)
+    p.add_argument("--temperature",type=float,default=1.0,help="reduced T* (kB T / eps_AA)")
+    p.add_argument("--T_equilibrate",type=float,default=None,help="reduced T*")
+    p.add_argument("--T_quench",type=float,default=None,help="reduced T*")
     p.add_argument("--friction",type=float,default=1.0)
     p.add_argument("--dt",type=float,default=0.005)
     p.add_argument("--n_steps",type=int,default=10000)

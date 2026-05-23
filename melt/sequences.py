@@ -19,58 +19,87 @@ def generate_alternating(N):
     s[::2]=1
     return s
 
-def generate_correlated(N,kappa,pi,rng):
-    """SYMMETRIC correlated Markov sequence at f_A=0.5.
-    Does NOT take an f_A argument; the symmetric two-state chain on {+1,-1}
-    with persistence pi has stationary distribution exactly 50/50.
-    For asymmetric composition use generate_correlated_biased() below."""
-    if not(0.0<=pi<=1.0):
-        raise ValueError(f"pi must be in [0,1], got {pi}")
-    if not(0.0<=kappa<=1.0):
-        raise ValueError(f"kappa must be in [0,1], got {kappa}")
-    sigma=np.empty(N,dtype=np.int8)
-    sigma[0]=1 if rng.random()<0.5 else -1
-    for i in range(N-1):
-        sigma[i+1]=sigma[i] if rng.random()<pi else -sigma[i]
-    if kappa<1.0:
-        flip=rng.random(N)>kappa
-        rand=np.where(rng.random(N)<0.5,1,-1).astype(np.int8)
-        sigma=np.where(flip,rand,sigma).astype(np.int8)
-    return ((sigma+1)//2).astype(np.int8)
+def valid_pi_range(f_A):
+    """Return (pi_min, pi_max=1) for which P(A->B)=2(1-pi)(1-f_A) and P(B->A)=2(1-pi)f_A
+    both stay in [0,1]. pi_min = max(0, 1 - 1/(2 max(f_A,1-f_A)))."""
+    fm=max(float(f_A),1.0-float(f_A))
+    return max(0.0,1.0-1.0/(2.0*fm)),1.0
 
-def generate_correlated_biased(N,kappa,pi,f_A,rng):
-    """Asymmetric correlated Markov sequence honoring f_A.
-    Two-state Markov chain on {A=1, B=0} with stationary distribution P(A)=f_A
-    and persistence controlled by pi.
-    Detailed balance: f_A * P(A->B) = (1-f_A) * P(B->A).
-    We use P(A->B)=(1-pi)*(1-f_A) and P(B->A)=(1-pi)*f_A."""
+def generate_correlated(N,kappa,pi,f_A,rng):
+    """Unified Markov correlated generator with eigenvalue lambda=2*pi-1 for all f_A.
+
+    Transition probabilities: P(A->B)=2(1-pi)(1-f_A), P(B->A)=2(1-pi)f_A. This matches
+    the manuscript formula (Eq. eq:markov) at all compositions; the symmetric f_A=0.5
+    case reduces to P(stay)=pi. Detailed balance gives stationary P(A)=f_A. The second
+    eigenvalue of the transition matrix is 2*pi-1 for every f_A.
+
+    Replaces both the old symmetric generate_correlated (which was {-1,+1} only) and
+    generate_correlated_biased (which used a=(1-pi) and gave lambda=pi for f_A!=0.5).
+
+    Sequence is mixed with i.i.d. Bernoulli(f_A) draws: with probability kappa each bead
+    inherits the Markov realization, with probability 1-kappa it is resampled i.i.d.
+
+    Raises ValueError if pi is outside the valid range for this f_A; use valid_pi_range()
+    to query the allowed window.
+    """
     if not(0.0<=pi<=1.0):
         raise ValueError(f"pi in [0,1], got {pi}")
     if not(0.0<=kappa<=1.0):
         raise ValueError(f"kappa in [0,1], got {kappa}")
     if not(0.0<f_A<1.0):
         raise ValueError(f"f_A in (0,1), got {f_A}")
-    p_AB=(1.0-pi)*(1.0-f_A)
-    p_BA=(1.0-pi)*f_A
-    p_AA=1.0-p_AB
-    p_BB=1.0-p_BA
-    s=np.empty(N,dtype=np.int8)
-    s[0]=1 if rng.random()<f_A else 0
+    p_AB=2.0*(1.0-pi)*(1.0-f_A)
+    p_BA=2.0*(1.0-pi)*f_A
+    if p_AB>1.0 or p_BA>1.0:
+        pmin,_=valid_pi_range(f_A)
+        raise ValueError(f"pi={pi} below valid_pi_min={pmin:.4f} for f_A={f_A}")
+    z=np.empty(N,dtype=np.int8)
+    z[0]=1 if rng.random()<f_A else 0
     for i in range(N-1):
-        if s[i]==1:
-            s[i+1]=1 if rng.random()<p_AA else 0
+        if z[i]==1:
+            z[i+1]=0 if rng.random()<p_AB else 1
         else:
-            s[i+1]=0 if rng.random()<p_BB else 1
+            z[i+1]=1 if rng.random()<p_BA else 0
     if kappa<1.0:
         flip=rng.random(N)>kappa
         rand=(rng.random(N)<f_A).astype(np.int8)
-        s=np.where(flip,rand,s).astype(np.int8)
-    return s
+        z=np.where(flip,rand,z).astype(np.int8)
+    return z
 
-def autocorrelation(seq,kmax):
-    s=2*seq.astype(np.float64)-1.0
-    N=len(s)
-    out=np.empty(kmax+1)
-    for k in range(kmax+1):
-        out[k]=float(np.mean(s[:N-k]*s[k:])) if k<N else 0.0
+def generate_per_chain(kind,n_chains,chain_length,f_A,block_length,kappa,pi,rng):
+    """Generate one sequence per chain independently, then concatenate.
+    Eliminates the across-chain Markov bleed-through of the previous run.py code path."""
+    out=np.empty(n_chains*chain_length,dtype=np.int8)
+    for c in range(n_chains):
+        if kind=="random":
+            s=generate_random(chain_length,f_A,rng)
+        elif kind=="block":
+            s=generate_block(chain_length,block_length,f_A)
+        elif kind=="alternating":
+            s=generate_alternating(chain_length)
+        elif kind=="correlated":
+            s=generate_correlated(chain_length,kappa,pi,f_A,rng)
+        else:
+            raise ValueError(f"unknown sequence kind: {kind}")
+        out[c*chain_length:(c+1)*chain_length]=s
     return out
+
+def autocorrelation(seq,kmax,per_chain_length=None):
+    """Centred normalized autocorrelation. If per_chain_length is given, compute
+    within-chain autocorrelation (averaged over chains) instead of treating the
+    concatenated sequence as one long chain."""
+    s=2*seq.astype(np.float64)-1.0
+    if per_chain_length is None:
+        N=len(s)
+        out=np.empty(kmax+1)
+        for k in range(kmax+1):
+            out[k]=float(np.mean(s[:N-k]*s[k:])) if k<N else 0.0
+        return out
+    L=int(per_chain_length)
+    n_chains=len(s)//L
+    out=np.zeros(kmax+1)
+    for c in range(n_chains):
+        sc=s[c*L:(c+1)*L]
+        for k in range(kmax+1):
+            out[k]+=float(np.mean(sc[:L-k]*sc[k:])) if k<L else 0.0
+    return out/max(n_chains,1)
