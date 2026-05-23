@@ -56,6 +56,7 @@ def build_openmm_system(types,mp):
     core=mm.CustomNonbondedForce(core_expr)
     core.setNonbondedMethod(mm.CustomNonbondedForce.CutoffPeriodic)
     core.setCutoffDistance(rc_wca*unit.nanometer)
+    core.setForceGroup(1)
     for _ in range(N):
         core.addParticle([])
     core.createExclusionsFromBonds([(int(i),int(j)) for i,j in bonds],1)
@@ -75,6 +76,7 @@ def build_openmm_system(types,mp):
     att.addPerParticleParameter("tA")
     att.setNonbondedMethod(mm.CustomNonbondedForce.CutoffPeriodic)
     att.setCutoffDistance(rc*unit.nanometer)
+    att.setForceGroup(2)
     types_py=[1.0 if int(t)==1 else 0.0 for t in types]
     for k in range(N):
         att.addParticle([types_py[k]])
