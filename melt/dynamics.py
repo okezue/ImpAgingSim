@@ -83,15 +83,31 @@ def overlap_self(pos_unwrapped,tw_idx,a=0.3):
         out[s]=float(np.mean(r<a))
     return out
 
-def chi4_from_overlap_realizations(overlap_runs):
-    """chi_4(lag) = N * Var_runs(Q_self(lag)). Input is array (n_runs, n_lags) of self-overlap
-    trajectories from independent realizations (or independent seeds at fixed condition).
-    Returns N * variance across realizations at each lag."""
-    Q=np.asarray(overlap_runs)
+def chi4_from_overlap_realizations(overlap_runs,n_particles):
+    """chi_4(lag) = N * Var_runs[Q_self(lag)] with N = number of particles in each realization.
+
+    A previous version of this function used N = n_runs (number of independent
+    realizations) instead of the system size, which underestimated chi_4 by a factor
+    n_runs / N. For the corrected aging campaign (N=5760, n_runs=3) the underestimate
+    was a factor of ~1920.
+
+    Parameters
+    ----------
+    overlap_runs : array_like
+        Shape (n_runs, n_lags). Q_self curves from independent realizations.
+    n_particles : int
+        Number of particles summed in each Q_self.
+
+    Returns
+    -------
+    ndarray of shape (n_lags,) or nan-filled if n_runs<2.
+    """
+    Q=np.asarray(overlap_runs,dtype=float)
     if Q.ndim!=2 or Q.shape[0]<2:
         return np.full(Q.shape[-1] if Q.ndim>=1 else 0,np.nan)
-    n_runs=Q.shape[0]
-    return n_runs*np.var(Q,axis=0,ddof=1)
+    if n_particles<=0:
+        raise ValueError("n_particles must be positive")
+    return float(n_particles)*np.var(Q,axis=0,ddof=1)
 
 def tau_alpha_from_overlap(lags,Q,threshold=1.0/np.e):
     """Extract alpha-relaxation time from a self-overlap curve as the lag at which Q crosses

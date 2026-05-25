@@ -213,6 +213,28 @@ class TestStructureFactor:
         xi_fit,S0_fit=fit_ornstein_zernike(k,S,k_max=1.5)
         assert abs(xi_fit-xi_true)<0.05
 
+class TestChi4Normalization:
+    """chi_4 = N * Var_runs(Q) requires N = system size, not n_runs. Regression test
+    for the patch that fixed a ~1920x underestimate on the corrected aging campaign."""
+    def test_chi4_uses_n_particles(self):
+        from melt.dynamics import chi4_from_overlap_realizations
+        rng=np.random.default_rng(0)
+        n_runs=3;n_lags=20;N=5760
+        Q=rng.uniform(0.2,0.8,size=(n_runs,n_lags))
+        chi4=chi4_from_overlap_realizations(Q,n_particles=N)
+        expected=N*np.var(Q,axis=0,ddof=1)
+        np.testing.assert_allclose(chi4,expected,rtol=1e-12)
+    def test_chi4_rejects_nonpositive_N(self):
+        from melt.dynamics import chi4_from_overlap_realizations
+        Q=np.array([[0.5,0.4],[0.3,0.2]])
+        with pytest.raises(ValueError):
+            chi4_from_overlap_realizations(Q,n_particles=0)
+    def test_chi4_single_run_returns_nan(self):
+        from melt.dynamics import chi4_from_overlap_realizations
+        Q=np.array([[0.5,0.4,0.3]])
+        out=chi4_from_overlap_realizations(Q,n_particles=100)
+        assert np.all(np.isnan(out))
+
 @needs_openmm
 class TestReproducibility:
     def test_same_seed_same_trajectory(self):
