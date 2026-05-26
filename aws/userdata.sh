@@ -111,6 +111,11 @@ run_rerun(){
        S3_BUCKET="${S3_BUCKET}" REGION="${REGION}" \
        bash aws/rerun_corrected.sh
 }
+run_seed_extension(){
+  sudo -u ubuntu env PY="${PY}" PLATFORM_FLAG="${PLATFORM_FLAG}" \
+       S3_BUCKET="${S3_BUCKET}" REGION="${REGION}" \
+       bash aws/seed_extension.sh
+}
 
 case "${SCAN_KIND}" in
   smoke) run_smoke ;;
@@ -118,6 +123,7 @@ case "${SCAN_KIND}" in
   temperature) run_temperature ;;
   big) run_big ;;
   rerun) run_rerun ;;
+  seed_extension) run_seed_extension ;;
   all) run_kappa; run_temperature; run_big ;;
   *) echo "unknown SCAN_KIND=${SCAN_KIND}"; exit 2 ;;
 esac
