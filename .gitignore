@@ -55,8 +55,10 @@ output/aws/
 # Plan files
 .claude/plans/
 
-# Manuscript directory not tracked
+# Manuscript directories not tracked
 paper/
+manuscript_v*/
+output/aws_corrected/
 
 # LaTeX leftover
 *.log

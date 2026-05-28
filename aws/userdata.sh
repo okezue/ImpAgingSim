@@ -28,8 +28,8 @@ apt-get update -y
 apt-get install -y git ffmpeg awscli wget
 
 cd /home/ubuntu
-REPO_URL="${REPO_URL:-https://github.com/okezue/PiMorph.git}"
-REPO_DIR="${REPO_DIR:-PiMorph}"
+REPO_URL="${REPO_URL:-https://github.com/okezue/ImpAgingSim.git}"
+REPO_DIR="${REPO_DIR:-ImpAgingSim}"
 sudo -u ubuntu git clone "${REPO_URL}" "${REPO_DIR}" || (cd "${REPO_DIR}" && sudo -u ubuntu git fetch --all && sudo -u ubuntu git reset --hard origin/${GIT_REF})
 cd "${REPO_DIR}"
 sudo -u ubuntu git checkout "${GIT_REF}"
