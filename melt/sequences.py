@@ -84,6 +84,32 @@ def generate_per_chain(kind,n_chains,chain_length,f_A,block_length,kappa,pi,rng)
         out[c*chain_length:(c+1)*chain_length]=s
     return out
 
+def generate_per_chain_exact_total(kind,n_chains,chain_length,f_A,block_length,kappa,pi,rng,
+                                   max_attempts=100000):
+    """Sample independent per-chain sequences conditional on an exact global A count.
+
+    Each attempt draws the full set with :func:`generate_per_chain`.  The first set whose
+    total A count equals ``n_chains*chain_length*f_A`` is retained.  Thus the accepted law is
+    the original independent-chain disorder ensemble conditioned only on canonical global
+    composition; no chain is copied, complemented, or otherwise constructed from another.
+    """
+    M=int(n_chains);N=int(chain_length);attempt_limit=int(max_attempts)
+    if M<1 or N<1:
+        raise ValueError("n_chains and chain_length must be positive")
+    target_float=M*N*float(f_A)
+    target=int(round(target_float))
+    if not np.isclose(target_float,target,rtol=0.0,atol=1e-12):
+        raise ValueError("exact global composition requires an integer target A count")
+    if attempt_limit<1:
+        raise ValueError("max_attempts must be positive")
+    for attempt in range(1,attempt_limit+1):
+        sequence=generate_per_chain(kind,M,N,f_A,block_length,kappa,pi,rng)
+        if int(np.sum(sequence,dtype=np.int64))==target:
+            return sequence,attempt
+    raise RuntimeError(
+        f"failed to sample exact A count {target}/{M*N} after {attempt_limit} independent attempts"
+    )
+
 def autocorrelation(seq,kmax,per_chain_length=None):
     """Centred normalized autocorrelation. If per_chain_length is given, compute
     within-chain autocorrelation (averaged over chains) instead of treating the
