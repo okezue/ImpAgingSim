@@ -116,6 +116,11 @@ run_seed_extension(){
        S3_BUCKET="${S3_BUCKET}" REGION="${REGION}" \
        bash aws/seed_extension.sh
 }
+run_fixed_density(){
+  sudo -u ubuntu env PY="${PY}" PLATFORM_FLAG="${PLATFORM_FLAG}" \
+       S3_BUCKET="${S3_BUCKET}" REGION="${REGION}" \
+       bash aws/fixed_density.sh
+}
 
 case "${SCAN_KIND}" in
   smoke) run_smoke ;;
@@ -124,6 +129,7 @@ case "${SCAN_KIND}" in
   big) run_big ;;
   rerun) run_rerun ;;
   seed_extension) run_seed_extension ;;
+  fixed_density) run_fixed_density ;;
   all) run_kappa; run_temperature; run_big ;;
   *) echo "unknown SCAN_KIND=${SCAN_KIND}"; exit 2 ;;
 esac
