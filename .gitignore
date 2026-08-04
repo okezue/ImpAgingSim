@@ -49,8 +49,10 @@ Thumbs.db
 .ipynb_checkpoints/
 
 # Simulation outputs
-output/melt/
+output/melt/*
 output/aws/
+# fixed-density finite-size campaign is small enough to version with the code
+!output/melt/fixed_density_size/
 
 # Plan files
 .claude/plans/

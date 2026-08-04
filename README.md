@@ -3,6 +3,10 @@
 Complete pipeline for simulating aging dynamics in the IMP heteropolymer with
 tunable disorder correlations.
 
+The reviewer-requested fixed-density 144/288/576-chain melt campaign, including direct
+shell-resolved structure factors and deterministic aggregation, is documented in
+[`FIXED_DENSITY_SIZE_STUDY.md`](FIXED_DENSITY_SIZE_STUDY.md).
+
 ## Pipeline
 
 | Script | Purpose |
