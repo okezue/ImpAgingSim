@@ -12,11 +12,11 @@ set -euxo pipefail
 
 PY=${PY:-/home/ubuntu/miniconda3/envs/imp/bin/python}
 PLATFORM_FLAG=${PLATFORM_FLAG:---platform CUDA}
-CAMPAIGN=${CAMPAIGN:-output/melt/fixed_density_size/fixed_density_pi099}
+CAMPAIGN=${CAMPAIGN:-fixed_density_pi099_v2}
 
-${PY} -m melt.fixed_density_size_scan --manifest-only ${PLATFORM_FLAG}
-${PY} -m melt.fixed_density_size_scan --run ${PLATFORM_FLAG}
-${PY} -m melt.fixed_density_size_scan --analyze ${PLATFORM_FLAG}
+${PY} -m melt.fixed_density_size_scan --manifest-only --campaign-id ${CAMPAIGN} ${PLATFORM_FLAG}
+${PY} -m melt.fixed_density_size_scan --run --campaign-id ${CAMPAIGN} ${PLATFORM_FLAG}
+${PY} -m melt.fixed_density_size_scan --analyze --campaign-id ${CAMPAIGN} ${PLATFORM_FLAG}
 
 aws s3 sync output/melt/fixed_density_size/ \
   "s3://${S3_BUCKET}/$(date +%Y-%m-%d)_fixed_density_$(hostname -s)/" \
