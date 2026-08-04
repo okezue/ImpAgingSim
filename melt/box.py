@@ -27,3 +27,51 @@ def bonded_pairs(n_chains,chain_length):
 
 def chain_index(bead_idx,chain_length):
     return bead_idx//chain_length
+
+def relax_overlaps(pos,box_size,chain_length,r_min=0.8,iterations=200,step=0.5):
+    """Push apart non-bonded beads closer than r_min, under the minimum image.
+
+    init_chains_in_box lays down independent random walks with no overlap
+    rejection, so beads can land essentially coincident.  The WCA core goes as
+    r^-12, so a 0.007 sigma contact carries ~1e25 energy and the local energy
+    minimizer cannot always recover: such runs diverge within the first
+    thousand steps.  This performs a deterministic, RNG-free geometric
+    push-off before minimization.  It is a repair of the initial condition
+    only; the subsequent high-temperature equilibration sets the ensemble.
+
+    Returns (positions, info) with the minimum non-bonded separation before
+    and after, and whether the target was reached.
+    """
+    from scipy.spatial import cKDTree
+    L=float(box_size)
+    p=np.mod(np.asarray(pos,dtype=np.float64).copy(),L)
+    def min_sep(w):
+        t=cKDTree(w,boxsize=L)
+        pr=t.query_pairs(r_min,output_type='ndarray')
+        if len(pr)==0:
+            return np.inf,pr
+        keep=~((pr[:,1]-pr[:,0]==1)&(pr[:,0]//chain_length==pr[:,1]//chain_length))
+        pr=pr[keep]
+        if len(pr)==0:
+            return np.inf,pr
+        d=(p[pr[:,0]]-p[pr[:,1]]+L/2)%L-L/2
+        return float(np.linalg.norm(d,axis=1).min()),pr
+    before,_=min_sep(p)
+    for _ in range(iterations):
+        cur,pr=min_sep(p)
+        if not np.isfinite(cur) or cur>=r_min:
+            break
+        d=(p[pr[:,0]]-p[pr[:,1]]+L/2)%L-L/2
+        dist=np.linalg.norm(d,axis=1)
+        safe=np.where(dist>1e-9,dist,1e-9)
+        unit=d/safe[:,None]
+        # coincident beads have no defined direction; push along x
+        unit[dist<=1e-9]=np.array([1.0,0.0,0.0])
+        push=(step*(r_min-safe))[:,None]*unit
+        np.add.at(p,pr[:,0], push/2)
+        np.add.at(p,pr[:,1],-push/2)
+        p=np.mod(p,L)
+    after,_=min_sep(p)
+    return p,{"min_separation_before":before,"min_separation_after":after,
+              "target_r_min":float(r_min),
+              "reached_target":bool(after>=0.99*r_min)}

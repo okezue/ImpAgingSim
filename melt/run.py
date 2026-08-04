@@ -3,7 +3,7 @@ import argparse,os,time
 import numpy as np
 from .model import MeltParams,RunParams
 from .sequences import generate_per_chain,generate_per_chain_exact_total
-from .box import init_chains_in_box
+from .box import init_chains_in_box,relax_overlaps
 from .integrator import (build_openmm_system,make_langevin_integrator,make_context,run_simulation,
                          kinetic_temperature_kelvin,kinetic_tstar,minimize_energy,
                          tstar_to_kelvin,KB_KJMOLK)
@@ -91,6 +91,7 @@ def execute(cfg):
     pos=init_chains_in_box(
         cfg.n_chains,cfg.chain_length,cfg.box_size,cfg.bond_r0,placement_rng
     )
+    pos,overlap_info=relax_overlaps(pos,cfg.box_size,cfg.chain_length)
     direct_recorder=None
     direct_extra={"enabled":False}
     if compute_direct:
@@ -144,6 +145,7 @@ def execute(cfg):
                                                   },
                                                   "requested_openmm_platform":cfg.platform,
                                                   "random_streams":random_streams,
+                                                  "initial_overlap_relaxation":overlap_info,
                                                   "direct_structure_factor":direct_extra})
     sys=build_openmm_system(types,mp)
     integ=make_langevin_integrator(T_eq_K,cfg.friction,cfg.dt,seed=cfg.seed)
