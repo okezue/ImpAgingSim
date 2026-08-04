@@ -1,0 +1,67 @@
+{
+  "completed_utc": "2026-08-03T22:25:36Z",
+  "elapsed_seconds": 28.46421848,
+  "files": {
+    "direct_structure_factor.npz": {
+      "bytes": 161792,
+      "sha256": "957eaa91b0a102defed405cc120092b574f3562f9b93d9c0811057092bb0d5dc"
+    },
+    "meta.json": {
+      "bytes": 42421,
+      "sha256": "91d189ba963030a73e377b2ab4dd26dcc745a3cba0d416612fcbe3de19764c4e"
+    },
+    "planned_run.json": {
+      "bytes": 1276,
+      "sha256": "c971d875431f4bdea7f5080a75606d75c3cbd6d7d1cfd632fe1817d51f0a523d"
+    },
+    "snapshots.csv": {
+      "bytes": 25205,
+      "sha256": "39fc15f2299ac2ec41b06f6982685e76ec3fca018e76ea54d03a3074bbabfce1"
+    },
+    "structure_factor.npz": {
+      "bytes": 79908,
+      "sha256": "3483a4fe1dbb1225cdc7d44d32925af23d11b836c2e0cf5a332bdb513a6773e3"
+    }
+  },
+  "provenance": {
+    "argv": [
+      "/home/ubuntu/ImpAgingSim/melt/fixed_density_size_scan.py",
+      "--run",
+      "--platform",
+      "CUDA"
+    ],
+    "git_commit": "58eb6df03142c67600ebbf13adf6329266e9c0d6",
+    "git_diff_sha256": null,
+    "git_dirty": false,
+    "hostname": "ip-172-31-18-95",
+    "numpy_version": "2.4.6",
+    "openmm_version": "8.5.2",
+    "platform": "Linux-6.8.0-1055-aws-x86_64-with-glibc2.35",
+    "python_executable": "/home/ubuntu/miniconda3/envs/imp/bin/python",
+    "python_version": "3.11.15"
+  },
+  "required_outputs": [
+    "direct_structure_factor.npz",
+    "meta.json",
+    "planned_run.json",
+    "snapshots.csv",
+    "structure_factor.npz"
+  ],
+  "run_spec": {
+    "bead_density": 0.540946656649136,
+    "box_size": 22.0,
+    "chain_length": 40,
+    "grid_size": 56,
+    "grid_spacing": 0.39285714285714285,
+    "index": 2,
+    "kappa": 0.0,
+    "n_beads": 5760,
+    "n_chains": 144,
+    "pi": 0.99,
+    "run_id": "M0144_N40_kappa0_pi0p990_seed3",
+    "seed": 3
+  },
+  "save_trajectory": false,
+  "schema_version": 1,
+  "started_utc": "2026-08-03T22:25:08Z"
+}
