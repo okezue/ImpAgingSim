@@ -1,0 +1,71 @@
+{
+  "completed_utc": "2026-08-05T04:35:11Z",
+  "elapsed_seconds": 32.58076144499955,
+  "files": {
+    "direct_structure_factor.npz": {
+      "bytes": 161859,
+      "sha256": "5000b49b25027763a0ce70fa221a95f7b6ac6efd5ab325f6959dfa1fafab4f2b"
+    },
+    "meta.json": {
+      "bytes": 42610,
+      "sha256": "98dfbc1fca21990b0c9b86b3b937f433758de917c3fb6961cb9dcaab7e22ce9b"
+    },
+    "planned_run.json": {
+      "bytes": 1276,
+      "sha256": "a0d9d5df6e40a64e139d4bdc5d7497da7efd49a60597e1b20406a2a7de73d97a"
+    },
+    "snapshots.csv": {
+      "bytes": 25234,
+      "sha256": "8bfc70912aaceb29ec66ced30cd806b52dbb7f94832a2829c6007b4d69b96b5e"
+    },
+    "structure_factor.npz": {
+      "bytes": 79900,
+      "sha256": "75a87e00d6c68837795fdb464529b8762ed3d2d39a1fae5325a5b03de35aa043"
+    }
+  },
+  "provenance": {
+    "argv": [
+      "/home/ubuntu/ImpAgingSim/melt/fixed_density_size_scan.py",
+      "--run",
+      "--out",
+      "output/melt/fd_v2",
+      "--campaign-id",
+      "fixed_density_pi099_v2",
+      "--platform",
+      "CUDA"
+    ],
+    "git_commit": "c8a8f80ed319b830cba0282ef1be63fb085337ed",
+    "git_diff_sha256": null,
+    "git_dirty": false,
+    "hostname": "ip-172-31-6-73",
+    "numpy_version": "2.4.6",
+    "openmm_version": "8.5.2",
+    "platform": "Linux-6.8.0-1055-aws-x86_64-with-glibc2.35",
+    "python_executable": "/home/ubuntu/miniconda3/envs/imp/bin/python",
+    "python_version": "3.11.15"
+  },
+  "required_outputs": [
+    "direct_structure_factor.npz",
+    "meta.json",
+    "planned_run.json",
+    "snapshots.csv",
+    "structure_factor.npz"
+  ],
+  "run_spec": {
+    "bead_density": 0.540946656649136,
+    "box_size": 22.0,
+    "chain_length": 40,
+    "grid_size": 56,
+    "grid_spacing": 0.39285714285714285,
+    "index": 0,
+    "kappa": 0.0,
+    "n_beads": 5760,
+    "n_chains": 144,
+    "pi": 0.99,
+    "run_id": "M0144_N40_kappa0_pi0p990_seed1",
+    "seed": 1
+  },
+  "save_trajectory": false,
+  "schema_version": 1,
+  "started_utc": "2026-08-05T04:34:38Z"
+}

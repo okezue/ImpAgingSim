@@ -1,0 +1,71 @@
+{
+  "completed_utc": "2026-08-05T04:56:25Z",
+  "elapsed_seconds": 112.51764532800007,
+  "files": {
+    "direct_structure_factor.npz": {
+      "bytes": 620753,
+      "sha256": "73cff83c3e38d7b0e92b4910173a133da53561f79baadbeb4f695f782e1eee45"
+    },
+    "meta.json": {
+      "bytes": 163588,
+      "sha256": "fd89ad1a5bf8860ca785e4fbd8821ee90e05b09f6461749e2f83f43e00619bca"
+    },
+    "planned_run.json": {
+      "bytes": 1291,
+      "sha256": "1823fceec7f7f815d5a34063d871909d9ba00f69c34e5d2916875115a556bb99"
+    },
+    "snapshots.csv": {
+      "bytes": 24852,
+      "sha256": "4308892e254235a7038c749cbf5b9c19e87b76680115c2e4012f93d2e98311ee"
+    },
+    "structure_factor.npz": {
+      "bytes": 126710,
+      "sha256": "3bbcbd2dd4da9a3c319fbccb7d9bd0f9aa501f663d9977ba3180bd7dac0494a6"
+    }
+  },
+  "provenance": {
+    "argv": [
+      "/home/ubuntu/ImpAgingSim/melt/fixed_density_size_scan.py",
+      "--run",
+      "--out",
+      "output/melt/fd_v2",
+      "--campaign-id",
+      "fixed_density_pi099_v2",
+      "--platform",
+      "CUDA"
+    ],
+    "git_commit": "c8a8f80ed319b830cba0282ef1be63fb085337ed",
+    "git_diff_sha256": null,
+    "git_dirty": false,
+    "hostname": "ip-172-31-6-73",
+    "numpy_version": "2.4.6",
+    "openmm_version": "8.5.2",
+    "platform": "Linux-6.8.0-1055-aws-x86_64-with-glibc2.35",
+    "python_executable": "/home/ubuntu/miniconda3/envs/imp/bin/python",
+    "python_version": "3.11.15"
+  },
+  "required_outputs": [
+    "direct_structure_factor.npz",
+    "meta.json",
+    "planned_run.json",
+    "snapshots.csv",
+    "structure_factor.npz"
+  ],
+  "run_spec": {
+    "bead_density": 0.5409466566491362,
+    "box_size": 34.922823143300384,
+    "chain_length": 40,
+    "grid_size": 89,
+    "grid_spacing": 0.392391271273038,
+    "index": 22,
+    "kappa": 0.0,
+    "n_beads": 23040,
+    "n_chains": 576,
+    "pi": 0.99,
+    "run_id": "M0576_N40_kappa0_pi0p990_seed3",
+    "seed": 3
+  },
+  "save_trajectory": false,
+  "schema_version": 1,
+  "started_utc": "2026-08-05T04:54:33Z"
+}

@@ -1,0 +1,71 @@
+{
+  "completed_utc": "2026-08-05T04:40:53Z",
+  "elapsed_seconds": 64.2030701170006,
+  "files": {
+    "direct_structure_factor.npz": {
+      "bytes": 309625,
+      "sha256": "d5a18ddb29634b4df2c0c1ee086b25c589acaec671330d14322973eb9f164b8d"
+    },
+    "meta.json": {
+      "bytes": 82947,
+      "sha256": "97d3563d90096cc53235735d41246243acdf8a0a43a74d97157fcaffa88650e6"
+    },
+    "planned_run.json": {
+      "bytes": 1290,
+      "sha256": "32293e0c64f781f905454344ca45416c10b899583a4cee217b86c02647c689f4"
+    },
+    "snapshots.csv": {
+      "bytes": 25143,
+      "sha256": "c806e75b938bbfab88891a92c11ada2484446350494d3d1394457904a583c6d6"
+    },
+    "structure_factor.npz": {
+      "bytes": 101166,
+      "sha256": "3edf37f51076858a4ec487ca31ca906d9d180fbedb1c9361f0775a73a66c28b8"
+    }
+  },
+  "provenance": {
+    "argv": [
+      "/home/ubuntu/ImpAgingSim/melt/fixed_density_size_scan.py",
+      "--run",
+      "--out",
+      "output/melt/fd_v2",
+      "--campaign-id",
+      "fixed_density_pi099_v2",
+      "--platform",
+      "CUDA"
+    ],
+    "git_commit": "c8a8f80ed319b830cba0282ef1be63fb085337ed",
+    "git_diff_sha256": null,
+    "git_dirty": false,
+    "hostname": "ip-172-31-6-73",
+    "numpy_version": "2.4.6",
+    "openmm_version": "8.5.2",
+    "platform": "Linux-6.8.0-1055-aws-x86_64-with-glibc2.35",
+    "python_executable": "/home/ubuntu/miniconda3/envs/imp/bin/python",
+    "python_version": "3.11.15"
+  },
+  "required_outputs": [
+    "direct_structure_factor.npz",
+    "meta.json",
+    "planned_run.json",
+    "snapshots.csv",
+    "structure_factor.npz"
+  ],
+  "run_spec": {
+    "bead_density": 0.540946656649136,
+    "box_size": 27.71826309768721,
+    "chain_length": 40,
+    "grid_size": 71,
+    "grid_spacing": 0.3903980717984114,
+    "index": 10,
+    "kappa": 0.0,
+    "n_beads": 11520,
+    "n_chains": 288,
+    "pi": 0.99,
+    "run_id": "M0288_N40_kappa0_pi0p990_seed1",
+    "seed": 1
+  },
+  "save_trajectory": false,
+  "schema_version": 1,
+  "started_utc": "2026-08-05T04:39:49Z"
+}

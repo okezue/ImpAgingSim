@@ -1,0 +1,71 @@
+{
+  "completed_utc": "2026-08-05T04:36:43Z",
+  "elapsed_seconds": 30.497338277999916,
+  "files": {
+    "direct_structure_factor.npz": {
+      "bytes": 161890,
+      "sha256": "b3c23c880195a3f19d01755d3108c2f17bf34cfa6f3916d5215467b633e7c3e4"
+    },
+    "meta.json": {
+      "bytes": 42608,
+      "sha256": "8c49968d0ad9dd92fefa1d0d23e9d0187b6dfaf22fa60be28a437986b80bf1c5"
+    },
+    "planned_run.json": {
+      "bytes": 1276,
+      "sha256": "09351830f2355494a16103ec95cc93acae38a89d91863199746d9f84292906d9"
+    },
+    "snapshots.csv": {
+      "bytes": 25166,
+      "sha256": "e43d79a19cb95582df0309353b67b59a2e12a9c800483587745488cd6c3a01f0"
+    },
+    "structure_factor.npz": {
+      "bytes": 79861,
+      "sha256": "a7f065fe2f6c214080d97525d499240c63944eeb37a5bffe22004b42597900f4"
+    }
+  },
+  "provenance": {
+    "argv": [
+      "/home/ubuntu/ImpAgingSim/melt/fixed_density_size_scan.py",
+      "--run",
+      "--out",
+      "output/melt/fd_v2",
+      "--campaign-id",
+      "fixed_density_pi099_v2",
+      "--platform",
+      "CUDA"
+    ],
+    "git_commit": "c8a8f80ed319b830cba0282ef1be63fb085337ed",
+    "git_diff_sha256": null,
+    "git_dirty": false,
+    "hostname": "ip-172-31-6-73",
+    "numpy_version": "2.4.6",
+    "openmm_version": "8.5.2",
+    "platform": "Linux-6.8.0-1055-aws-x86_64-with-glibc2.35",
+    "python_executable": "/home/ubuntu/miniconda3/envs/imp/bin/python",
+    "python_version": "3.11.15"
+  },
+  "required_outputs": [
+    "direct_structure_factor.npz",
+    "meta.json",
+    "planned_run.json",
+    "snapshots.csv",
+    "structure_factor.npz"
+  ],
+  "run_spec": {
+    "bead_density": 0.540946656649136,
+    "box_size": 22.0,
+    "chain_length": 40,
+    "grid_size": 56,
+    "grid_spacing": 0.39285714285714285,
+    "index": 3,
+    "kappa": 0.0,
+    "n_beads": 5760,
+    "n_chains": 144,
+    "pi": 0.99,
+    "run_id": "M0144_N40_kappa0_pi0p990_seed4",
+    "seed": 4
+  },
+  "save_trajectory": false,
+  "schema_version": 1,
+  "started_utc": "2026-08-05T04:36:12Z"
+}

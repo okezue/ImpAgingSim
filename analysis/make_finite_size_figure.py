@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 HERE=Path(__file__).resolve().parents[1]
 FIG=HERE/'figures'
 ROOT=Path(os.environ.get('IMP_V3_ROOT',HERE.parent))
-CAMP=ROOT/'output/melt/fixed_density_size/fixed_density_pi099'
+CAMP=ROOT/'output/melt/fd_v2/fixed_density_pi099_v2'
 ANA=CAMP/'analysis'
 FIG.mkdir(exist_ok=True)
 
@@ -41,10 +41,12 @@ def panel(ax,label,size=12):
 def healthy_runs():
     """Runs whose final state is physically sane.
 
-    Six of the thirty runs (M=288 seeds 1-2, M=576 seed 2, at both kappa)
-    integrated unstably from a bad initial placement and diverged: final
-    total energy ~1e27 and instantaneous T ~1e15 K against healthy values
-    of ~-3e4 and 0.70. They are excluded rather than averaged in.
+    Guards against runs that integrate unstably from an overlapping initial
+    placement: those diverge to total energy ~1e27 and instantaneous T ~1e15 K
+    against healthy values of ~-3e4 and 0.70. Six of the thirty runs failed
+    this way before melt.box.relax_overlaps was introduced; all thirty pass
+    with it. Kept as a standing check so a divergence is excluded rather than
+    silently averaged in.
     """
     ok,bad=[],[]
     for d in sorted((CAMP/'runs').glob('*/')):
