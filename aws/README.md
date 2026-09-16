@@ -45,9 +45,9 @@ The script prints a summary, then prompts `Proceed and create instance? (yes/no)
 
 `SCAN_KIND=all` runs three back-to-back campaigns:
 
-1. **Kappa scan** — 6 kappa values × 4 seeds = 24 runs at 96 chains × 30 beads, 150k BD steps each. ~6-10 GPU-hours.
-2. **Temperature scan** — 6 T values × 3 sequences × 3 seeds = 54 runs same size. ~12-20 GPU-hours.
-3. **Big run** — single 256 chains × 30 beads, 400k steps, full position+grid recording. ~4-8 GPU-hours.
+1. **Kappa scan**, 6 kappa values × 4 seeds = 24 runs at 96 chains × 30 beads, 150k BD steps each. ~6-10 GPU-hours.
+2. **Temperature scan**, 6 T values × 3 sequences × 3 seeds = 54 runs same size. ~12-20 GPU-hours.
+3. **Big run**, single 256 chains × 30 beads, 400k steps, full position+grid recording. ~4-8 GPU-hours.
 
 Total: ~25-40 GPU-hours on a g5.2xlarge → ~$30-50 in compute.
 
@@ -78,4 +78,4 @@ python3 -m melt.analyze output/aws/.../scans/kscan_aws/   # cross-run plots + su
 
 ### Resuming a failed run
 
-The userdata is idempotent for git-clone (does `git pull` if repo exists). To resume after a partial failure, SSH in, `cd ImpAgingSim`, and re-run whichever scan command from `aws/userdata.sh` you need — no AMI rebuild needed.
+The userdata is idempotent for git-clone (does `git pull` if repo exists). To resume after a partial failure, SSH in, `cd ImpAgingSim`, and re-run whichever scan command from `aws/userdata.sh` you need, no AMI rebuild needed.

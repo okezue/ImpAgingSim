@@ -69,3 +69,6 @@ texput.log
 *.bbl
 *.blg
 *.out
+
+# Obsidian vault: local only
+obsidian-notes/

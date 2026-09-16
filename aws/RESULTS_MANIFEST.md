@@ -1,6 +1,6 @@
-# Multi-chain copolymer melt campaign — results manifest
+# Multi-chain copolymer melt campaign, results manifest
 
-Campaign run on AWS g6e.2xlarge (NVIDIA L40S) instances against branch `melt-pipeline-aws`. All bulk simulation outputs live in S3 (gitignored locally) — this manifest is the in-repo index.
+Campaign run on AWS g6e.2xlarge (NVIDIA L40S) instances against branch `melt-pipeline-aws`. All bulk simulation outputs live in S3 (gitignored locally), this manifest is the in-repo index.
 
 ## Bucket
 
@@ -28,7 +28,7 @@ S3_BUCKET=okezue-imp-aging-results bash aws/sync_back.sh
 | `chunkJ_20260427_184256/` | Bond stiffness scan + density (box size) scan | 468 | 19 MB |
 | `chunkK_20260427_211516/` | **6×3×3×4 (T_q × t_w × sequence) aging-temperature diagram** | 428+ | 23 MB+ |
 | `chunkL_20260427_202933/` | 11×5×4 extended (π, κ) scan | 660 | 27 MB |
-| `chunkE_20260427_184248/` | ❌ FAILED — 1500×80=120k-bead mega cinematic runs blew up numerically (NaN energies, Rg→10¹¹). Aborted after 4.4hr | 2 | 1 MB |
+| `chunkE_20260427_184248/` | ❌ FAILED, 1500×80=120k-bead mega cinematic runs blew up numerically (NaN energies, Rg→10¹¹). Aborted after 4.4hr | 2 | 1 MB |
 | `smoke_test/` | Pre-campaign validation | 8 | 2 MB |
 
 **Total valid: ~9,924 files, ~825 MB, ~10,000 simulation runs.**
@@ -37,13 +37,13 @@ S3_BUCKET=okezue-imp-aging-results bash aws/sync_back.sh
 
 `seminal_20260427_133456/melt/big/` contains for each of 3 sequences (correlated, random, block):
 
-- `polymer_3d.gif` (~18 MB) — animated 3D bead cloud, A red / B blue
-- `density_slice.gif` (~7 MB) — 2D φ_A and φ_B density evolution (z-projection)
-- `Sk_evolution.gif` (~1 MB) — log-log structure factor S(k) over time
-- `final_3d.png` (~1 MB) — high-res final-state snapshot
-- `trajectory.npz` (~21 MB) — full position trajectory (re-render at any resolution)
-- `density_grids.npz` (~73 MB) — full 64³ density field tensor
-- `snapshots.csv`, `meta.json`, `structure_factor.npz` — analysis-ready
+- `polymer_3d.gif` (~18 MB), animated 3D bead cloud, A red / B blue
+- `density_slice.gif` (~7 MB), 2D φ_A and φ_B density evolution (z-projection)
+- `Sk_evolution.gif` (~1 MB), log-log structure factor S(k) over time
+- `final_3d.png` (~1 MB), high-res final-state snapshot
+- `trajectory.npz` (~21 MB), full position trajectory (re-render at any resolution)
+- `density_grids.npz` (~73 MB), full 64³ density field tensor
+- `snapshots.csv`, `meta.json`, `structure_factor.npz`, analysis-ready
 
 ## Parameter coverage
 
@@ -110,10 +110,10 @@ Each: 11 κ × 6 T × 4 seeds = 264 scan runs + 3 trajectory recordings at κ �
 After analysis with `melt/deep_analysis.py`:
 
 ### 1. Original κ-tuning hypothesis confirmed in true melt (chunkM)
-The IMP single-chain finding — **sequence correlation κ tunes microphase structure at fixed marginal coupling variance** — translates directly to multi-chain melts when the system is at high enough density to suppress chain-vacuum globule formation. At ρ≈1.0:
+The IMP single-chain finding, **sequence correlation κ tunes microphase structure at fixed marginal coupling variance**, translates directly to multi-chain melts when the system is at high enough density to suppress chain-vacuum globule formation. At ρ≈1.0:
 
 - Raw S_AA peak grows **5.13×** from κ=0 to κ=1 at T_q=0.7 *(complete-data result; partial-data preview was 2.26×)*
-- Contrast peak grows **5.15×** — basically identical to raw, confirming this is a clean microphase signal not contaminated by globule artifacts
+- Contrast peak grows **5.15×**, basically identical to raw, confirming this is a clean microphase signal not contaminated by globule artifacts
 - Not visible at ρ≈0.54 (baseline) where globule positions dominate the signal
 
 ### 2. Contrast observable (S_AA − S_AB) extracts the microphase signal at any density
@@ -158,18 +158,18 @@ Direct geometric evidence that increasing κ drives A-beads to cluster within th
 |---|---|
 | N soft LJ | 2.23× → **3.49×** |
 | O short chains | 2.21× → **3.60×** |
-| M high density | — (no globules form, by design) |
+| M high density |, (no globules form, by design) |
 
-The absence of an intra-globule signal in M (high density) is an internal consistency check — globules don't form in a true melt, so there's nothing for the metric to measure. The structure-factor signal is correspondingly *strongest* there because no gas-liquid phase separation masks the microphase.
+The absence of an intra-globule signal in M (high density) is an internal consistency check, globules don't form in a true melt, so there's nothing for the metric to measure. The structure-factor signal is correspondingly *strongest* there because no gas-liquid phase separation masks the microphase.
 
 ## Analysis artifacts
 
 `analysis_aws/` directory holds:
-- `figures/Fig_kT_heatmaps_4conditions.png` — (κ, T) phase maps for raw S_AA + contrast across baseline, M, N, O
-- `figures/Fig_headline_kappa_tuning.png` — κ-tuning curves at T=0.7 across all 4 conditions
-- `figures/Fig_energy_kT_4conditions.png` — energy heatmaps
-- `figures/Fig_kT_heatmaps_4conditions.png` — (κ, T) phase diagrams
-- `figures/contrast_analysis.png` — original contrast finding
-- `tables/headline_summary_T07.csv` — top-line numerical comparison
-- `tables/<condition>_runs.csv` — per-run metrics
-- `tables/<condition>_agg_by_kT.csv` — (κ, T) aggregated means with seed counts
+- `figures/Fig_kT_heatmaps_4conditions.png`, (κ, T) phase maps for raw S_AA + contrast across baseline, M, N, O
+- `figures/Fig_headline_kappa_tuning.png`, κ-tuning curves at T=0.7 across all 4 conditions
+- `figures/Fig_energy_kT_4conditions.png`, energy heatmaps
+- `figures/Fig_kT_heatmaps_4conditions.png`, (κ, T) phase diagrams
+- `figures/contrast_analysis.png`, original contrast finding
+- `tables/headline_summary_T07.csv`, top-line numerical comparison
+- `tables/<condition>_runs.csv`, per-run metrics
+- `tables/<condition>_agg_by_kT.csv`, (κ, T) aggregated means with seed counts
