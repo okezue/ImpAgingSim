@@ -341,7 +341,7 @@ measured `R_g` at `eps_AB = 1`. For a symmetric blend it reproduces
 
 ### 4.5 Results of the sweep program
 
-Fifteen campaigns, 1,036 production runs, all with the 144 x 40 production
+Fifteen campaigns, 1,072 production runs, all with the 144 x 40 production
 geometry unless stated (details, tables and figures in the `analysis/`
 subdirectories named below; raw output in the Zenodo record, version 4).
 
