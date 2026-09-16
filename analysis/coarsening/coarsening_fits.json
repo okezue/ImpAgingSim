@@ -1,0 +1,26 @@
+{
+  "0.8": {
+    "S_peak_growth_exponent_last_decade": 0.48456248631859355,
+    "q_peak_exponent_last_decade": -0.09298587659503377,
+    "t_range": [
+      10691.83877951348,
+      89909.53661957778
+    ]
+  },
+  "0.7": {
+    "S_peak_growth_exponent_last_decade": 0.4973839932205867,
+    "q_peak_exponent_last_decade": -0.09892184092272417,
+    "t_range": [
+      10691.83877951348,
+      89909.53661957778
+    ]
+  },
+  "0.5": {
+    "S_peak_growth_exponent_last_decade": 0.11336973197313616,
+    "q_peak_exponent_last_decade": -0.1162598558456896,
+    "t_range": [
+      10691.83877951348,
+      89909.53661957778
+    ]
+  }
+}

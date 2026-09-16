@@ -1,0 +1,74 @@
+{
+  "campaign_id": "dsf_chi0_M288_T1p5",
+  "design_sha256": "7a683fa463652b3f62be24670f2ebd739d0d2f16734f7c9eeec2f659c2be553d",
+  "incompatibility_axis": "delta_eps = 1 - eps_AB",
+  "missing_runs": [],
+  "n_runs_analyzed": 4,
+  "n_runs_planned": 4,
+  "rpa": {
+    "288": {
+      "T_star": 1.5,
+      "chain_length": 40,
+      "chi_spinodal_at_q_min": 0.2682263434665677,
+      "chi_spinodal_q0": 0.23461580551123518,
+      "eps_like": 1.0,
+      "fit_eps_ABs": [
+        1.0
+      ],
+      "fit_error": "need at least 2 finite positive S_peak values, got 1",
+      "kappa": 0.5,
+      "n_chains": 288,
+      "pi": 0.99,
+      "q_fit": 0.3400205102157276,
+      "q_min": 0.2266803401438184,
+      "reference_Rg": 3.2162191099256727,
+      "segment_length_b": 1.2456363050496173
+    }
+  },
+  "transition": {
+    "288": {
+      "delta_eps_grid": [
+        0.0
+      ],
+      "estimates": {
+        "delta_eps_max_log_slope_S_peak": {
+          "bootstrap_p16": null,
+          "bootstrap_p50": null,
+          "bootstrap_p84": null,
+          "n_bootstrap_finite": 0,
+          "value": null
+        },
+        "delta_eps_max_log_slope_cg_variance": {
+          "bootstrap_p16": null,
+          "bootstrap_p50": null,
+          "bootstrap_p84": null,
+          "n_bootstrap_finite": 0,
+          "value": null
+        },
+        "delta_eps_max_peak_intensity_variance": {
+          "bootstrap_p16": 0.0,
+          "bootstrap_p50": 0.0,
+          "bootstrap_p84": 0.0,
+          "n_bootstrap_finite": 400,
+          "value": 0.0
+        },
+        "delta_eps_max_seed_variance": {
+          "bootstrap_p16": 0.0,
+          "bootstrap_p50": 0.0,
+          "bootstrap_p84": 0.0,
+          "n_bootstrap_finite": 400,
+          "value": 0.0
+        },
+        "delta_eps_non_gaussian_ratio_1p5": {
+          "bootstrap_p16": null,
+          "bootstrap_p50": null,
+          "bootstrap_p84": null,
+          "n_bootstrap_finite": 0,
+          "value": null
+        }
+      },
+      "n_chains": 288
+    }
+  },
+  "window_fraction": 0.5
+}

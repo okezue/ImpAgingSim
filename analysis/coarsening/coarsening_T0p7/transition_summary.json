@@ -1,0 +1,87 @@
+{
+  "campaign_id": "coarsening_T0p7",
+  "design_sha256": "7845001f55541989e3f586f0a83a7cd9fe0fa40aab92fb5b08a240b0abb242ff",
+  "incompatibility_axis": "delta_eps = 1 - eps_AB",
+  "missing_runs": [],
+  "n_runs_analyzed": 12,
+  "n_runs_planned": 12,
+  "rpa": {
+    "144": {
+      "T_star": 0.7,
+      "alpha": 0.3744063943838252,
+      "chain_length": 40,
+      "chi_spinodal_at_q_min": 0.2825831761264451,
+      "chi_spinodal_q0": 0.23461580551123518,
+      "delta_eps_spinodal_rpa": 0.5283249064537268,
+      "eps_AB_spinodal_rpa": 0.47167509354627324,
+      "eps_like": 1.0,
+      "fit_eps_ABs": [
+        0.8,
+        0.7,
+        0.5
+      ],
+      "kappa": 0.5,
+      "n_chains": 144,
+      "n_fit_points": 3,
+      "pi": 0.99,
+      "predicted_S_peak": {
+        "0.5": 132.01287646514896,
+        "0.7": 16.37689218683876,
+        "0.8": 11.388878221121878
+      },
+      "q_fit": 0.28559933214452665,
+      "q_min": 0.28559933214452665,
+      "reference_Rg": 3.04120523537837,
+      "residual_rms_log": 2.201198380084154,
+      "segment_length_b": 1.1778537229019235
+    }
+  },
+  "transition": {
+    "144": {
+      "delta_eps_grid": [
+        0.19999999999999996,
+        0.30000000000000004,
+        0.5
+      ],
+      "estimates": {
+        "delta_eps_max_log_slope_S_peak": {
+          "bootstrap_p16": 0.25,
+          "bootstrap_p50": 0.25,
+          "bootstrap_p84": 0.25,
+          "n_bootstrap_finite": 400,
+          "value": 0.25
+        },
+        "delta_eps_max_log_slope_cg_variance": {
+          "bootstrap_p16": 0.25,
+          "bootstrap_p50": 0.25,
+          "bootstrap_p84": 0.25,
+          "n_bootstrap_finite": 400,
+          "value": 0.25
+        },
+        "delta_eps_max_peak_intensity_variance": {
+          "bootstrap_p16": 0.5,
+          "bootstrap_p50": 0.5,
+          "bootstrap_p84": 0.5,
+          "n_bootstrap_finite": 400,
+          "value": 0.5
+        },
+        "delta_eps_max_seed_variance": {
+          "bootstrap_p16": 0.30000000000000004,
+          "bootstrap_p50": 0.5,
+          "bootstrap_p84": 0.5,
+          "n_bootstrap_finite": 400,
+          "value": 0.5
+        },
+        "delta_eps_non_gaussian_ratio_1p5": {
+          "bootstrap_p16": 0.20565913109167816,
+          "bootstrap_p50": 0.21180037670802454,
+          "bootstrap_p84": 0.22025314738303917,
+          "n_bootstrap_finite": 126,
+          "value": null
+        }
+      },
+      "n_chains": 144
+    }
+  },
+  "window_fraction": 0.5
+}
