@@ -127,13 +127,46 @@ def kinetic_temperature_kelvin(ke_kjmol,n_particles):
 def kinetic_tstar(ke_kjmol,n_particles,eps_kjmol=1.0):
     return kelvin_to_tstar(kinetic_temperature_kelvin(ke_kjmol,n_particles),eps_kjmol)
 
-def run_simulation(ctx,n_steps,snapshot_interval,callback=None):
+def run_simulation(ctx,n_steps,snapshot_interval,callback=None,
+                   mode_interval=None,mode_callback=None):
+    """Advance ``n_steps`` and invoke ``callback`` every ``snapshot_interval`` steps.
+
+    ``mode_callback(step,pos)`` fires every ``mode_interval`` steps with positions only.
+    Both intervals must divide ``n_steps``; the integrator advances in chunks of their
+    greatest common divisor, and the state is fetched once per chunk.  Chunking does not
+    change the seeded Langevin trajectory, so recording modes leaves the dynamics identical.
+    """
     _require_openmm()
     integ=ctx.getIntegrator()
-    n_snap=n_steps//snapshot_interval
-    for s in range(n_snap):
-        integ.step(snapshot_interval)
-        if callback is not None:
-            step=(s+1)*snapshot_interval
+    n_steps=int(n_steps);snapshot_interval=int(snapshot_interval)
+    if snapshot_interval<1 or n_steps%snapshot_interval!=0:
+        raise ValueError("snapshot_interval must be positive and divide n_steps")
+    if mode_callback is None or mode_interval is None:
+        n_snap=n_steps//snapshot_interval
+        for s in range(n_snap):
+            integ.step(snapshot_interval)
+            if callback is not None:
+                step=(s+1)*snapshot_interval
+                pos,vel,pe,ke=get_state_arrays(ctx)
+                callback(step,pos,vel,pe,ke)
+        return
+    mode_interval=int(mode_interval)
+    if mode_interval<1 or n_steps%mode_interval!=0:
+        raise ValueError("mode_interval must be positive and divide n_steps")
+    chunk=int(np.gcd(snapshot_interval,mode_interval))
+    for s in range(n_steps//chunk):
+        integ.step(chunk)
+        step=(s+1)*chunk
+        want_snapshot=callback is not None and step%snapshot_interval==0
+        want_modes=step%mode_interval==0
+        if not (want_snapshot or want_modes):
+            continue
+        if want_snapshot:
             pos,vel,pe,ke=get_state_arrays(ctx)
+        else:
+            st=ctx.getState(getPositions=True)
+            pos=np.asarray(st.getPositions(asNumpy=True).value_in_unit(unit.nanometer))
+        if want_modes:
+            mode_callback(step,pos)
+        if want_snapshot:
             callback(step,pos,vel,pe,ke)

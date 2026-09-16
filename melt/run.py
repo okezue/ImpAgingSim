@@ -11,6 +11,7 @@ from .io import make_run_dir,write_meta,open_csv,append_row,compute_mean_Rg,save
 from .density import density_field_A,density_field_B
 from .observables import compute_all_observables
 from .direct_structure import DirectStructureFactorRecorder,early_and_final_snapshot_steps
+from .modes import ModeAmplitudeRecorder
 
 def make_rng_streams(seed,split=False):
     """Return sequence and placement RNGs, splitting only for matched exact-balance studies."""
@@ -51,11 +52,18 @@ def execute(cfg):
     rd=make_run_dir(cfg.out,run_id)
     compute_density=bool(getattr(cfg,"compute_density",False))
     compute_direct=bool(getattr(cfg,"compute_direct_structure_factor",False))
+    record_modes=bool(getattr(cfg,"record_modes",False))
+    mode_interval=int(getattr(cfg,"mode_interval",cfg.snapshot_interval) or cfg.snapshot_interval)
+    mode_q_max=float(getattr(cfg,"mode_q_max",1.5))
+    if record_modes and (mode_interval<1 or cfg.n_steps%mode_interval!=0):
+        raise ValueError("mode_interval must be positive and divide n_steps")
     required_cache=[]
     if compute_density:
         required_cache.append(os.path.join(rd,"structure_factor.npz"))
     if compute_direct:
         required_cache.append(os.path.join(rd,"direct_structure_factor.npz"))
+    if record_modes:
+        required_cache.append(os.path.join(rd,"mode_amplitudes.npz"))
     if required_cache and all(os.path.exists(path) for path in required_cache) and getattr(cfg,"skip_if_cached",True):
         print(f"  cached: {rd} (skipping)")
         return rd
@@ -126,6 +134,23 @@ def execute(cfg):
             "composition_channel":"S_psi_psi^(N)=S_CC=S_AA+S_BB-2*S_AB",
             "primary_channel":"S_psi_psi^(N)/2=S_CC/2",
         }
+    mode_recorder=None
+    mode_extra={"enabled":False}
+    if record_modes:
+        mode_recorder=ModeAmplitudeRecorder(cfg.box_size,mode_q_max,
+                                            dtype=getattr(cfg,"mode_dtype","complex64"))
+        mode_extra={
+            "enabled":True,
+            "interval_steps":mode_interval,
+            "n_frames":int(cfg.n_steps//mode_interval),
+            "q_max":mode_q_max,
+            "n_modes":int(len(mode_recorder.modes.q)),
+            "n_shells":int(len(mode_recorder.modes.shell_q)),
+            "dtype":str(mode_recorder.dtype),
+            "q_units":"nm^-1",
+            "amplitude_definition":"rho_alpha(q)=sum_{j in alpha} exp(i q.r_j)",
+            "normalization":"S_ab(q)=Re[rho_a(q)rho_b(q)*]/N_total",
+        }
     write_meta(rd,mp,rp,cfg.sequence,types,extra={"T_equilibrate_kelvin":float(T_eq_K),
                                                   "T_quench_kelvin":float(T_q_K),
                                                   "T_equilibrate_star":float(T_eq_star),
@@ -146,7 +171,8 @@ def execute(cfg):
                                                   "requested_openmm_platform":cfg.platform,
                                                   "random_streams":random_streams,
                                                   "initial_overlap_relaxation":overlap_info,
-                                                  "direct_structure_factor":direct_extra})
+                                                  "direct_structure_factor":direct_extra,
+                                                  "mode_amplitudes":mode_extra})
     sys=build_openmm_system(types,mp)
     integ=make_langevin_integrator(T_eq_K,cfg.friction,cfg.dt,seed=cfg.seed)
     ctx=make_context(sys,integ,pos,cfg.box_size,platform_name=cfg.platform)
@@ -187,13 +213,30 @@ def execute(cfg):
             append_row(w,run_id,cfg.sequence,mp,cfg.kappa,cfg.pi,cfg.f_A,step,pe,ke,rg,T_inst_star,
                        k_star=kstar,xi_AA=xi,S_AA_peak=Speak)
             f.flush()
-        run_simulation(ctx,cfg.n_steps,cfg.snapshot_interval,callback=cb)
+        mode_cb=None
+        if mode_recorder is not None:
+            def mode_cb(step,p_arr):
+                mode_recorder.observe(step,p_arr,types)
+        run_simulation(ctx,cfg.n_steps,cfg.snapshot_interval,callback=cb,
+                       mode_interval=mode_interval if mode_recorder is not None else None,
+                       mode_callback=mode_cb)
     finally:
         f.close()
     if cfg.compute_density and sf_k is not None:
         save_structure_factors(rd,sf_steps,sf_k,sf_AA,sf_BB,sf_AB)
     if direct_recorder is not None:
         direct_recorder.save(os.path.join(rd,"direct_structure_factor.npz"))
+    if mode_recorder is not None:
+        mode_recorder.save(os.path.join(rd,"mode_amplitudes.npz"),
+                           mode_interval_steps=mode_interval,
+                           production_steps=int(cfg.n_steps),
+                           dt_ps=float(cfg.dt),
+                           kappa=float(cfg.kappa),
+                           pi=float(cfg.pi),
+                           f_A=float(cfg.f_A),
+                           lj_eps_AB=float(cfg.lj_eps_AB),
+                           T_quench_star=float(T_q_star),
+                           seed=int(cfg.seed))
     if save_traj and traj_pos:
         save_trajectory(rd,traj_steps,traj_pos,types,cfg.box_size)
     if save_grids and grid_phiA:
@@ -250,6 +293,13 @@ def parse_args():
                    help="number of preceding snapshots stored as a convergence block")
     p.add_argument("--direct_chunk_size",type=int,default=128,
                    help="number of q vectors evaluated per memory-bounded chunk")
+    p.add_argument("--record_modes",action="store_true",
+                   help="store exact rho_A(q,t), rho_B(q,t) at every box mode for the dynamic structure factor")
+    p.add_argument("--mode_interval",type=int,default=None,
+                   help="steps between recorded mode frames (default: snapshot_interval)")
+    p.add_argument("--mode_q_max",type=float,default=1.5,
+                   help="largest |q| recorded in mode_amplitudes.npz")
+    p.add_argument("--mode_dtype",type=str,default="complex64",choices=["complex64","complex128"])
     return p.parse_args()
 
 def main():
