@@ -76,3 +76,4 @@ obsidian-notes/
 # Zenodo archive downloads and Sherlock sync-back (large, never versioned)
 output/zenodo/
 output/sherlock/
+output/devbox/
