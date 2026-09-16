@@ -1,0 +1,104 @@
+{
+  "campaign_id": "kappa0p75_T1p5",
+  "design_sha256": "ad0906b181495947cd4211c6495e06f483a08b2963f7479834051489c27e0a75",
+  "incompatibility_axis": "delta_eps = 1 - eps_AB",
+  "missing_runs": [],
+  "n_runs_analyzed": 44,
+  "n_runs_planned": 44,
+  "rpa": {
+    "144": {
+      "T_star": 1.5,
+      "alpha": 2.315240493698013,
+      "chain_length": 40,
+      "chi_spinodal_at_q_min": 0.13909999380899424,
+      "chi_spinodal_q0": 0.11154307119903767,
+      "delta_eps_spinodal_rpa": 0.09012022348495885,
+      "eps_AB_spinodal_rpa": 0.9098797765150411,
+      "eps_like": 1.0,
+      "fit_eps_ABs": [
+        1.0,
+        0.975,
+        0.95,
+        0.9
+      ],
+      "kappa": 0.75,
+      "n_chains": 144,
+      "n_fit_points": 4,
+      "pi": 0.99,
+      "predicted_S_peak": {
+        "0.1": null,
+        "0.3": null,
+        "0.5": null,
+        "0.6": null,
+        "0.7": null,
+        "0.8": null,
+        "0.85": null,
+        "0.9": 142.952315472719,
+        "0.95": 21.938156630841373,
+        "0.975": 15.413936963791263,
+        "1": 11.880714381343449
+      },
+      "q_fit": 0.40389844892348786,
+      "q_min": 0.28559933214452665,
+      "reference_Rg": 3.203629220068547,
+      "residual_rms_log": 0.4498852430704976,
+      "segment_length_b": 1.2407602616748938
+    }
+  },
+  "transition": {
+    "144": {
+      "delta_eps_grid": [
+        0.0,
+        0.025000000000000022,
+        0.050000000000000044,
+        0.09999999999999998,
+        0.15000000000000002,
+        0.19999999999999996,
+        0.30000000000000004,
+        0.4,
+        0.5,
+        0.7,
+        0.9
+      ],
+      "estimates": {
+        "delta_eps_max_log_slope_S_peak": {
+          "bootstrap_p16": 0.03750000000000003,
+          "bootstrap_p50": 0.03750000000000003,
+          "bootstrap_p84": 0.07500000000000001,
+          "n_bootstrap_finite": 400,
+          "value": 0.03750000000000003
+        },
+        "delta_eps_max_log_slope_cg_variance": {
+          "bootstrap_p16": 0.03750000000000003,
+          "bootstrap_p50": 0.03750000000000003,
+          "bootstrap_p84": 0.07500000000000001,
+          "n_bootstrap_finite": 400,
+          "value": 0.03750000000000003
+        },
+        "delta_eps_max_peak_intensity_variance": {
+          "bootstrap_p16": 0.0,
+          "bootstrap_p50": 0.025000000000000022,
+          "bootstrap_p84": 0.050000000000000044,
+          "n_bootstrap_finite": 400,
+          "value": 0.0
+        },
+        "delta_eps_max_seed_variance": {
+          "bootstrap_p16": 0.050000000000000044,
+          "bootstrap_p50": 0.050000000000000044,
+          "bootstrap_p84": 0.15000000000000002,
+          "n_bootstrap_finite": 400,
+          "value": 0.050000000000000044
+        },
+        "delta_eps_non_gaussian_ratio_1p5": {
+          "bootstrap_p16": 0.00813739025567566,
+          "bootstrap_p50": 0.012247256009872027,
+          "bootstrap_p84": 0.0178587559897637,
+          "n_bootstrap_finite": 399,
+          "value": 0.01224231773407648
+        }
+      },
+      "n_chains": 144
+    }
+  },
+  "window_fraction": 0.5
+}
