@@ -341,7 +341,7 @@ measured `R_g` at `eps_AB = 1`. For a symmetric blend it reproduces
 
 ### 4.5 Results of the sweep program
 
-Ten campaigns, 1,036 production runs, all with the 144 x 40 production
+Fifteen campaigns, 1,036 production runs, all with the 144 x 40 production
 geometry unless stated (details, tables and figures in the `analysis/`
 subdirectories named below; raw output in the Zenodo record, version 4).
 
@@ -553,7 +553,7 @@ output is too large for git and lives on Zenodo.
 
 | file | size | contents |
 |---|---|---|
-| `incompatibility_sweep_campaigns.tar` | ~25 GB | [version 4.0.0] all ten `eps_AB` sweep, temperature, kappa and coarsening campaigns of section 4: per run `mode_amplitudes.npz` (exact box modes for the dynamic structure factor), `snapshots.csv`, `structure_factor.npz`, `meta.json`, hashed `completion.json`; per campaign `manifest.json` and the `analysis/` tables and figures |
+| `incompatibility_sweep_campaigns.tar` | ~32 GB | [version 4.0.0] all fifteen `eps_AB` sweep, temperature, kappa and coarsening campaigns of section 4: per run `mode_amplitudes.npz` (exact box modes for the dynamic structure factor), `snapshots.csv`, `structure_factor.npz`, `meta.json`, hashed `completion.json`; per campaign `manifest.json` and the `analysis/` tables and figures |
 | `heteropolymer_microphase_data.tar` | 3,328 MB | full raw output of the production campaigns, mirroring the AWS results bucket. Per run `meta.json`, `snapshots.csv`, `structure_factor.npz`, and `trajectory.npz` where applicable |
 | `complete_local_archive.tar` | 106 MB | the earlier single chain study, robustness sweeps, development runs, manuscript builds and working notes |
 | `fixed_density_campaign.tar` | 37 MB | the 30 run fixed density finite size study, plus the superseded first execution kept for provenance |
