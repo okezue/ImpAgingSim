@@ -21,34 +21,24 @@ All simulation data is archived on Zenodo at
 A melt of `M` chains, each `N` beads, in a cubic periodic box. Every bead
 carries a binary label A or B. Langevin dynamics in OpenMM on GPU.
 
-```
-        periodic box, L = 22 sigma
-      +-------------------------------+
-      |   A-A-A-B-B-A-A      B-B-A-A  |     144 chains
-      |  /           \      /       \ |     40 beads each
-      | A   B-B-B-A-A       A-A-B-B   |     5,760 beads total
-      |  \ /         \     /          |     rho = 0.541 sigma^-3
-      |   B           B-B-B           |     T* = 0.7
-      +-------------------------------+
-```
+![A forty-bead A/B chain beside a schematic periodic multichain melt; a highlighted chain segment repeats after translation by one box length.](docs/figures/polymer-model.svg)
+
+**Figure 1. Bead-spring geometry.** Teal and orange denote A and B. The
+highlighted segment illustrates periodic continuation. Chain excerpts in the
+box are schematic; production systems contain 144 chains of 40 beads.
 
 ### 1.1 The sequence construction
 
 Two parameters generate the sequence. A Markov backbone sets the **range** of
 correlation, and a Bernoulli mask sets its **amplitude**.
 
-```
-  step 1   Markov backbone z, persistence pi        A A A B B A A A A B B B
-           eigenvalue lambda = 2*pi - 1             (long same-type runs)
+![Aligned backbone, keep/redraw mask, fresh draws, and final bead labels, beside discrete covariance curves separating correlation amplitude from range.](docs/figures/sequence-construction.svg)
 
-  step 2   Bernoulli mask b, mean kappa             1 1 0 1 1 1 0 0 1 1 0 1
-           b=1 keep backbone, b=0 redraw            . . ^ . . . ^ ^ . . ^ .
-
-  step 3   redraw u, iid at the same f_A            . . B . . . B A . . A .
-
-           expressed sequence                       A A B B B A A A A B A B
-           psi_i = b_i z_i + (1 - b_i) u_i
-```
+**Figure 2. Sequence construction.** A fresh draw can match the original label;
+redrawing is not the same as flipping. For the unconditioned generator, the
+normalized connected covariance is $\Gamma(0)=1$ and
+$\Gamma(\ell)=\kappa^2(2\pi-1)^\ell$ for $\ell\geq1$. The plotted values
+illustrate amplitude and range separately; they are analytic, not simulation data.
 
 Consequences of this construction:
 
@@ -56,13 +46,16 @@ Consequences of this construction:
 - `kappa = 1` gives the fully correlated Markov sequence.
 - The lag zero variance stays independent of kappa, so the random sequence
   limit is preserved.
-- The connected sequence autocorrelation scales as `kappa^2 * lambda^ell`.
+- At positive lag, the normalized connected sequence autocorrelation is
+  `kappa^2 * lambda^ell`, with `lambda = 2*pi - 1`.
 - Mean composition `f_A`, chemistry, density and chain length are all held
   fixed while kappa varies. Only the covariance between labels along the chain
   changes.
 
-Sequences are drawn independently for each chain. A Markov state never
-propagates across a chain boundary.
+The ordinary generator draws chains independently and fixes composition in
+expectation. A Markov state never propagates across a chain boundary. The
+optional exact-total generator, used by the fixed-density campaign, conditions
+these draws on the global A count.
 
 ### 1.2 The interaction potential
 
@@ -71,19 +64,13 @@ incompatibility is pair specific. This matters, because a single Lennard-Jones
 term with a reduced `eps_AB` would weaken the A/B attraction and remove A/B
 excluded volume at the same time, which confounds the interaction scan.
 
-```
-  U(r)
-    |
-    |\                  shared WCA repulsive core, identical for AA / AB / BB
-    | \                 U = 4 eps_core [ (s/r)^12 - (s/r)^6 ] + eps_core
-    |  \                                        for r < 2^(1/6) s
-  0 +---\---------------------------------------------------- r
-    |    \        ______------
-    |     \______/                pair specific attractive tail
-    |       |                     U = 4 eps_ab [ (s/r)^12 - (s/r)^6 ] - shift
-    |   2^(1/6) s                            for r >= 2^(1/6) s
-    |                                        cut and shifted at 2.5 s
-```
+![Nonbonded A-A, B-B, and A-B pairs beside the exact implemented potential: a shared repulsive core and pair-specific attractive branches with a jump at their onset.](docs/figures/interaction-potential.svg)
+
+**Figure 3. Implemented nonbonded energy.** The WCA core is common to all
+pairs. Attraction begins at $r_m=2^{1/6}\sigma$ and is shifted to zero at
+$r_c=2.5\sigma$. Open and filled endpoints show the energy jump at $r_m$
+caused by the current step-gated tail. Adjacent bonded beads are excluded
+from both nonbonded terms.
 
 | pair | eps | meaning |
 |---|---|---|
@@ -130,29 +117,22 @@ repair existed.
 
 The composition structure factor, taken at equal time:
 
-```
-  S_psipsi(k) = S_AA(k) + S_BB(k) - 2 S_AB(k)
-```
+$$
+S_{\psi\psi}(k)=S_{AA}(k)+S_{BB}(k)-2S_{AB}(k).
+$$
 
-This combination is invariant under relabelling A and B. The peak defines the
-contrast `C` and the domain size `xi = 2 pi / k*`.
+This combination is invariant under relabelling A and B. Its peak defines the
+contrast `C`. A resolved peak wavevector gives a characteristic spacing
+$\xi=2\pi/k^*$; a maximum at the lowest sampled wavevector is limited by the box.
 
-```
-   real space, kappa = 0            real space, kappa = 1
-  +-------------------+           +-------------------+
-  | A B A B B A B A B |           | A A A A B B B B B |
-  | B A B A A B A B A |           | A A A A B B B B B |
-  | A B B A B A B A B |           | A A A A B B B B B |
-  +-------------------+           +-------------------+
-   interleaved, weak peak          coherent domains, strong peak
+![Measured composition spectra for random and correlated chains, with five-seed uncertainty bands, and their peak amplitudes across three fixed-density system sizes.](docs/figures/measured-structure.svg)
 
-      S(k)                              S(k)
-       |                                 |      /\
-       |    __                           |     /  \
-       |___/  \___                       |    /    \___
-       +----------- k                    +--/---------- k
-            k*                              k*  (lower k, larger xi)
-```
+**Figure 4. Measured static structure.** Panel A shows 144 chains; panel B
+compares three system sizes at fixed density. The direct reciprocal-shell
+estimator uses the total-bead-normalized channel $S_{\psi\psi}^{(N)}/2$.
+Bands and bars show mean ± SEM across five independent seeds, each averaging
+its final five saved configurations. At $\kappa=1$, the two smaller boxes peak
+at their lowest sampled wavevector. [Figure sources and regeneration](docs/figures/README.md).
 
 Away from `f_A = 1/2` this combination mixes total density and composition
 modes. The density orthogonal quantity is the Bhatia-Thornton mode
@@ -201,10 +181,12 @@ the potential energy falls with kappa, consistent with more like-like contacts.
 The finite chain intramolecular composition form factor for a Gaussian
 reference chain with segment length `b`:
 
-```
-  S_0(k) / [4 f_A (1 - f_A)]  =  1 + 2 kappa^2 SUM_{ell=1}^{N-1}
-                                  (1 - ell/N) lambda^ell exp(-k^2 b^2 ell / 6)
-```
+$$
+\frac{S_0(k)}{4f_A(1-f_A)}
+=1+2\kappa^2\sum_{\ell=1}^{N-1}
+\left(1-\frac{\ell}{N}\right)\lambda^\ell
+\exp\!\left(-\frac{k^2b^2\ell}{6}\right).
+$$
 
 Plotting excess contrast against this predictor collapses the data with
 logarithmic slope 1.02 and R^2 = 0.80. The melt amplifies a bare one chain
@@ -242,7 +224,8 @@ probed, so the structural relaxation slows more than the local bead motion does.
 
 A fixed density series at `M = 144 / 288 / 576` chains, with
 `L(M) = 22 (M/144)^(1/3)` so bead density and mesh spacing stay constant,
-five seeds per condition, 30 runs total:
+five seeds per condition, 30 runs total. Entries are selected peak
+$S_{\psi\psi}^{(N)}/2$, mean ± SEM, as plotted in Figure 4B:
 
 | M | L (sigma) | kappa = 0 | kappa = 1 |
 |---|---|---|---|
@@ -250,10 +233,12 @@ five seeds per condition, 30 runs total:
 | 288 | 27.72 | 6.60 +/- 0.75 | 773 +/- 59 |
 | 576 | 34.92 | 6.83 +/- 1.25 | 575 +/- 40 |
 
-The roughly 90x amplification is present at every system size and `k*` is
-stable. At kappa = 0 the amplitude is flat to 9%. At kappa = 1 the M = 144 and
-M = 576 values differ by 0.8 sigma, so there is no evidence of systematic
-drift with box size.
+Peak amplification ranges from 84× to 117× across these sizes. At kappa = 0,
+the endpoint amplitudes differ by about 10%. At kappa = 1, the M = 144 and
+M = 576 amplitudes differ by 0.83 combined SEM, with a higher intermediate
+value. The correlated peak occurs at $k_{\min}=2\pi/L$ in the two smaller
+boxes and at $\sqrt{2}k_{\min}$ in the largest. This series therefore does
+not establish a size-independent domain length.
 
 ### 3.7 What is deliberately not claimed
 
@@ -284,6 +269,8 @@ melt/                       the simulation engine
   fixed_density_analysis.py     deterministic aggregation for that campaign
   analyze.py  deep_analysis.py  viz.py  io.py  model.py
 
+docs/figures/              README SVGs, PNG exports, and figure provenance
+scripts/render_*_figure*   reproducible README figure generators
 analysis/  analysis_aws/    derived tables and figures
 aws/                        EC2 campaign scripts, see aws/README.md
 tests/                      33 melt tests, 30 fixed density tests
