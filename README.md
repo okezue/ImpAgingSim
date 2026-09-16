@@ -339,6 +339,47 @@ composition form factor of section 3.2 and the segment length taken from the
 measured `R_g` at `eps_AB = 1`. For a symmetric blend it reproduces
 `chi_s N = 2`.
 
+### 4.5 Results of the sweep program
+
+Ten campaigns, 1,036 production runs, all with the 144 x 40 production
+geometry unless stated (details, tables and figures in the `analysis/`
+subdirectories named below; raw output in the Zenodo record, version 4).
+
+**The chi = 0 reference is mixed.** At `eps_AB = 1` the composition spectrum
+is flat, `S_psi(q) = 3-5`, matching the ideal single-chain form factor
+(`S_0(q_min) = 6.9` for `b = 1.24 sigma`). [`analysis/epsab_stage1/`]
+
+**Where demixing sets in at kappa = 0.5, T* = 0.7.** `eps_AB = 0.85 +/- 0.03`
+(`delta_eps = 0.15`), from the half-rise of `S_psi(q*)` over a 25-point grid
+with eight seeds; the 144- and 288-chain boxes agree at every point. The
+mean-field spinodal fitted on the mixed side is at `eps_AB = 0.905` with a
+contact factor `alpha ~ 2.0`, so the melt demixes about 50% deeper in
+incompatibility than the RPA instability. The microphase peak stays at
+`q* = 0.4-0.5 / sigma` (domain spacing ~14 sigma) in both boxes and is still
+coarsening slowly after 1M steps. [`analysis/epsab_stage1/`, `analysis/epsab_stage2/`]
+
+**The dynamic structure factor needs an ergodic melt.** At `T* = 0.7` no
+composition mode below `q ~ 0.5 / sigma` relaxes even in a 6,250-tau window.
+At `T* >= 1.5` the two-time correlation `F(q, tau)` decays fully for every
+shell: at chi = 0 the relaxation time falls from 1,700 tau at `q = 0.29` to
+60 tau at `q = 1.0`, as `q^-4` for `q R_g > 1.6` (Rouse) with a diffusive
+plateau below; toward the transition only the low-q modes slow down
+(critical slowing down); and `S_psi(q*)` collapses across temperatures when
+plotted against `delta_eps / T*`, validating the Flory-Huggins mapping with a
+temperature-independent `alpha`. [`analysis/dsf_series/`]
+
+**Sequence correlation programs the transition.** At `T* = 1.5`, an
+uncorrelated copolymer (`kappa = 0`) never demixes over the whole range
+(`S_psi(q*) <= 3`, Gaussian amplitudes); `kappa = 0.25` reaches 13; from
+`kappa = 0.5` a genuine crossover appears at `delta_eps_c` = 0.20, 0.15, 0.115
+for `kappa` = 0.5, 0.75, 1 with plateau amplitudes of 120, 500, 1020. The RPA
+spinodal reproduces the trend, matches at `kappa = 0.5`, and sits at about
+half the simulated value for `kappa >= 0.75`. The lamellar (structured)
+signature, shell anisotropy approaching 3, appears only for `kappa = 1` at
+`delta_eps >= 0.7`: of the two transitions in the 2017 random copolymer phase
+diagram, the first exists for `kappa >= 0.5` and the second only for the most
+correlated sequences in this box. [`analysis/kappa_boundary/`]
+
 ---
 
 ## 5. Repository layout
@@ -489,14 +530,18 @@ The repository holds the code and small derived tables. The raw simulation
 output is too large for git and lives on Zenodo.
 
 **DOI [10.5281/zenodo.20499120](https://doi.org/10.5281/zenodo.20499120)**
-(concept DOI, resolves to the newest version, currently 3.0.0, 3.5 GB)
+(concept DOI, resolves to the newest version, currently 4.0.0)
 
 | file | size | contents |
 |---|---|---|
+| `incompatibility_sweep_campaigns.tar` | ~25 GB | [version 4.0.0] all ten `eps_AB` sweep, temperature, kappa and coarsening campaigns of section 4: per run `mode_amplitudes.npz` (exact box modes for the dynamic structure factor), `snapshots.csv`, `structure_factor.npz`, `meta.json`, hashed `completion.json`; per campaign `manifest.json` and the `analysis/` tables and figures |
 | `heteropolymer_microphase_data.tar` | 3,328 MB | full raw output of the production campaigns, mirroring the AWS results bucket. Per run `meta.json`, `snapshots.csv`, `structure_factor.npz`, and `trajectory.npz` where applicable |
 | `complete_local_archive.tar` | 106 MB | the earlier single chain study, robustness sweeps, development runs, manuscript builds and working notes |
 | `fixed_density_campaign.tar` | 37 MB | the 30 run fixed density finite size study, plus the superseded first execution kept for provenance |
 | `Supplementary_Data_1_source_tables.zip` | 25 MB | per figure source and sensitivity tables, plus figure generation scripts |
 
 A fresh clone gives you the code and the derived tables. Reproducing figures
-from raw trajectories requires pulling the tarballs from the DOI.
+from raw trajectories requires pulling the tarballs from the DOI:
+`python scripts/fetch_zenodo.py --only incompatibility_sweep_campaigns.tar`
+downloads and checksum-verifies a file; `scripts/publish_zenodo.py` creates
+the next version (token via `ZENODO_TOKEN`).
