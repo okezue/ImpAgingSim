@@ -231,6 +231,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--shard-count", type=int, default=None)
     parser.add_argument("--parallel", type=int, default=1, help="run this many runs concurrently as subprocesses")
     parser.add_argument("--threads-per-run", type=int, default=None, help="OPENMM_CPU_THREADS for each subprocess")
+    parser.add_argument("--cuda-devices", type=str, default=None,
+                        help="comma-separated GPU ids to round-robin over parallel subprocesses, e.g. 0,1,2,3")
     parser.add_argument("--recover-interrupted", action="store_true")
     parser.add_argument("--allow-dirty", action="store_true", help="skip the clean-git-tree guard (smoke tests only)")
     parser.add_argument("--allow-incomplete-analysis", action="store_true")
@@ -295,14 +297,20 @@ def run_parallel(args: argparse.Namespace, indices: list[int]) -> int:
         env["OPENMM_CPU_THREADS"] = str(int(args.threads_per_run))
         env.setdefault("OMP_NUM_THREADS", "1")
         env.setdefault("OPENBLAS_NUM_THREADS", "1")
+    devices = [d.strip() for d in (args.cuda_devices or "").split(",") if d.strip()]
     failures = 0
 
-    def worker(index: int) -> tuple[int, int, str]:
-        proc = subprocess.run(_child_command(args, index), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    def worker(slot_index: tuple[int, int]) -> tuple[int, int, str]:
+        slot, index = slot_index
+        child_env = dict(env)
+        if devices:
+            # Round-robin the workers over the listed GPUs; each child sees exactly one device.
+            child_env["CUDA_VISIBLE_DEVICES"] = devices[slot % len(devices)]
+        proc = subprocess.run(_child_command(args, index), env=child_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         return index, proc.returncode, proc.stdout
 
     with ThreadPoolExecutor(max_workers=int(args.parallel)) as pool:
-        for index, code, output in pool.map(worker, indices):
+        for index, code, output in pool.map(worker, list(enumerate(indices))):
             tail = output.strip().splitlines()[-1] if output.strip() else ""
             print(f"[index={index}] exit={code} {tail}", flush=True)
             if code != 0:

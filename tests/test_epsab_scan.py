@@ -77,6 +77,41 @@ class TestPlan:
         assert settings["exact_global_composition"] is True
 
 
+class TestParallelLauncher:
+    def test_cuda_devices_round_robin(self, monkeypatch):
+        from melt import epsab_scan
+
+        seen = []
+
+        class Proc:
+            returncode = 0
+            stdout = "ok"
+
+        def fake_run(cmd, env, **kwargs):
+            seen.append((int(cmd[cmd.index("--run-index") + 1]), env.get("CUDA_VISIBLE_DEVICES")))
+            return Proc()
+
+        monkeypatch.setattr(epsab_scan.subprocess, "run", fake_run)
+        args = parse_args(["--run", "--parallel", "2", "--cuda-devices", "0,1,2"])
+        assert epsab_scan.run_parallel(args, [10, 11, 12, 13]) == 0
+        assert sorted(seen) == [(10, "0"), (11, "1"), (12, "2"), (13, "0")]
+
+    def test_no_cuda_devices_leaves_env_alone(self, monkeypatch):
+        from melt import epsab_scan
+
+        envs = []
+
+        class Proc:
+            returncode = 0
+            stdout = ""
+
+        monkeypatch.setattr(epsab_scan.subprocess, "run", lambda cmd, env, **k: envs.append(env) or Proc())
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        args = parse_args(["--run", "--parallel", "2", "--threads-per-run", "1"])
+        assert epsab_scan.run_parallel(args, [0]) == 0
+        assert "CUDA_VISIBLE_DEVICES" not in envs[0] and envs[0]["OPENMM_CPU_THREADS"] == "1"
+
+
 class TestSharding:
     def test_shards_partition_indices(self):
         indices = list(range(10))
