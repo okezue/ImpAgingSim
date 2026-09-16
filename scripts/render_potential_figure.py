@@ -68,13 +68,11 @@ def main():
             "savefig.facecolor": "white",
         }
     )
-    fig = plt.figure(figsize=(12, 5), facecolor="white")
+    fig = plt.figure(figsize=(12, 4.6), facecolor="white")
     fig.text(0.045, 0.91, "A", size=16, weight="bold")
-    fig.text(0.073, 0.91, "Nonbonded pairs", size=15)
     fig.text(0.365, 0.91, "B", size=16, weight="bold")
-    fig.text(0.394, 0.91, "Pair energy", size=15)
 
-    pairs = fig.add_axes((0.045, 0.18, 0.265, 0.65))
+    pairs = fig.add_axes((0.045, 0.17, 0.265, 0.75))
     pairs.set_aspect("equal")
     pairs.set_xlim(0, 1.05)
     pairs.set_ylim(0, 1.30)
@@ -88,9 +86,8 @@ def main():
         bead(pairs, (0.50, y), label2, color2)
         pairs.text(0.77, y, rf"$\epsilon={strength}$", va="center", size=13,
                    color=PURPLE if strength == "0.1" else INK)
-    fig.text(0.074, 0.12, "Common bead diameter", size=11, color=MUTED)
 
-    ax = fig.add_axes((0.445, 0.19, 0.515, 0.64))
+    ax = fig.add_axes((0.445, 0.20, 0.515, 0.72))
     ax.spines[["top", "right"]].set_visible(False)
     ax.spines["left"].set_color(RULE)
     ax.spines["bottom"].set_color(RULE)
@@ -117,21 +114,15 @@ def main():
     ax.plot(R_MIN, tail(R_MIN, 1.0), "o", ms=6.5, mfc=INK, mec="white", mew=0.6, zorder=6)
     ax.plot(R_MIN, tail(R_MIN, 0.1), "o", ms=6.5, mfc=PURPLE, mec="white", mew=0.6, zorder=7)
 
-    ax.annotate("Shared repulsive core", xy=(0.990, core(0.990)), xytext=(1.31, 1.59),
-                ha="left", va="center", size=12, color=INK,
-                arrowprops=dict(arrowstyle="-", color=MUTED, lw=0.8,
-                                connectionstyle="angle,angleA=180,angleB=75,rad=0"))
-    ax.text(1.58, 0.68, "Pair-specific attraction", size=12, color=MUTED)
     ax.annotate(r"$\mathrm{AB}$", xy=(1.71, tail(1.71, 0.1)), xytext=(1.91, 0.26),
                 color=PURPLE, size=13, ha="left", va="center",
                 arrowprops=dict(arrowstyle="-", color=PURPLE, lw=0.85))
     ax.annotate(r"$\mathrm{AA}=\mathrm{BB}$", xy=(1.50, tail(1.50, 1.0)), xytext=(1.73, -0.65),
                 color=INK, size=13, ha="left", va="center",
                 arrowprops=dict(arrowstyle="-", color=MUTED, lw=0.85))
-    ax.text(R_MIN + 0.035, 1.97, r"$r_m=2^{1/6}\sigma$", size=11, color=MUTED, va="top")
-    ax.text(R_CUT - 0.035, 1.97, r"$r_c=2.5\sigma$", size=11, color=MUTED,
+    ax.text(R_MIN + 0.035, 1.97, r"$r_m$", size=11, color=MUTED, va="top")
+    ax.text(R_CUT - 0.035, 1.97, r"$r_c$", size=11, color=MUTED,
             ha="right", va="top")
-    ax.text(1.13, -1.075, "Tail onset", size=10, color=MUTED, ha="left", va="center")
 
     # Fixed canvas preserves a consistent manuscript-style aspect ratio in the README.
     description = (

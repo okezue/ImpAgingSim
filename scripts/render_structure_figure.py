@@ -87,16 +87,12 @@ def main() -> None:
             "mathtext.fontset": "dejavusans",
         }
     )
-    fig = plt.figure(figsize=(12, 5.2), dpi=150)
-    ax_a = fig.add_axes([0.09, 0.19, 0.425, 0.63])
-    ax_b = fig.add_axes([0.67, 0.19, 0.29, 0.63])
+    fig = plt.figure(figsize=(12, 4.6), dpi=150)
+    ax_a = fig.add_axes([0.09, 0.20, 0.425, 0.72])
+    ax_b = fig.add_axes([0.67, 0.20, 0.29, 0.72])
 
-    fig.text(0.025, 0.90, "A", weight="bold", fontsize=17)
-    fig.text(0.09, 0.90, "Measured composition spectrum", weight="bold", fontsize=14)
-    fig.text(0.09, 0.852, r"$M=144$ chains", color=MUTED, fontsize=11)
-    fig.text(0.60, 0.90, "B", weight="bold", fontsize=17)
-    fig.text(0.67, 0.90, "System-size comparison", weight="bold", fontsize=14)
-    fig.text(0.67, 0.852, r"Fixed bead density", color=MUTED, fontsize=11)
+    fig.text(0.025, 0.95, "A", weight="bold", fontsize=17)
+    fig.text(0.60, 0.95, "B", weight="bold", fontsize=17)
 
     style_axis(ax_a, 0.18, 1100)
     style_axis(ax_b, 3, 1300)
@@ -130,13 +126,8 @@ def main() -> None:
 
     reference = select(summary, n_chains=144, kappa=1)[0]
     kmin = 2 * np.pi / float(reference["box_size"])
-    maximum = float(reference["primary_amplitude_seed_mean_at_selected_shell"])
     ax_a.axvline(kmin, color=MUTED, linewidth=0.9, linestyle=(0, (3, 3)), zorder=0)
-    ax_a.annotate("Box-limited maximum", xy=(kmin, maximum),
-                  xytext=(0.62, 460), ha="left", va="center", fontsize=10.5,
-                  color=PURPLE, arrowprops={"arrowstyle": "-", "color": PURPLE,
-                                            "linewidth": 0.9, "shrinkB": 7})
-    ax_a.text(kmin + 0.022, 0.24, r"$k_{\min}=2\pi/L$", fontsize=10, color=MUTED)
+    ax_a.text(kmin + 0.022, 0.24, r"$k_{\min}$", fontsize=10, color=MUTED)
     # Direct labels preserve the two-channel key without occupying a data region.
     last_correlated = select(summary, n_chains=576, kappa=1)[0]
     last_correlated_peak = float(last_correlated["primary_amplitude_seed_mean_at_selected_shell"])
@@ -144,9 +135,6 @@ def main() -> None:
               fontsize=12, ha="right", va="bottom")
     ax_b.text(606, 8.45, r"$\kappa=0$", color=MUTED,
               fontsize=12, ha="right", va="bottom")
-    fig.text(0.09, 0.045, r"$N_{\rm chain}=40$   ·   $f_A=0.5$   ·   $\pi=0.99$   ·   $T^*=0.7$",
-             fontsize=11, color=MUTED)
-    fig.text(0.96, 0.045, "Mean ± SEM · 5 independent seeds", ha="right", fontsize=11, color=MUTED)
 
     OUT.mkdir(parents=True, exist_ok=True)
     for ext in ("svg", "png"):

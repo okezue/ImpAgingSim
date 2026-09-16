@@ -23,9 +23,10 @@ carries a binary label A or B. Langevin dynamics in OpenMM on GPU.
 
 ![A forty-bead A/B chain beside a schematic periodic multichain melt; a highlighted chain segment repeats after translation by one box length.](docs/figures/polymer-model.svg)
 
-**Figure 1. Bead-spring geometry.** Teal and orange denote A and B. The
-highlighted segment illustrates periodic continuation. Chain excerpts in the
-box are schematic; production systems contain 144 chains of 40 beads.
+**Figure 1. Bead-spring geometry.** Panel A shows a chain with harmonic bonds;
+panel B shows a schematic melt. Teal and orange denote A and B. The highlighted
+segment repeats across a periodic boundary separated by $L=22\sigma$.
+Production systems contain 144 chains of 40 beads.
 
 ### 1.1 The sequence construction
 
@@ -34,9 +35,11 @@ correlation, and a Bernoulli mask sets its **amplitude**.
 
 ![Aligned backbone, keep/redraw mask, fresh draws, and final bead labels, beside discrete covariance curves separating correlation amplitude from range.](docs/figures/sequence-construction.svg)
 
-**Figure 2. Sequence construction.** A fresh draw can match the original label;
-redrawing is not the same as flipping. For the unconditioned generator, the
-normalized connected covariance is $\Gamma(0)=1$ and
+**Figure 2. Sequence construction.** In panel A, $b_i=1$ keeps the Markov
+backbone label and $b_i=0$ redraws independently at the same mean A fraction:
+$\psi_i=b_i z_i+(1-b_i)u_i$, with $\Pr(b_i=1)=\kappa$. A redraw can retain
+the original species. Panel B separates amplitude from range. For the
+unconditioned generator, the normalized connected covariance is $\Gamma(0)=1$ and
 $\Gamma(\ell)=\kappa^2(2\pi-1)^\ell$ for $\ell\geq1$. The plotted values
 illustrate amplitude and range separately; they are analytic, not simulation data.
 
@@ -66,8 +69,9 @@ excluded volume at the same time, which confounds the interaction scan.
 
 ![Nonbonded A-A, B-B, and A-B pairs beside the exact implemented potential: a shared repulsive core and pair-specific attractive branches with a jump at their onset.](docs/figures/interaction-potential.svg)
 
-**Figure 3. Implemented nonbonded energy.** The WCA core is common to all
-pairs. Attraction begins at $r_m=2^{1/6}\sigma$ and is shifted to zero at
+**Figure 3. Implemented nonbonded energy.** Panel A identifies pair types and
+attraction strengths; panel B shows their energies. The WCA core is common to
+all pairs. Attraction begins at $r_m=2^{1/6}\sigma$ and is shifted to zero at
 $r_c=2.5\sigma$. Open and filled endpoints show the energy jump at $r_m$
 caused by the current step-gated tail. Adjacent bonded beads are excluded
 from both nonbonded terms.
@@ -128,11 +132,13 @@ $\xi=2\pi/k^*$; a maximum at the lowest sampled wavevector is limited by the box
 ![Measured composition spectra for random and correlated chains, with five-seed uncertainty bands, and their peak amplitudes across three fixed-density system sizes.](docs/figures/measured-structure.svg)
 
 **Figure 4. Measured static structure.** Panel A shows 144 chains; panel B
-compares three system sizes at fixed density. The direct reciprocal-shell
+compares three system sizes at fixed density. All use 40 beads per chain,
+$f_A=0.5$, $\pi=0.99$, and $T^*=0.7$. The direct reciprocal-shell
 estimator uses the total-bead-normalized channel $S_{\psi\psi}^{(N)}/2$.
 Bands and bars show mean ± SEM across five independent seeds, each averaging
 its final five saved configurations. At $\kappa=1$, the two smaller boxes peak
-at their lowest sampled wavevector. [Figure sources and regeneration](docs/figures/README.md).
+at their lowest sampled wavevector, $k_{\min}=2\pi/L$.
+[Figure sources and regeneration](docs/figures/README.md).
 
 Away from `f_A = 1/2` this combination mixes total density and composition
 modes. The density orthogonal quantity is the Bhatia-Thornton mode

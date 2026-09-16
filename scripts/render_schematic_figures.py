@@ -34,8 +34,8 @@ class SVG:
   a=math.atan2(y2-y1,x2-x1)
   p=[(x2-head*math.cos(a-v),y2-head*math.sin(a-v)) for v in [-.45,.45]]
   self.path(f'M{p[0][0]},{p[0][1]} L{x2},{y2} L{p[1][0]},{p[1][1]}',color,sw)
- def panel(self,x,letter,title):
-  self.text(x,39,letter,24,weight='Bold');self.text(x+36,39,title,23,weight='Semi Bold')
+ def panel(self,x,letter):
+  self.text(x,39,letter,24,weight='Bold')
  def svg(self,text=True):
   labels=''
   if text:
@@ -50,8 +50,8 @@ class SVG:
 
 def model(tmp):
  s=SVG(1200,470,'Bead-spring A/B chain and a periodic multichain melt; schematic geometry')
- s.panel(34,'A','One A/B heteropolymer')
- s.panel(604,'B','A melt with periodic boundaries')
+ s.panel(34,'A')
+ s.panel(604,'B')
  # Forty beads, equally spaced along a deliberate coiled path (schematic).
  ctrl=np.array([[75,184],[103,109],[180,109],[201,174],[143,222],[157,302],[250,336],[327,300],[289,234],[255,158],[327,117],[423,141],[449,223],[420,298]])
  raw=make_interp_spline(np.linspace(0,1,len(ctrl)),ctrl,k=3)(np.linspace(0,1,2000))
@@ -62,10 +62,6 @@ def model(tmp):
  for (x,y),v in zip(p,seq):s.bead(x,y,8.4,v)
  s.text(51,82,'A',18,A,weight='Semi Bold');s.bead(85,76,7,1)
  s.text(123,82,'B',18,B,weight='Semi Bold');s.bead(157,76,7,0)
- q=(p[37]+p[38])/2
- s.line(q[0]+3,q[1],483,324,MUTED,1.3)
- s.text(425,350,'harmonic bond',18,MUTED)
- s.text(259,385,'N = 40 beads',21,anchor='middle')
  # Orthographic box and many short chain excerpts. It is not a trajectory.
  ox,oy=686,159;W=345;H=237;dx=99;dy=-74
  back=[(ox+dx,oy+dy),(ox+dx+W,oy+dy),(ox+dx+W,oy+dy+H),(ox+dx,oy+dy+H)]
@@ -93,20 +89,18 @@ def model(tmp):
  s.line(ox+3,yy,ox+3,423,PURPLE,1,'4 5')
  s.line(ox+W+3,yy,ox+W+3,423,PURPLE,1,'4 5')
  s.arrow(ox+8,423,ox+W-2,423,PURPLE,1.6)
- s.text(858,450,'translation by L = 22σ',18,PURPLE,anchor='middle')
- s.text(1107,357,'144',23,weight='Semi Bold',anchor='middle')
- s.text(1107,382,'chains',18,MUTED,anchor='middle')
+ s.text(858,450,'L',18,PURPLE,anchor='middle')
  s.save('polymer-model',tmp)
 
 def sequence(tmp):
- s=SVG(1200,590,'Bernoulli inheritance gates control correlation amplitude independently of Markov range')
- s.panel(34,'A','Keep or redraw each bead')
- s.panel(755,'B','Amplitude versus range')
+ s=SVG(1200,555,'Bernoulli inheritance gates control correlation amplitude independently of Markov range')
+ s.panel(34,'A')
+ s.panel(755,'B')
  z=np.array([1,1,1,1,1,0,0,0,0,1,1,1]); mask=np.array([1,1,0,1,1,0,1,0,1,1,0,1]);u=np.array([0,0,0,0,0,1,0,0,0,0,0,0]);out=np.where(mask,z,u)
  xs=224+np.arange(len(z))*40
- s.text(40,133,'Backbone z',19,weight='Semi Bold');s.text(40,160,'Markov sequence',17,MUTED)
- s.text(40,227,'Mask b',19,weight='Semi Bold');s.text(40,254,'Pr(keep) = κ',17,MUTED)
- s.text(40,331,'Fresh draw u',19,weight='Semi Bold');s.text(40,358,'same A fraction',17,MUTED)
+ s.text(40,133,'Backbone z',19,weight='Semi Bold')
+ s.text(40,227,'Mask b',19,weight='Semi Bold')
+ s.text(40,331,'Fresh draw u',19,weight='Semi Bold')
  s.text(40,441,'Expressed ψ',19,weight='Semi Bold')
  s.line(xs[0],135,xs[-1],135,PALE,2)
  for x,zz,m,uu,oo in zip(xs,z,mask,u,out):
@@ -125,8 +119,6 @@ def sequence(tmp):
  # output bead row has no backbone connects until the final stage
  s.line(xs[0],438,xs[-1],438,MUTED,2)
  for x,oo in zip(xs,out):s.bead(x,438,11.5,oo)
- s.text(224,494,'1  keep',18,MUTED);s.text(415,494,'0  redraw',18,PURPLE)
- s.text(224,547,'ψᵢ = bᵢ zᵢ + (1 − bᵢ) uᵢ',22)
  # Discrete correlation panel. No misleading line connects ell=0 to ell=1.
  x0,y0,w,h=817,400,321,266
  def xy(l,g):return x0+w*l/20,y0-h*g
@@ -137,18 +129,21 @@ def sequence(tmp):
   s.text(x0-16,y+6,f'{gg:g}',17,MUTED,anchor='end')
  for l in [0,10,20]:
   x,y=xy(l,0);s.line(x,y,x,y+5,INK,1.2);s.text(x,y+27,str(l),17,MUTED,anchor='middle')
- s.text(x0,87,'Normalized covariance Γ(ℓ)',18)
- s.text(x0+w/2,457,'Bead separation ℓ',18,anchor='middle')
+ s.text(x0,87,'Γ(ℓ)',18)
+ s.text(x0+w/2,457,'Lag ℓ',18,anchor='middle')
  curves=[(1,.97,INK,None),(.5,.97,PURPLE,None),(1,.85,MUTED,'6 6')]
  for k,pi,col,dash in curves:
   xx=np.arange(1,21);yy=k*k*(2*pi-1)**xx
   s.path('M'+' L'.join(f'{xy(l,g)[0]},{xy(l,g)[1]}' for l,g in zip(xx,yy)),col,2.4,dash=dash)
   for l,g in zip(xx,yy):s.circle(*xy(l,g),2.7,col)
  s.circle(*xy(0,1),5.8,'white',INK,2)
- s.text(842,122,'Γ(0) = 1',16,MUTED)
  # concise line legends, no information boxes
  for j,(label,col,dash) in enumerate([('κ = 1,  π = 0.97',INK,None),('κ = ½, π = 0.97',PURPLE,None),('κ = 1,  π = 0.85',MUTED,'6 6')]):
   y=493+j*31;s.line(797,y-5,829,y-5,col,2.4,dash);s.text(844,y,label,18)
+ # Reclaim the space formerly occupied by panel headings.
+ s.shapes=[s.shapes[0],'<g transform="translate(0,-35)">',*s.shapes[1:],'</g>']
+ for label in s.labels:
+  if label['size']!=24: label['y']-=35
  s.save('sequence-construction',tmp)
 
 if __name__=='__main__':
