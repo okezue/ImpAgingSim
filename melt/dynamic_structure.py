@@ -96,12 +96,34 @@ def coarse_grained_variance(
 
 
 def non_gaussian_ratio(rho_modes: np.ndarray) -> float:
-    """``<|rho|^4>/<|rho|^2>^2`` pooled over time and modes: 2 for a complex Gaussian, 1 if frozen."""
+    """Temporal ``<|rho|^4>_t/<|rho|^2>_t^2`` per mode, averaged over the modes of a shell.
+
+    2 for a complex Gaussian amplitude (mixed state), 1 for a frozen pattern.  The ratio is
+    formed mode by mode so that an anisotropic pattern (a lamella along one axis, which
+    puts all intensity into two of a shell's modes) does not masquerade as heavy tails.
+    """
     a2 = np.abs(np.asarray(rho_modes, dtype=np.complex128)) ** 2
-    m2 = float(np.mean(a2))
-    if m2 <= 0.0:
+    if a2.ndim != 2 or a2.shape[0] < 2:
         return float("nan")
-    return float(np.mean(a2 * a2) / (m2 * m2))
+    m2 = a2.mean(axis=0)
+    good = m2 > 0.0
+    if not np.any(good):
+        return float("nan")
+    return float(np.mean((a2[:, good] ** 2).mean(axis=0) / m2[good] ** 2))
+
+
+def shell_anisotropy(rho_modes: np.ndarray) -> float:
+    """``max_m <|rho_m|^2>_t / mean_m <|rho_m|^2>_t`` over a shell's modes.
+
+    1 when every direction carries equal intensity (isotropic random microphase); for the
+    six-mode lowest shell a single lamellar direction gives 3.
+    """
+    a2 = np.abs(np.asarray(rho_modes, dtype=np.complex128)) ** 2
+    if a2.ndim != 2 or a2.shape[1] == 0:
+        return float("nan")
+    m2 = a2.mean(axis=0)
+    mean = float(np.mean(m2))
+    return float(np.max(m2) / mean) if mean > 0.0 else float("nan")
 
 
 def time_correlation_by_shell(
@@ -240,6 +262,8 @@ def analyze_mode_amplitudes(
         else float("nan"),
         "non_gaussian_ratio_peak": non_gaussian_ratio(psi[:, peak_modes]),
         "non_gaussian_ratio_kmin": non_gaussian_ratio(psi[:, shell_index == 0]),
+        "shell_anisotropy_peak": shell_anisotropy(psi[:, peak_modes]),
+        "shell_anisotropy_kmin": shell_anisotropy(psi[:, shell_index == 0]),
         "coarse_grained_variance": {
             f"{float(ell):g}": coarse_grained_variance(S_psi_mode_mean, q, n_total, ell)
             for ell in coarse_grain_lengths

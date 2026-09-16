@@ -46,9 +46,7 @@ hashed and the driver rejects a mismatch. A changed grid needs a new
 - The `sherlock/` kit committed and pushed. The driver refuses to write a
   manifest unless `git status` is clean, so nothing may be edited or copied
   into the clone on Sherlock; change code locally, push, `git pull` there.
-- Nothing under `output/sherlock/` is gitignored yet; add `output/sherlock/`
-  to `.gitignore` before syncing results to the laptop if you also run
-  campaigns locally.
+- Results synced to the laptop land in `output/sherlock/`, which is gitignored.
 
 ## 1. One-time local SSH config (laptop)
 

@@ -28,13 +28,13 @@ DESIGN_KEYS = ("schema_version", "study", "campaign_id", "design", "simulation_s
 RUN_FIELDS = (
     "run_id", "n_chains", "chain_length", "box_size", "eps_AB", "delta_eps", "seed",
     "q_peak", "S_psi_peak", "S_psi_peak_sem_time", "S_psi_kmin", "S_rho_kmin",
-    "non_gaussian_ratio_peak", "peak_intensity_relative_variance",
+    "non_gaussian_ratio_peak", "shell_anisotropy_peak", "peak_intensity_relative_variance",
     "cg_variance_1p5", "cg_variance_2", "cg_variance_3",
     "tau_psi_peak", "gamma_psi_peak", "kww_tau_peak", "kww_beta_peak", "plateau_psi_peak",
     "S_psi_peak_relative_drift", "energy_per_bead", "mean_Rg", "T_inst_star", "n_frames_window",
 )
 CONDITION_OBSERVABLES = (
-    "S_psi_peak", "S_psi_kmin", "S_rho_kmin", "non_gaussian_ratio_peak",
+    "S_psi_peak", "S_psi_kmin", "S_rho_kmin", "non_gaussian_ratio_peak", "shell_anisotropy_peak",
     "peak_intensity_relative_variance", "cg_variance_1p5", "cg_variance_2", "cg_variance_3",
     "tau_psi_peak", "gamma_psi_peak", "kww_tau_peak", "kww_beta_peak", "plateau_psi_peak",
     "S_psi_peak_relative_drift", "energy_per_bead", "mean_Rg", "q_peak",
@@ -101,6 +101,7 @@ def per_run_row(spec: dict[str, Any], summary: dict[str, Any], window: dict[str,
         "S_psi_kmin": summary["S_psi_kmin"],
         "S_rho_kmin": summary["S_rho_kmin"],
         "non_gaussian_ratio_peak": summary["non_gaussian_ratio_peak"],
+        "shell_anisotropy_peak": summary.get("shell_anisotropy_peak", float("nan")),
         "peak_intensity_relative_variance": summary["peak_intensity_relative_variance"],
         "cg_variance_1p5": cg.get("1.5", float("nan")),
         "cg_variance_2": cg.get("2", float("nan")),
@@ -460,12 +461,14 @@ def make_figures(analysis_dir: Path, conditions, spectra_rows, f_rows, summary) 
     ax.legend(fontsize=8)
     save(fig, "S_peak_vs_delta_eps")
 
-    fig, axes = plt.subplots(1, 3, figsize=(12.0, 3.8))
+    fig, axes = plt.subplots(1, 4, figsize=(15.5, 3.8))
     for n in sizes:
         for ax, key, label in zip(
             axes,
-            ("peak_intensity_relative_variance", "cg_variance_2", "non_gaussian_ratio_peak"),
-            (r"Var$_t[S(q^*,t)]/\langle S\rangle^2$", r"coarse-grained variance $\ell=2\sigma$", r"$\langle|\rho_\psi|^4\rangle/\langle|\rho_\psi|^2\rangle^2$"),
+            ("peak_intensity_relative_variance", "cg_variance_2", "non_gaussian_ratio_peak", "shell_anisotropy_peak"),
+            (r"Var$_t[S(q^*,t)]/\langle S\rangle^2$", r"coarse-grained variance $\ell=2\sigma$",
+             r"$\langle|\rho_\psi|^4\rangle_t/\langle|\rho_\psi|^2\rangle_t^2$ (peak shell)",
+             r"shell anisotropy $\max_m S_m/\overline{S_m}$ (peak shell)"),
         ):
             x, y, e, _ = series(n, key)
             ax.errorbar(x, y, yerr=np.nan_to_num(e), marker="o", ms=4, lw=1.2, capsize=2, label=f"M={n}")
@@ -475,6 +478,7 @@ def make_figures(analysis_dir: Path, conditions, spectra_rows, f_rows, summary) 
         axes[0].plot([c["delta_eps"] for c in g], [c["S_psi_peak_seed_relative_variance"] for c in g], "s--", ms=3, lw=0.8, label=f"M={n} seed variance")
     axes[2].axhline(2.0, color="0.6", lw=0.8, ls=":")
     axes[2].axhline(1.0, color="0.6", lw=0.8, ls=":")
+    axes[3].axhline(1.0, color="0.6", lw=0.8, ls=":")
     axes[1].set_yscale("log")
     axes[0].set_yscale("log")
     axes[0].legend(fontsize=7)

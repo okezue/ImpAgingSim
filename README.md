@@ -256,7 +256,92 @@ size scaling and Binder cumulants across several box sizes.
 
 ---
 
-## 4. Repository layout
+## 4. The incompatibility sweep and the dynamic structure factor
+
+Two extensions take the model to the next question: at what A/B
+incompatibility does the melt cross from mixed to demixed at fixed sequence
+correlation, and how does the composition pattern relax in time.
+
+### 4.1 Dictionary to the field theory
+
+| simulation | field theory |
+|---|---|
+| `kappa` | the sequence correlation parameter `lambda` of random copolymer theory |
+| `eps_AB` at fixed `eps_AA = eps_BB = 1` | the Flory-Huggins `chi`; the incompatibility axis is `delta_eps = 1 - eps_AB` |
+| `eps_AB = 1` | `chi = 0`: every pair interacts identically, entropy of mixing wins |
+| `eps_AB = 0.1` | the strongly demixed production value of sections 1-3 |
+
+Because the WCA core is shared by all pairs, lowering `eps_AB` weakens the A-B
+attraction without touching excluded volume, so the sweep is a clean
+incompatibility knob. The bridge `chi = alpha (1 - eps_AB) / T*` has one
+unknown, the effective contact number `alpha`, which `melt.rpa` fits from the
+mixed side of the sweep where mean-field theory applies.
+
+### 4.2 The sweep (`melt.epsab_scan`)
+
+Everything is held at the production protocol (144 x 40 beads, `L = 22`,
+`kappa = 0.5`, `pi = 0.99`, `f_A = 1/2`, exact global composition,
+`T* = 0.7`, 30,000 equilibration steps at `T* = 5`, 250,000 production steps)
+and only `eps_AB` moves: 37 values from 1.0 down to 0.1 in steps of 0.025,
+four seeds each, 148 runs. The grid is deliberately dense because a
+finite-system transition is sudden and its location is not known in advance;
+a second stage refines the bracketed interval with a finer list, more seeds
+and a second box size under a new campaign id.
+
+Every run records the exact Fourier amplitudes of the A and B bead densities
+at all periodic-box modes with `|q| <= 1.5 / sigma` (618 modes in 24 shells
+for `L = 22`) every 200 steps, so 1,250 frames per run. The evaluation uses
+the per-axis factorization of `exp(i q . r)` for integer box modes and is
+exact; recording leaves the seeded trajectory bit-identical.
+
+### 4.3 What is measured
+
+Static, from the trailing half of production (the stationary window):
+
+| observable | definition | reads |
+|---|---|---|
+| `S_psi(q*)` | time-averaged peak of `S_AA + S_BB - 2 S_AB` | amplitude of composition fluctuations |
+| coarse-grained variance | `(1/N) sum_q S_psi(q) exp(-q^2 l^2)` | real-space density fluctuation at scale `l` |
+| peak-intensity variance | `Var_t[S_psi(q*, t)] / <S_psi(q*)>^2` | fluctuations of the fluctuations; spikes at a transition |
+| non-Gaussianity ratio | `<|rho_psi(q*)|^4> / <|rho_psi(q*)|^2>^2` | 2 for Gaussian (mixed) amplitudes, 1 for a frozen pattern |
+| seed variance of `S_psi(q*)` | relative variance across seeds | disorder-to-disorder susceptibility |
+
+Dynamic, the two-time object Spakowitz asked for:
+
+$$
+S_{\psi\psi}(q,\tau)=\frac{1}{N}\left\langle \rho_\psi(q,t_0)\,\rho_\psi^*(q,t_0+\tau)\right\rangle_{t_0,\ |q|\in\text{shell}},
+\qquad F(q,\tau)=\frac{S(q,\tau)}{S(q,0)} .
+$$
+
+It is computed for every shell by the Wiener-Khinchin identity over all time
+origins in the window, together with the total-density channel
+`rho_A + rho_B`. Time means are not subtracted, so an arrested pattern
+appears as a plateau in `F(q, tau -> inf)` rather than being removed. Per
+shell the analysis reports the `1/e` relaxation time, the short-time decay
+rate from `-ln F`, a stretched-exponential fit and the late-lag plateau.
+
+### 4.4 Locating the transition
+
+`melt.epsab_analysis` aggregates a campaign into per-run and per-condition
+tables (mean and SEM over seeds), spectra and `F(q*, tau)` per condition,
+and `transition_summary.json` with five estimators of the transition along
+`delta_eps`, each with a seed bootstrap: the maximum of the peak-intensity
+variance, the maximum of the seed variance, the steepest rise of
+`ln S_psi(q*)`, the steepest rise of the coarse-grained variance, and the
+crossing of the non-Gaussianity ratio through 1.5. The same file holds the
+RPA comparison: `alpha`, the fitted `chi(eps_AB)`, the predicted spinodal
+`eps_AB` and the mean-field `S(q*)` curve that the figures overlay on the
+simulation.
+
+The RPA used is the incompressible one-component form in the simulation's
+normalization, `S^{-1} = S_0^{-1} - chi/2`, with `S_0(q)` the finite-chain
+composition form factor of section 3.2 and the segment length taken from the
+measured `R_g` at `eps_AB = 1`. For a symmetric blend it reproduces
+`chi_s N = 2`.
+
+---
+
+## 5. Repository layout
 
 ```
 melt/                       the simulation engine
@@ -269,17 +354,26 @@ melt/                       the simulation engine
   direct_structure.py       direct reciprocal shell estimator
   dynamics.py               F_s, MSD, alpha_2, Q, chi_4, tau_alpha
   twotime.py                two time correlation helpers
+  modes.py                  exact box-mode amplitudes rho_A(q,t), rho_B(q,t) recorder
+  dynamic_structure.py      S(q,tau), F(q,tau) and static fluctuation observables
+  rpa.py                    finite-chain S_0(q), RPA S(q), spinodal, eps_AB -> chi bridge
   run.py                    single run driver
   scan.py  kappa_scan.py  temperature_scan.py  big_run.py
+  campaign.py               shared restartable-campaign machinery (manifest, hashes, locks)
+  epsab_scan.py             eps_AB sweep at fixed kappa, shardable and parallel
+  epsab_analysis.py         sweep aggregation, transition estimators, RPA comparison, figures
   fixed_density_size_scan.py    fixed density campaign driver
   fixed_density_analysis.py     deterministic aggregation for that campaign
   analyze.py  deep_analysis.py  viz.py  io.py  model.py
 
 docs/figures/              README SVGs, PNG exports, and figure provenance
 scripts/render_*_figure*   reproducible README figure generators
+scripts/fetch_zenodo.py    download and verify the Zenodo archive
+scripts/modes_from_trajectory.py   archived trajectory.npz -> mode_amplitudes.npz
 analysis/  analysis_aws/    derived tables and figures
 aws/                        EC2 campaign scripts, see aws/README.md
-tests/                      33 melt tests, 30 fixed density tests
+sherlock/                   SLURM kit for Stanford Sherlock, see sherlock/README.md
+tests/                      113 tests across melt, fixed density, modes, RPA and the sweep
 output/                     run outputs, large directories are gitignored
 archive/single_chain_mc/    superseded code, see below
 ```
@@ -298,7 +392,7 @@ The Obsidian vault in `obsidian-notes/` is local only and is gitignored.
 
 ---
 
-## 5. Running it
+## 6. Running it
 
 ### Single run
 
@@ -330,6 +424,30 @@ hashes and skips completed work. A campaign is pinned to its creation commit
 and requires a clean git tree. For a scheduler array, create the manifest once
 and pass `--run-index "$SLURM_ARRAY_TASK_ID"`.
 
+### eps_AB sweep
+
+```bash
+python3 -m melt.epsab_scan --dry-run                                  # 148-run plan
+python3 -m melt.epsab_scan --manifest-only --out $OUT --campaign-id epsab_kappa05
+python3 -m melt.epsab_scan --run --out $OUT --campaign-id epsab_kappa05 --platform CUDA
+python3 -m melt.epsab_scan --status --out $OUT --campaign-id epsab_kappa05
+python3 -m melt.epsab_scan --analyze --out $OUT --campaign-id epsab_kappa05
+```
+
+`--shard-index K --shard-count S` runs every plan index congruent to `K`
+modulo `S` (one shard per scheduler array task); `--parallel P
+--threads-per-run T` runs `P` runs at once as subprocesses on a many-core
+machine. Both share one campaign directory safely through per-run locks.
+`$OUT` must be outside the git tree, since a campaign requires a clean tree.
+Stage 2 uses a new `--campaign-id` with a finer `--eps-ABs` list, more
+`--seeds` and `--sizes 144 288`. Any run's two-time correlations can also be
+inspected directly:
+
+```bash
+python3 -m melt.dynamic_structure $OUT/epsab_kappa05/runs/M0144_N40_kappa0p5_pi0p990_epsAB0p5_seed1
+python3 scripts/modes_from_trajectory.py --analyze path/to/archived_run   # from a trajectory.npz
+```
+
 ### Tests
 
 ```bash
@@ -353,6 +471,15 @@ GIT_REF=master SCAN_KIND=fixed_density ./aws/launch.sh
 
 Available kinds: `smoke`, `kappa`, `temperature`, `big`, `rerun`,
 `seed_extension`, `fixed_density`, `all`.
+
+### Sherlock
+
+The `eps_AB` sweep runs on Stanford's Sherlock cluster as a GPU job array.
+[`sherlock/README.md`](sherlock/README.md) walks through the SSH setup, the
+one-time environment (`python` module plus a pip-installed `openmm[cuda12]`
+virtualenv; Sherlock advises against conda), the smoke test, the array
+submission, monitoring, and pulling results back through the data transfer
+nodes.
 
 ---
 

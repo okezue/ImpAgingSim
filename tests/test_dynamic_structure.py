@@ -14,6 +14,7 @@ from melt.dynamic_structure import (
     initial_decay_rates,
     non_gaussian_ratio,
     relaxation_times,
+    shell_anisotropy,
     shell_average_series,
     stationary_window_mask,
     time_correlation_by_shell,
@@ -154,6 +155,17 @@ class TestStaticObservables:
         assert abs(non_gaussian_ratio(gaussian) - 2.0) < 0.05
         frozen = np.exp(1j * rng.uniform(0, 2 * np.pi, size=(200, 4)))
         assert abs(non_gaussian_ratio(frozen) - 1.0) < 1e-12
+
+    def test_lamella_is_anisotropic_not_non_gaussian(self):
+        # Six-mode shell, all intensity frozen in one +/- pair: ratio stays 1, anisotropy is 3.
+        modes = np.zeros((50, 6), dtype=np.complex128)
+        modes[:, 0] = 3.0 * np.exp(0.2j)
+        modes[:, 1] = 3.0 * np.exp(-0.2j)
+        assert abs(non_gaussian_ratio(modes) - 1.0) < 1e-12
+        assert abs(shell_anisotropy(modes) - 3.0) < 1e-12
+        rng = np.random.default_rng(12)
+        iso = rng.normal(size=(20000, 6)) + 1j * rng.normal(size=(20000, 6))
+        assert abs(shell_anisotropy(iso) - 1.0) < 0.05
 
     def test_coarse_grained_variance_reduces_to_parseval_sum(self):
         q = np.array([0.5, 1.0, 1.5])
