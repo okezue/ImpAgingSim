@@ -380,6 +380,25 @@ signature, shell anisotropy approaching 3, appears only for `kappa = 1` at
 diagram, the first exists for `kappa >= 0.5` and the second only for the most
 correlated sequences in this box. [`analysis/kappa_boundary/`]
 
+**The theory-comparison dataset.** At `T* = 1.5` and `2.0`, mixed side
+(`eps_AB` 1.0 to 0.85), eight seeds, 5M steps with box modes every tau: at
+chi = 0 the composition relaxation is a single exponential with
+`tau ~ q^-3.9` above `q R_g ~ 1.8` (Rouse); toward the crossover the `q_min`
+mode's amplitude grows eightfold and its rate falls sixfold while every mode
+with `q >= 0.8` keeps its chi = 0 relaxation time, so `Gamma(q) S(q)` is
+approximately constant (thermodynamic slowing with a fixed kinetic
+coefficient); relaxation times level off near 3,000 tau below `q ~ 0.3` in
+both the 144- and 288-chain boxes; and the chi = 0 times are 2.2x shorter at
+`T* = 2.0` than at 1.5, more than the 1.33x of a purely thermal mobility.
+[`analysis/dsf_theory/`]
+
+**Coarsening at T* = 0.7.** Over 100,000 tau, quenches just past the
+crossover (`eps_AB = 0.8, 0.7`) coarsen as `S_psi(q*) ~ t^0.5` with
+`q* ~ t^-0.1` for three decades until the domains reach the box, while a
+deeper quench (`eps_AB = 0.5`) arrests after ~10,000 tau at a finite domain
+spacing of ~16 sigma with `S_psi(q*) ~ 100`. Stronger incompatibility gives a
+smaller, frozen pattern. [`analysis/coarsening/`]
+
 ---
 
 ## 5. Repository layout
