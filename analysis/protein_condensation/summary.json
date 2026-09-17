@@ -1,0 +1,9 @@
+{
+  "campaign_id": "protein_condensation",
+  "mode": "protein",
+  "n_runs_analyzed": 360,
+  "missing_runs": [],
+  "window_fraction": 0.5,
+  "box_size": 30.65237729574212,
+  "bead_density": 0.2
+}
