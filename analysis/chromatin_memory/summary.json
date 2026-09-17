@@ -1,0 +1,9 @@
+{
+  "campaign_id": "chromatin_memory",
+  "mode": "chromatin",
+  "n_runs_analyzed": 160,
+  "missing_runs": [],
+  "window_fraction": 0.5,
+  "box_size": 30.65237729574212,
+  "bead_density": 0.2
+}
