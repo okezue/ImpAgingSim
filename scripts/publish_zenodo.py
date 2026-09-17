@@ -99,6 +99,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--description-file", default=None, help="HTML file replacing the record description")
     parser.add_argument("--publish", action="store_true", help="publish instead of leaving a draft")
     parser.add_argument("--record-id", type=int, default=None, help="record to version (default: latest)")
+    parser.add_argument("--draft-id", type=int, default=None,
+                        help="reuse an existing draft deposition instead of creating a new version")
     args = parser.parse_args(argv)
     token = os.environ.get("ZENODO_TOKEN")
     if not token:
@@ -109,11 +111,15 @@ def main(argv: list[str] | None = None) -> int:
             print(f"missing file: {path}", file=sys.stderr)
             return 2
 
-    record_id = args.record_id or latest_record_id()
-    print(f"creating new version of record {record_id}")
-    created = _request("POST", f"{API}/deposit/depositions/{record_id}/actions/newversion", token)
-    draft_url = created["links"]["latest_draft"]
-    draft = _request("GET", draft_url, token)
+    if args.draft_id:
+        draft = _request("GET", f"{API}/deposit/depositions/{args.draft_id}", token)
+        if draft.get("submitted"):
+            raise RuntimeError(f"deposition {args.draft_id} is already published")
+    else:
+        record_id = args.record_id or latest_record_id()
+        print(f"creating new version of record {record_id}")
+        created = _request("POST", f"{API}/deposit/depositions/{record_id}/actions/newversion", token)
+        draft = _request("GET", created["links"]["latest_draft"], token)
     draft_id = draft["id"]
     bucket = draft["links"]["bucket"]
     print(f"draft deposition {draft_id}")
