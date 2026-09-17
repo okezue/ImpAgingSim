@@ -12,6 +12,9 @@ from .density import density_field_A,density_field_B
 from .observables import compute_all_observables
 from .direct_structure import DirectStructureFactorRecorder,early_and_final_snapshot_steps
 from .modes import ModeAmplitudeRecorder
+from .marks import MarkDynamics,MarkRecorder,local_B_counts,step_marks
+from .clusters import condensation_summary,CONDENSATION_FIELDS
+from .integrator import update_types_in_context
 
 def make_rng_streams(seed,split=False):
     """Return sequence and placement RNGs, splitting only for matched exact-balance studies."""
@@ -33,7 +36,11 @@ def make_rng_streams(seed,split=False):
     return shared,shared,{"method":"legacy_shared_numpy_stream","root_seed":int(seed)}
 
 def execute(cfg):
-    eps_ref=float(cfg.lj_eps_AA)
+    # Reduced temperature unit: the shared WCA core energy, which is 1 for every campaign to
+    # date; eps_AA is only a fallback for configurations that do not set a core energy.
+    eps_ref=float(getattr(cfg,"lj_eps_core",None) or cfg.lj_eps_AA)
+    if eps_ref<=0.0:
+        raise ValueError("the reduced temperature reference energy must be positive")
     T_eq_star=getattr(cfg,"T_equilibrate",None)
     if T_eq_star is None:T_eq_star=cfg.temperature
     T_q_star=getattr(cfg,"T_quench",None)
@@ -57,6 +64,22 @@ def execute(cfg):
     mode_q_max=float(getattr(cfg,"mode_q_max",1.5))
     if record_modes and (mode_interval<1 or cfg.n_steps%mode_interval!=0):
         raise ValueError("mode_interval must be positive and divide n_steps")
+    marks_dynamic=bool(getattr(cfg,"marks_dynamic",False))
+    mark_params=None
+    if marks_dynamic:
+        mark_params=MarkDynamics(k_off=float(cfg.mark_k_off),k_on=float(cfg.mark_k_on),
+                                 k_fb=float(getattr(cfg,"mark_k_fb",0.0)),
+                                 r_c=float(getattr(cfg,"mark_r_c",1.5)),
+                                 n_half=float(getattr(cfg,"mark_n_half",6.0)),
+                                 hill=float(getattr(cfg,"mark_hill",2.0)),
+                                 interval_steps=int(getattr(cfg,"mark_interval",200)))
+        if cfg.n_steps%mark_params.interval_steps!=0:
+            raise ValueError("mark_interval must divide n_steps")
+    condensation_interval=int(getattr(cfg,"condensation_interval",0) or 0)
+    if condensation_interval<0 or (condensation_interval and cfg.n_steps%condensation_interval!=0):
+        raise ValueError("condensation_interval must be nonnegative and divide n_steps")
+    if condensation_interval and condensation_interval%int(cfg.snapshot_interval)!=0:
+        raise ValueError("condensation_interval must be a multiple of snapshot_interval")
     required_cache=[]
     if compute_density:
         required_cache.append(os.path.join(rd,"structure_factor.npz"))
@@ -64,6 +87,10 @@ def execute(cfg):
         required_cache.append(os.path.join(rd,"direct_structure_factor.npz"))
     if record_modes:
         required_cache.append(os.path.join(rd,"mode_amplitudes.npz"))
+    if marks_dynamic:
+        required_cache.append(os.path.join(rd,"marks.npz"))
+    if condensation_interval:
+        required_cache.append(os.path.join(rd,"condensation.csv"))
     if required_cache and all(os.path.exists(path) for path in required_cache) and getattr(cfg,"skip_if_cached",True):
         print(f"  cached: {rd} (skipping)")
         return rd
@@ -138,7 +165,8 @@ def execute(cfg):
     mode_extra={"enabled":False}
     if record_modes:
         mode_recorder=ModeAmplitudeRecorder(cfg.box_size,mode_q_max,
-                                            dtype=getattr(cfg,"mode_dtype","complex64"))
+                                            dtype=getattr(cfg,"mode_dtype","complex64"),
+                                            allow_type_changes=marks_dynamic)
         mode_extra={
             "enabled":True,
             "interval_steps":mode_interval,
@@ -172,7 +200,14 @@ def execute(cfg):
                                                   "random_streams":random_streams,
                                                   "initial_overlap_relaxation":overlap_info,
                                                   "direct_structure_factor":direct_extra,
-                                                  "mode_amplitudes":mode_extra})
+                                                  "mode_amplitudes":mode_extra,
+                                                  "marks":({"dynamic":True,**mark_params.as_dict(),
+                                                            "mark_rng_seed":int(cfg.seed)+7919}
+                                                           if marks_dynamic else {"dynamic":False}),
+                                                  "condensation":{"enabled":bool(condensation_interval),
+                                                                  "interval_steps":condensation_interval,
+                                                                  "r_c":float(getattr(cfg,"condensation_r_c",1.5)),
+                                                                  "n_dense":int(getattr(cfg,"condensation_n_dense",6))}})
     sys=build_openmm_system(types,mp)
     integ=make_langevin_integrator(T_eq_K,cfg.friction,cfg.dt,seed=cfg.seed)
     ctx=make_context(sys,integ,pos,cfg.box_size,platform_name=cfg.platform)
@@ -183,6 +218,11 @@ def execute(cfg):
         from openmm import unit
         integ.setTemperature(T_q_K*unit.kelvin)
     f,w=open_csv(rd)
+    state={"types":np.asarray(types).astype(np.int8).copy()}
+    mark_recorder=MarkRecorder(mark_params,N) if marks_dynamic else None
+    mark_rng=np.random.default_rng(int(cfg.seed)+7919) if marks_dynamic else None
+    cond_rows=[]
+    cond_r_c=float(getattr(cfg,"condensation_r_c",1.5));cond_n_dense=int(getattr(cfg,"condensation_n_dense",6))
     sf_steps=[];sf_k=None;sf_AA=[];sf_BB=[];sf_AB=[]
     traj_steps=[];traj_pos=[]
     grid_steps=[];grid_phiA=[];grid_phiB=[]
@@ -196,8 +236,8 @@ def execute(cfg):
             rg=compute_mean_Rg(p_arr,cfg.n_chains,cfg.chain_length)
             kstar=xi=Speak=float("nan")
             if cfg.compute_density:
-                phi_A=density_field_A(p_arr,types,cfg.box_size,cfg.grid_size)
-                phi_B=density_field_B(p_arr,types,cfg.box_size,cfg.grid_size)
+                phi_A=density_field_A(p_arr,state["types"],cfg.box_size,cfg.grid_size)
+                phi_B=density_field_B(p_arr,state["types"],cfg.box_size,cfg.grid_size)
                 obs=compute_all_observables(phi_A,phi_B,cfg.box_size)
                 kstar=obs["k_star"];xi=obs["xi_AA"];Speak=obs["S_AA_peak"]
                 if sf_k is None:
@@ -207,7 +247,10 @@ def execute(cfg):
                 if save_grids:
                     grid_steps.append(int(step));grid_phiA.append(phi_A);grid_phiB.append(phi_B)
             if direct_recorder is not None:
-                direct_recorder.observe(step,p_arr,types)
+                direct_recorder.observe(step,p_arr,state["types"])
+            if condensation_interval and step%condensation_interval==0:
+                row=condensation_summary(p_arr,state["types"],cfg.box_size,r_c=cond_r_c,n_dense=cond_n_dense)
+                cond_rows.append({"step":int(step),**row})
             if save_traj:
                 traj_steps.append(int(step));traj_pos.append(p_arr.copy())
             append_row(w,run_id,cfg.sequence,mp,cfg.kappa,cfg.pi,cfg.f_A,step,pe,ke,rg,T_inst_star,
@@ -216,10 +259,22 @@ def execute(cfg):
         mode_cb=None
         if mode_recorder is not None:
             def mode_cb(step,p_arr):
-                mode_recorder.observe(step,p_arr,types)
+                mode_recorder.observe(step,p_arr,state["types"])
+        mark_cb=None
+        if marks_dynamic:
+            dt_marks=float(cfg.dt)*mark_params.interval_steps
+            def mark_cb(step,p_arr):
+                n_B=local_B_counts(p_arr,state["types"],cfg.box_size,mark_params.r_c)
+                new_types,n_on,n_off=step_marks(state["types"],n_B,mark_params,dt_marks,mark_rng)
+                mark_recorder.observe(step,new_types,n_on,n_off,n_B)
+                if n_on or n_off:
+                    state["types"]=new_types
+                    update_types_in_context(sys,ctx,new_types)
         run_simulation(ctx,cfg.n_steps,cfg.snapshot_interval,callback=cb,
                        mode_interval=mode_interval if mode_recorder is not None else None,
-                       mode_callback=mode_cb)
+                       mode_callback=mode_cb,
+                       mark_interval=mark_params.interval_steps if marks_dynamic else None,
+                       mark_callback=mark_cb)
     finally:
         f.close()
     if cfg.compute_density and sf_k is not None:
@@ -237,8 +292,19 @@ def execute(cfg):
                            lj_eps_AB=float(cfg.lj_eps_AB),
                            T_quench_star=float(T_q_star),
                            seed=int(cfg.seed))
+    if mark_recorder is not None:
+        mark_recorder.save(os.path.join(rd,"marks.npz"),production_steps=int(cfg.n_steps),
+                           dt_ps=float(cfg.dt),initial_types=np.asarray(types).astype(np.int8),
+                           seed=int(cfg.seed),T_quench_star=float(T_q_star))
+    if cond_rows:
+        import csv as _csv
+        with open(os.path.join(rd,"condensation.csv"),"w",newline="") as ch:
+            cw=_csv.DictWriter(ch,fieldnames=list(CONDENSATION_FIELDS),lineterminator="\n")
+            cw.writeheader()
+            for row in cond_rows:
+                cw.writerow({k:row.get(k,"") for k in CONDENSATION_FIELDS})
     if save_traj and traj_pos:
-        save_trajectory(rd,traj_steps,traj_pos,types,cfg.box_size)
+        save_trajectory(rd,traj_steps,traj_pos,state["types"],cfg.box_size)
     if save_grids and grid_phiA:
         save_density_grids(rd,grid_steps,grid_phiA,grid_phiB)
     return rd
@@ -300,6 +366,19 @@ def parse_args():
     p.add_argument("--mode_q_max",type=float,default=1.5,
                    help="largest |q| recorded in mode_amplitudes.npz")
     p.add_argument("--mode_dtype",type=str,default="complex64",choices=["complex64","complex128"])
+    p.add_argument("--marks_dynamic",action="store_true",
+                   help="let marks turn over (k_off) and be written with reader-writer feedback during the run")
+    p.add_argument("--mark_k_off",type=float,default=1e-3,help="B->A turnover rate per tau")
+    p.add_argument("--mark_k_on",type=float,default=1e-3,help="basal A->B writing rate per tau")
+    p.add_argument("--mark_k_fb",type=float,default=0.0,help="feedback gain: extra A->B rate at saturating local B count")
+    p.add_argument("--mark_r_c",type=float,default=1.5,help="neighbor radius for the local B count")
+    p.add_argument("--mark_n_half",type=float,default=6.0,help="Hill half-saturation B-neighbor count")
+    p.add_argument("--mark_hill",type=float,default=2.0)
+    p.add_argument("--mark_interval",type=int,default=200,help="steps between mark updates")
+    p.add_argument("--condensation_interval",type=int,default=0,
+                   help="steps between condensation summaries (0 disables; multiple of snapshot_interval)")
+    p.add_argument("--condensation_r_c",type=float,default=1.5)
+    p.add_argument("--condensation_n_dense",type=int,default=6)
     return p.parse_args()
 
 def main():

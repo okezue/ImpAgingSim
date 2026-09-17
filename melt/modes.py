@@ -79,7 +79,8 @@ def partial_structure_factors_from_amplitudes(
 class ModeAmplitudeRecorder:
     """Accumulate ``rho_A(q,t)`` and ``rho_B(q,t)`` frames and write ``mode_amplitudes.npz``."""
 
-    def __init__(self, box_size: float, q_max: float, dtype: str = "complex64") -> None:
+    def __init__(self, box_size: float, q_max: float, dtype: str = "complex64",
+                 allow_type_changes: bool = False) -> None:
         self.box_size = float(box_size)
         self.q_max = float(q_max)
         self.modes = reciprocal_modes(box_size, q_max)
@@ -87,9 +88,12 @@ class ModeAmplitudeRecorder:
         if dtype not in ("complex64", "complex128"):
             raise ValueError(f"dtype must be complex64 or complex128, got {dtype}")
         self.dtype = np.dtype(dtype)
+        self.allow_type_changes = bool(allow_type_changes)
         self.steps: list[int] = []
         self._rho_A: list[np.ndarray] = []
         self._rho_B: list[np.ndarray] = []
+        self._n_A: list[int] = []
+        self._n_B: list[int] = []
         self.n_A: int | None = None
         self.n_B: int | None = None
 
@@ -103,9 +107,11 @@ class ModeAmplitudeRecorder:
         n_B = int(bead_types.size - n_A)
         if self.n_A is None:
             self.n_A, self.n_B = n_A, n_B
-        elif (n_A, n_B) != (self.n_A, self.n_B):
+        elif (n_A, n_B) != (self.n_A, self.n_B) and not self.allow_type_changes:
             raise ValueError("bead type counts changed between frames")
         self.steps.append(step_i)
+        self._n_A.append(n_A)
+        self._n_B.append(n_B)
         self._rho_A.append(rho_A.astype(self.dtype))
         self._rho_B.append(rho_B.astype(self.dtype))
 
@@ -130,6 +136,8 @@ class ModeAmplitudeRecorder:
             "shell_degeneracy": self.modes.shell_degeneracy,
             "n_A": np.asarray(int(self.n_A)),
             "n_B": np.asarray(int(self.n_B)),
+            "n_A_t": np.asarray(self._n_A, dtype=np.int64),
+            "n_B_t": np.asarray(self._n_B, dtype=np.int64),
             "n_total": np.asarray(int(self.n_A + self.n_B)),
             "box_size_nm": np.asarray(self.box_size),
             "q_max_inverse_nm": np.asarray(self.q_max),
