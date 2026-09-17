@@ -101,6 +101,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--record-id", type=int, default=None, help="record to version (default: latest)")
     parser.add_argument("--draft-id", type=int, default=None,
                         help="reuse an existing draft deposition instead of creating a new version")
+    parser.add_argument("--new-record", default=None, metavar="TITLE",
+                        help="create a standalone new record with this title instead of versioning the main one")
+    parser.add_argument("--keywords", nargs="*", default=None, help="keywords for a new record")
+    parser.add_argument("--related", action="append", default=[],
+                        help="related identifier for a new record, as RELATION:IDENTIFIER (e.g. isSupplementTo:https://github.com/...)")
+    parser.add_argument("--remove-file", action="append", default=[], help="file name to delete from the draft")
     args = parser.parse_args(argv)
     token = os.environ.get("ZENODO_TOKEN")
     if not token:
@@ -115,6 +121,23 @@ def main(argv: list[str] | None = None) -> int:
         draft = _request("GET", f"{API}/deposit/depositions/{args.draft_id}", token)
         if draft.get("submitted"):
             raise RuntimeError(f"deposition {args.draft_id} is already published")
+    elif args.new_record:
+        print(f"creating standalone record: {args.new_record}")
+        draft = _request("POST", f"{API}/deposit/depositions", token, data=b"{}", content_type="application/json")
+        draft["metadata"] = {
+            "upload_type": "dataset",
+            "title": args.new_record,
+            "creators": [{"name": "Bell, Alexander Okezue", "affiliation": "Stanford University",
+                          "orcid": "0009-0004-9419-3962"}],
+            "license": "cc-by-4.0",
+            "access_right": "open",
+            "keywords": args.keywords or [],
+            "related_identifiers": [
+                {"relation": item.split(":", 1)[0], "identifier": item.split(":", 1)[1]} for item in args.related
+            ],
+        }
+        if not args.description_file:
+            raise RuntimeError("--new-record requires --description-file")
     else:
         record_id = args.record_id or latest_record_id()
         print(f"creating new version of record {record_id}")
@@ -125,6 +148,11 @@ def main(argv: list[str] | None = None) -> int:
     print(f"draft deposition {draft_id}")
 
     existing = {f["filename"]: f for f in draft.get("files", [])}
+    for name in args.remove_file:
+        if name in existing:
+            print(f"  removing {name}")
+            _request("DELETE", f"{API}/deposit/depositions/{draft_id}/files/{existing[name]['id']}", token)
+            del existing[name]
     for path in args.file:
         name = os.path.basename(path)
         if name in existing:
