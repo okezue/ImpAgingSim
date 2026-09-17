@@ -341,7 +341,7 @@ measured `R_g` at `eps_AB = 1`. For a symmetric blend it reproduces
 
 ### 4.5 Results of the sweep program
 
-Fifteen campaigns, 1,072 production runs, all with the 144 x 40 production
+Seventeen campaigns, 1,592 production runs, all with the 144 x 40 production
 geometry unless stated (details, tables and figures in the `analysis/`
 subdirectories named below; raw output in the Zenodo record, version 4).
 
@@ -433,6 +433,26 @@ the B fraction ran away. The campaign scans turnover against feedback at
 two attractions bracketing the condensation boundary and asks the headline
 questions of the chromatin note: what happens to transient blobs, and under
 what conditions a transient blob is stabilized.
+
+**Protein result (360 runs).** Whether a condensate forms is decided by the
+sequence pattern, not the attraction: the boundary in the `eps_BB` x `kappa`
+plane is a horizontal line at `kappa ~ 0.5`. Uncorrelated hydrophobic
+patterns never phase separate (at `eps_BB = 3` the largest cluster holds 6%
+of B; the chains collapse individually into ~40 small clusters and shrink by
+10-20%), while blocky patterns (`kappa >= 0.75`) form a shared condensate
+already at `eps_BB = 0.5` with the chains keeping their open size. Strong
+attraction fragments the condensate kinetically. [`analysis/protein_condensation/`]
+
+**Chromatin result (160 runs).** Without feedback, marked blobs are
+transient and their lifetime, measured by the two-time B-density
+correlation, is set by mark turnover (16-290 tau, tracking the mark memory
+time `1/(k_on + k_off)`). Feedback stabilizes a blob once
+`k_fb / k_off >= ~10` (marginal at 3), a diagonal boundary that is the same
+at both attractions. A stabilized blob then accretes marks until the B
+fraction reaches a plateau set by the rate ratio alone (0.75 at 10, 0.93 at
+30, full runaway above 100): the minimal feedback model has no intrinsic
+domain-size control, which is the first thing the theory has to supply.
+[`analysis/chromatin_memory/`]
 
 ---
 
