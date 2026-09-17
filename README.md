@@ -553,7 +553,7 @@ output is too large for git and lives on Zenodo.
 
 | file | size | contents |
 |---|---|---|
-| `incompatibility_sweep_campaigns.tar` | ~32 GB | [version 4.0.0] all fifteen `eps_AB` sweep, temperature, kappa and coarsening campaigns of section 4: per run `mode_amplitudes.npz` (exact box modes for the dynamic structure factor), `snapshots.csv`, `structure_factor.npz`, `meta.json`, hashed `completion.json`; per campaign `manifest.json` and the `analysis/` tables and figures |
+| `sweep_*.tar` (five archives) | 37 GB | [version 4.0.0] all fifteen `eps_AB` sweep, temperature, kappa and coarsening campaigns of section 4: per run `mode_amplitudes.npz` (exact box modes for the dynamic structure factor), `snapshots.csv`, `structure_factor.npz`, `meta.json`, hashed `completion.json`; per campaign `manifest.json` and the `analysis/` tables and figures |
 | `heteropolymer_microphase_data.tar` | 3,328 MB | full raw output of the production campaigns, mirroring the AWS results bucket. Per run `meta.json`, `snapshots.csv`, `structure_factor.npz`, and `trajectory.npz` where applicable |
 | `complete_local_archive.tar` | 106 MB | the earlier single chain study, robustness sweeps, development runs, manuscript builds and working notes |
 | `fixed_density_campaign.tar` | 37 MB | the 30 run fixed density finite size study, plus the superseded first execution kept for provenance |
@@ -561,6 +561,6 @@ output is too large for git and lives on Zenodo.
 
 A fresh clone gives you the code and the derived tables. Reproducing figures
 from raw trajectories requires pulling the tarballs from the DOI:
-`python scripts/fetch_zenodo.py --only incompatibility_sweep_campaigns.tar`
+`python scripts/fetch_zenodo.py --only sweep_kappa_boundary_and_coarsening.tar`
 downloads and checksum-verifies a file; `scripts/publish_zenodo.py` creates
 the next version (token via `ZENODO_TOKEN`).
