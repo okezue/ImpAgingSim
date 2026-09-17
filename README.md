@@ -399,6 +399,41 @@ deeper quench (`eps_AB = 0.5`) arrests after ~10,000 tau at a finite domain
 spacing of ~16 sigma with `S_psi(q*) ~ 100`. Stronger incompatibility gives a
 smaller, frozen pattern. [`analysis/coarsening/`]
 
+### 4.6 Applications: sequence-programmed condensation and epigenetic memory
+
+The melt of sections 1-4 is symmetric: A and B demix into compartments of
+equal density. The two applications the model is meant to serve need the
+asymmetric energetics "B loves B, A-B neutral" in a box with free volume, so
+that B condenses, expels the implicit solvent, and leaves A open. Both are
+run by `melt.condensate_scan` with `eps_AA = eps_AB = 0`, a shared WCA core,
+bead density 0.2 (`L = 30.7 sigma` for 144 x 40 beads) and `T* = 1`; the
+observables (`melt.clusters`) are the B contact clusters: the fraction of B
+in the largest cluster, the number of clusters, the B-B coordination, the
+fraction of B beads in a dense environment, plus the B-density spectrum and
+its two-time correlation `F_BB(q*, t)` from the recorded box modes.
+
+**Protein mode (quenched sequence).** B is hydrophobic, A polar. The
+campaign scans the B-B attraction `eps_BB` against the sequence correlation
+`kappa` (blockiness of the hydrophobic pattern) at two compositions and asks
+when the chains condense and into what: one dense condensate, many
+micelle-like clusters, or single-chain collapse.
+
+**Chromatin mode (dynamic marks, `--marks-dynamic`).** B is a marked
+nucleosome bound by a reader protein, A an unmarked one. Marks become
+dynamical variables (`melt.marks`): every `mark_interval` steps a B bead
+loses its mark at rate `k_off` and an A bead gains one at rate
+`k_on + k_fb H(n_B)`, where `n_B` counts marked beads within `r_c = 1.5 sigma`
+and `H` is a saturating Hill function. `k_on` is chosen so that without
+feedback the B fraction relaxes to its initial value; `k_fb` is the
+reader-writer feedback gain (writers are recruited where marks have
+condensed). Types are pushed into the running OpenMM context in place, the
+full mark history is written to `marks.npz`, and the analysis reports the
+mark autocorrelation time (memory), the persistence fraction, and whether
+the B fraction ran away. The campaign scans turnover against feedback at
+two attractions bracketing the condensation boundary and asks the headline
+questions of the chromatin note: what happens to transient blobs, and under
+what conditions a transient blob is stabilized.
+
 ---
 
 ## 5. Repository layout
@@ -422,6 +457,10 @@ melt/                       the simulation engine
   campaign.py               shared restartable-campaign machinery (manifest, hashes, locks)
   epsab_scan.py             eps_AB sweep at fixed kappa, shardable and parallel
   epsab_analysis.py         sweep aggregation, transition estimators, RPA comparison, figures
+  marks.py                  dynamic epigenetic marks: turnover, writing, reader-writer feedback
+  clusters.py               B contact clusters and local-density condensation observables
+  condensate_scan.py        protein (quenched) and chromatin (dynamic-mark) condensation campaigns
+  condensate_analysis.py    condensation aggregation, blob lifetime, mark memory, phase diagrams
   fixed_density_size_scan.py    fixed density campaign driver
   fixed_density_analysis.py     deterministic aggregation for that campaign
   analyze.py  deep_analysis.py  viz.py  io.py  model.py
@@ -433,7 +472,7 @@ scripts/modes_from_trajectory.py   archived trajectory.npz -> mode_amplitudes.np
 analysis/  analysis_aws/    derived tables and figures
 aws/                        EC2 campaign scripts, see aws/README.md
 sherlock/                   SLURM kit for Stanford Sherlock, see sherlock/README.md
-tests/                      113 tests across melt, fixed density, modes, RPA and the sweep
+tests/                      136 tests across melt, fixed density, modes, RPA, sweeps, marks and condensation
 output/                     run outputs, large directories are gitignored
 archive/single_chain_mc/    superseded code, see below
 ```
