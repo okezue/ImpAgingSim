@@ -513,17 +513,21 @@ turnover and feedback at $\epsilon_{BB}=1$ and 1.5, starting from
 $f_B=0.3$ and $\kappa=0.5$: 40 conditions, four seeds each,
 160 runs of 12,500 tau. Full mark histories are recorded in `marks.npz`.
 
-![Feedback-turnover heatmaps of marked-cluster connectivity, measured density and site-mark correlation times, and marked fraction versus the feedback-to-turnover ratio.](docs/figures/chromatin-memory-results.svg)
+![Paired attraction values in one feedback-turnover heatmap, density relaxation separating from site-mark turnover, no-feedback correlation times, and marked fraction versus feedback-to-turnover ratio.](docs/figures/chromatin-memory-results.svg)
 
-**Figure 8. Collective organization under mark turnover.** A–B show the
-largest marked-cluster fraction for the two attractions. C compares measured
-first $1/e$ times of B-density correlations at each run's spectral peak
-with time-centered site-mark correlations (site-mark curve at $\epsilon_{BB}=1$),
-without feedback. D plots the
-trailing-half marked fraction for every condition; points are not a fitted
-ratio-only law. Means and SEM use four seeds, each analyzed over its final
-6,250 tau. [Source tables](analysis/chromatin_memory/per_condition.csv)
-and [regeneration details](docs/figures/README.md).
+**Figure 8. Collective organization under mark turnover.** A pairs the two
+attractions in each cell: upper-left $\epsilon_{BB}=1$, lower-right 1.5;
+color shows the largest marked-cluster fraction. B compares B-density and
+site-mark $1/e$ times at $k_{\mathrm{off}}=0.01\tau^{-1}$ and
+$\epsilon_{BB}=1.5$. Upward arrows mark no density crossing in any of four
+seeds before the 3,122.5-tau lag limit; they are lower bounds, not finite
+estimates. C shows correlation times without feedback (site-mark curve at
+$\epsilon_{BB}=1$). Density times use each run's spectral peak; site-mark
+correlations subtract each site's time mean. D shows marked fraction for
+every condition, without a ratio-only fit. Means and SEM use four seeds,
+each analyzed over its final 6,250 tau.
+[Source tables](analysis/chromatin_memory/per_condition.csv) and
+[regeneration details](docs/figures/README.md).
 
 **Without feedback, density correlations decay faster as turnover increases.**
 The measured B-density relaxation times span 16–290 tau. These are collective
