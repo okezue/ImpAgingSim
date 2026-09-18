@@ -1,6 +1,6 @@
 # ImpAgingSim
 
-Sequence correlations as a design axis for microphase structure in A/B heteropolymer melts. Work with the Spakowitz Research Group.
+Sequence correlations as a design axis for microphase structure in A/B heteropolymer melts. 
 
 The project asks a single question. If you hold composition, chemistry, chain
 length and density fixed, and change only how **correlated the A/B pattern is
