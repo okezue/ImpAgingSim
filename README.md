@@ -618,6 +618,13 @@ output is too large for git and lives on Zenodo.
 | `fixed_density_campaign.tar` | 37 MB | the 30 run fixed density finite size study, plus the superseded first execution kept for provenance |
 | `Supplementary_Data_1_source_tables.zip` | 25 MB | per figure source and sensitivity tables, plus figure generation scripts |
 
+The two applications of section 4.6 are separate records:
+
+| record | DOI | contents |
+|---|---|---|
+| Sequence-programmed condensation of A/B copolymers | [10.5281/zenodo.22819768](https://doi.org/10.5281/zenodo.22819768) | `protein_condensation_data.tar` (14.5 GB): the 360-run `eps_BB` x `kappa` x composition campaign with cluster statistics, box modes and analysis |
+| Epigenetic memory in a copolymer model of chromatin | [10.5281/zenodo.22819770](https://doi.org/10.5281/zenodo.22819770) | `chromatin_memory_data.tar` (13.5 GB): the 160-run `k_off` x `k_fb` campaign with full mark histories (`marks.npz`), cluster statistics, box modes and analysis |
+
 A fresh clone gives you the code and the derived tables. Reproducing figures
 from raw trajectories requires pulling the tarballs from the DOI:
 `python scripts/fetch_zenodo.py --only sweep_kappa_boundary_and_coarsening.tar`
