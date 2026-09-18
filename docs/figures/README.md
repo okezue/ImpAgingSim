@@ -70,12 +70,22 @@ mean, with no smoothing or fitted phase boundary. Attraction-axis cell widths fo
 the sampled numerical spacing.
 
 The chromatin results use 160 runs, grouped into 40 conditions. The final 6,250 tau
-of each run form the analysis window. The two heatmaps use categorical cells at the
-sampled turnover and feedback rates (including zero feedback); their shared color
-scale is the largest marked-cluster fraction. The correlation-time panel shows
-first 1/e times of the B-density correlation at each run's selected spectral peak,
-and the time-centered site-mark correlation. The site-mark curve uses eps_BB=1;
-with no feedback its kinetics are independent of the spatial neighborhood. The
+of each run form the analysis window. Panel A combines the two attractions in
+one categorical heatmap: each cell's upper-left triangle shows eps_BB=1 and its
+lower-right triangle shows eps_BB=1.5, with the same 0–1 color scale. Both measured
+values are retained; they are not averaged. The two attractions show nearly the
+same sampled connectivity boundary.
+
+Panel B shows first 1/e times at fixed k_off=0.01 and eps_BB=1.5. Three feedback
+conditions have finite B-density crossings in every seed. The remaining two have
+no crossing in any seed; upward arrows start at the 3,122.5-tau evaluated lag
+limit, derived from the archived manifest's sampling protocol. They are lower
+bounds, with no invented finite estimate, SEM, or connecting curve. Site-mark
+times remain finite. Panel C shows the no-feedback times; its site-mark curve
+uses eps_BB=1, where mark kinetics are independent of the spatial neighborhood.
+Density times use each run's selected spectral peak and an uncentered density
+correlation, whereas site-mark correlations are time-centered per site. Thus the
+comparison concerns different observables and is not at a common wavevector. The
 mark-fraction panel shows every condition separately, without a ratio-only fit;
 its horizontal scale is logarithmic above 0.3 and linear near zero.
 

@@ -4,7 +4,9 @@
 Input: analysis/chromatin_memory/{per_condition,per_run}.csv.
 All points/cells are measured condition means; error bars are seed SEM (n=4).
 Cluster and mark-fraction means use the trailing 6,250 tau of each 12,500 tau run.
-Panel C shows measured first 1/e crossing times, not invented correlation curves.
+Panel A pairs both attractions within each cell. Panel B separates density
+relaxation from site-mark fluctuations and shows unobserved density crossings
+as lower bounds. Panel C shows no-feedback first 1/e crossing times.
 The site-mark observable is time-centered per site. Its finite-window estimate
 should not be equated to the infinite-duration kinetic expectation.
 Panel D plots every condition without fitting a universal ratio-only law.
@@ -17,13 +19,16 @@ is represented in this figure.
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.collections import PolyCollection
+from matplotlib.cm import ScalarMappable
 from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
 import numpy as np
 
@@ -61,8 +66,12 @@ def verify_summaries(conditions, runs):
         group = select(runs, **{key: row[key] for key in ("eps_BB", "k_off", "k_fb")})
         assert len(group) == int(row["n_seeds"]) == 4
         fields = ["f_B", "largest_B_cluster_fraction"]
-        if row["k_fb"] == 0:
-            fields += ["tau_BB_peak", "mark_memory_time"]
+        if row["k_fb"] == 0 or (row["k_off"] == 0.01 and row["eps_BB"] == 1.5):
+            fields += ["mark_memory_time"]
+            if np.isfinite(row["tau_BB_peak_mean"]):
+                fields += ["tau_BB_peak"]
+            else:
+                assert all(not np.isfinite(seed["tau_BB_peak"]) for seed in group)
         for field in fields:
             values = np.array([seed[field] for seed in group])
             assert np.isfinite(values).all()
@@ -93,48 +102,83 @@ def main():
         "svg.hashsalt": "ImpAgingSim-chromatin-v1", "mathtext.fontset": "dejavusans",
     })
     fig = plt.figure(figsize=(12, 7.7))
-    a = fig.add_axes((0.085, 0.640, 0.335, 0.280))
-    b = fig.add_axes((0.565, 0.640, 0.335, 0.280))
+    a = fig.add_axes((0.085, 0.645, 0.300, 0.280))
+    b = fig.add_axes((0.565, 0.645, 0.355, 0.280))
     c = fig.add_axes((0.085, 0.125, 0.355, 0.365))
     d = fig.add_axes((0.565, 0.125, 0.355, 0.365))
-
-    for label, x, y, title in (
-        ("A", 0.030, 0.953, r"$\epsilon_{BB}=1.0$"),
-        ("B", 0.510, 0.953, r"$\epsilon_{BB}=1.5$"),
-        ("C", 0.030, 0.515, ""),
-        ("D", 0.510, 0.515, ""),
-    ):
+    for label, x, y in (("A", 0.030, 0.958), ("B", 0.510, 0.958),
+                        ("C", 0.030, 0.515), ("D", 0.510, 0.515)):
         fig.text(x, y, label, fontsize=17, weight="bold")
-        fig.text(x + 0.055, y, title, fontsize=13)
 
     koff = sorted({row["k_off"] for row in conditions})
     kfb = sorted({row["k_fb"] for row in conditions})
     cmap = LinearSegmentedColormap.from_list("marked_connectivity", ["#F4F0FA", "#C6B5DD", PURPLE])
-    for ax, eps in ((a, 1.0), (b, 1.5)):
-        values = np.array([
-            [select(conditions, eps_BB=eps, k_off=off, k_fb=fb)[0]["largest_B_cluster_fraction_mean"]
-             for fb in kfb] for off in koff
-        ])
-        heat = ax.pcolormesh(np.arange(len(kfb) + 1) - 0.5, np.arange(len(koff) + 1) - 0.5,
-                             values, vmin=0, vmax=1, cmap=cmap, shading="flat",
-                             edgecolors="white", linewidth=1.2, rasterized=False)
-        ax.set_xticks(range(len(kfb)), ["0", "0.01", "0.03", "0.1", "0.3"])
-        ax.set_yticks(range(len(koff)), ["0.001", "0.003", "0.01", "0.03"])
-        ax.set_xticks(np.arange(-0.5, len(kfb), 1), minor=True)
-        ax.set_yticks(np.arange(-0.5, len(koff), 1), minor=True)
-        ax.grid(which="minor", color="white", linewidth=1.5)
-        ax.tick_params(which="minor", bottom=False, left=False)
-        ax.tick_params(which="major", length=0, pad=6, labelsize=10.5)
-        ax.set_xlabel(r"Feedback $k_{\rm fb}$ ($\tau^{-1}$)", labelpad=8)
-        ax.set_ylabel(r"Turnover $k_{\rm off}$ ($\tau^{-1}$)", labelpad=8)
-        for spine in ax.spines.values():
-            spine.set_visible(False)
-    colorbar_ax = fig.add_axes((0.922, 0.640, 0.014, 0.280))
-    colorbar = fig.colorbar(heat, cax=colorbar_ax, ticks=[0, 0.5, 1])
+    norm = Normalize(0, 1)
+    # Paired measured values, not their mean: upper-left epsilon=1,
+    # lower-right epsilon=1.5. Each cell is a sampled categorical condition.
+    triangles, colors = [], []
+    for j, off in enumerate(koff):
+        for i, fb in enumerate(kfb):
+            lo, hi, bot, top = i - 0.5, i + 0.5, j - 0.5, j + 0.5
+            triangles.extend([[(lo, bot), (lo, top), (hi, top)],
+                              [(lo, bot), (hi, top), (hi, bot)]])
+            for eps in (1.0, 1.5):
+                value = select(conditions, eps_BB=eps, k_off=off, k_fb=fb)[0]["largest_B_cluster_fraction_mean"]
+                colors.append(cmap(norm(value)))
+    a.add_collection(PolyCollection(triangles, facecolors=colors, edgecolors="white", linewidths=0.8))
+    a.set_xlim(-0.5, len(kfb) - 0.5)
+    a.set_ylim(-0.5, len(koff) - 0.5)
+    a.set_xticks(range(len(kfb)), ["0", "0.01", "0.03", "0.1", "0.3"])
+    a.set_yticks(range(len(koff)), ["0.001", "0.003", "0.01", "0.03"])
+    a.tick_params(length=0, pad=6, labelsize=10.5)
+    a.set_xlabel(r"Feedback $k_{\rm fb}$ ($\tau^{-1}$)", labelpad=8)
+    a.set_ylabel(r"Turnover $k_{\rm off}$ ($\tau^{-1}$)", labelpad=8)
+    for spine in a.spines.values():
+        spine.set_visible(False)
+    colorbar_ax = fig.add_axes((0.400, 0.645, 0.013, 0.280))
+    colorbar = fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), cax=colorbar_ax, ticks=[0, 0.5, 1])
     colorbar.solids.set_rasterized(False)
     colorbar.outline.set_visible(False)
     colorbar.ax.tick_params(length=0, labelsize=10)
-    colorbar.set_label("Largest-cluster fraction", fontsize=10.5, color=MUTED, labelpad=8)
+    colorbar.set_label("Largest-cluster fraction", fontsize=10, color=MUTED, labelpad=7)
+
+    # Show actual density relaxation times against site-mark times. The unobserved
+    # density crossings are censored at the evaluated lag limit, not finite means.
+    settings = json.loads((SOURCE / "manifest.json").read_text())["simulation_settings"]
+    saved_steps = np.arange(settings["mode_interval"], settings["n_steps"] + 1, settings["mode_interval"])
+    n_frames = np.count_nonzero(saved_steps > 0.5 * settings["n_steps"])
+    lag_limit = int(0.5 * (n_frames - 1)) * settings["mode_interval"] * settings["dt"]
+    assert lag_limit == 3122.5
+    rows = sorted(select(conditions, eps_BB=1.5, k_off=0.01), key=lambda row: row["k_fb"])
+    axis_style(b)
+    b.set_xscale("symlog", linthresh=0.005, linscale=0.6)
+    b.set_yscale("log")
+    b.set_xlim(-0.0005, 0.44)
+    b.set_ylim(4, 6500)
+    b.set_xticks(kfb, ["0", "0.01", "0.03", "0.1", "0.3"])
+    b.xaxis.set_minor_locator(NullLocator())
+    b.set_yticks([10, 100, 1000, lag_limit], ["10", "100", "1,000", "3,122.5"])
+    b.yaxis.set_minor_locator(NullLocator())
+    finite = [row for row in rows if np.isfinite(row["tau_BB_peak_mean"])]
+    censored = [row for row in rows if not np.isfinite(row["tau_BB_peak_mean"])]
+    b.errorbar([r["k_fb"] for r in finite], [r["tau_BB_peak_mean"] for r in finite],
+               yerr=[r["tau_BB_peak_sem"] for r in finite], color=ORANGE, marker="s",
+               markersize=5.3, linewidth=1.7, capsize=3, elinewidth=1,
+               markeredgecolor="white", markeredgewidth=0.6, label="B density")
+    b.errorbar([r["k_fb"] for r in rows], [r["mark_memory_time_mean"] for r in rows],
+               yerr=[r["mark_memory_time_sem"] for r in rows], color=INK, marker="D",
+               linestyle=(0, (3, 2)), markersize=4.5, linewidth=1.5, capsize=3,
+               markeredgecolor="white", markeredgewidth=0.6, label="Site marks")
+    b.axhline(lag_limit, color=MUTED, linewidth=0.8, linestyle=(0, (3, 3)), zorder=0)
+    for row in censored:
+        x = row["k_fb"]
+        b.plot(x, lag_limit, marker="_", color=ORANGE, markersize=9, markeredgewidth=1.4)
+        b.annotate("", xy=(x, 5800), xytext=(x, lag_limit),
+                   arrowprops={"arrowstyle": "-|>", "lw": 1.4, "color": ORANGE})
+    b.set_xlabel(r"Feedback $k_{\rm fb}$ ($\tau^{-1}$)", labelpad=8)
+    b.set_ylabel(r"$1/e$ time ($\tau$)", labelpad=8)
+    b.legend(loc="upper left", frameon=False, fontsize=9.5, handlelength=2.1,
+             borderaxespad=0.3, labelspacing=0.25)
 
     axis_style(c)
     c.set_xscale("log")
@@ -186,7 +230,10 @@ def main():
 
     description = (
         "Dynamic-label polymer proxy inspired by chromatin: 160 simulations, four seeds "
-        "per condition. A and B: fraction of B beads in the largest contact cluster. "
+        "per condition. A: each heatmap cell pairs epsilon_BB=1 in its upper-left "
+        "and epsilon_BB=1.5 in its lower-right triangle. B: density and site-mark "
+        "1/e times at k_off=0.01 and epsilon_BB=1.5; upward arrows are lower "
+        "bounds at the 3122.5-tau evaluated lag limit, not finite relaxation estimates. "
         "C: measured 1/e times of B-density and site-mark correlations without feedback. "
         "D: trailing-half mean marked fraction versus the feedback/turnover ratio. "
         "Error bars are across-seed SEM; no raw correlation curves or biological claims "
