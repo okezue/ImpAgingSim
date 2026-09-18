@@ -9,9 +9,21 @@ change? The answer is that it changes by roughly two orders of magnitude in
 the composition structure factor peak, and that a one chain sequence statistic
 predicts most of it.
 
-All simulation data is archived on Zenodo at
+Sections 1-3 describe the model and the paper's results. Section 4 continues
+the program: where the mixed -> demixed transition sits and how it depends on
+sequence correlation, the composition dynamic structure factor for comparison
+with theory, and two applications of the model with asymmetric energetics,
+sequence-programmed condensation of copolymers and epigenetic memory in a
+chromatin fiber with dynamic marks. Every study has a findings note under
+[`analysis/`](analysis/README.md).
+
+All simulation data is archived on Zenodo: the melt archive at
 **[10.5281/zenodo.20499120](https://doi.org/10.5281/zenodo.20499120)**
-(concept DOI, always resolves to the newest version). See
+(concept DOI, always resolves to the newest version, currently 4.0.0), the
+copolymer condensation dataset at
+[10.5281/zenodo.22819768](https://doi.org/10.5281/zenodo.22819768) and the
+chromatin epigenetic-memory dataset at
+[10.5281/zenodo.22819770](https://doi.org/10.5281/zenodo.22819770). See
 [Data availability](#data-availability).
 
 ---
@@ -489,10 +501,11 @@ docs/figures/              README SVGs, PNG exports, and figure provenance
 scripts/render_*_figure*   reproducible README figure generators
 scripts/fetch_zenodo.py    download and verify the Zenodo archive
 scripts/modes_from_trajectory.py   archived trajectory.npz -> mode_amplitudes.npz
-analysis/  analysis_aws/    derived tables and figures
+analysis/                   derived tables and figures, one directory per study; see analysis/README.md
+analysis_aws/               AWS campaign tables of the paper
 aws/                        EC2 campaign scripts, see aws/README.md
 sherlock/                   SLURM kit for Stanford Sherlock, see sherlock/README.md
-tests/                      136 tests across melt, fixed density, modes, RPA, sweeps, marks and condensation
+tests/                      138 tests across melt, fixed density, modes, RPA, sweeps, marks and condensation
 output/                     run outputs, large directories are gitignored
 archive/single_chain_mc/    superseded code, see below
 ```
@@ -612,7 +625,7 @@ output is too large for git and lives on Zenodo.
 
 | file | size | contents |
 |---|---|---|
-| `sweep_*.tar` (five archives) | 37 GB | [version 4.0.0] all fifteen `eps_AB` sweep, temperature, kappa and coarsening campaigns of section 4: per run `mode_amplitudes.npz` (exact box modes for the dynamic structure factor), `snapshots.csv`, `structure_factor.npz`, `meta.json`, hashed `completion.json`; per campaign `manifest.json` and the `analysis/` tables and figures |
+| `sweep_*.tar` (five archives) | 39 GB | [version 4.0.0] all fifteen `eps_AB` sweep, temperature, kappa and coarsening campaigns of section 4: per run `mode_amplitudes.npz` (exact box modes for the dynamic structure factor), `snapshots.csv`, `structure_factor.npz`, `meta.json`, hashed `completion.json`; per campaign `manifest.json` and the `analysis/` tables and figures |
 | `heteropolymer_microphase_data.tar` | 3,328 MB | full raw output of the production campaigns, mirroring the AWS results bucket. Per run `meta.json`, `snapshots.csv`, `structure_factor.npz`, and `trajectory.npz` where applicable |
 | `complete_local_archive.tar` | 106 MB | the earlier single chain study, robustness sweeps, development runs, manuscript builds and working notes |
 | `fixed_density_campaign.tar` | 37 MB | the 30 run fixed density finite size study, plus the superseded first execution kept for provenance |
