@@ -1,0 +1,83 @@
+{
+  "verified_on": "2026-09-18",
+  "records": [
+    {
+      "record": 22819768,
+      "url": "https://zenodo.org/records/22819768",
+      "archive": "protein_condensation_data.tar",
+      "method": "HTTP 206 ranges, verified Content-Range and byte count; tar member headers checked using Python tarfile checksum parser; file bytes compared against GitHub checkout",
+      "comparison_git_commit": "81532887abaec462e712321ada698e6359e99e25",
+      "members": [
+        {
+          "archive_path": "README.md",
+          "bytes": 3934,
+          "sha256": "b455995901fceaeea3d8884a4c1c612f5ad57934471e9d69404764777eb641e8",
+          "identical_to_comparison_commit": true
+        },
+        {
+          "archive_path": "protein_condensation/manifest.json",
+          "bytes": 132142,
+          "sha256": "5223b815483361f9a8e259ff1b45b235f9769c303a547fdeaa02cc0262e9ac35",
+          "identical_to_comparison_commit": true
+        },
+        {
+          "archive_path": "protein_condensation/analysis/per_condition.csv",
+          "bytes": 58827,
+          "sha256": "6a28aba07beae9f367557d21b68f3eb67c37448a173a462b47fe0b321c1774dd",
+          "identical_to_comparison_commit": true
+        },
+        {
+          "archive_path": "protein_condensation/analysis/per_run.csv",
+          "bytes": 123482,
+          "sha256": "af163f48fc1e5c99e93fc473f5029cf3089cfef2973a8f304494e41447ccdd93",
+          "identical_to_comparison_commit": true
+        },
+        {
+          "archive_path": "protein_condensation/analysis/summary.json",
+          "bytes": 195,
+          "sha256": "31d40f3f3a8850274764337dc5861fc8f1d338c076cc5a477a99ce3a8e7ac3d7",
+          "identical_to_comparison_commit": true
+        }
+      ]
+    },
+    {
+      "record": 22819770,
+      "url": "https://zenodo.org/records/22819770",
+      "archive": "chromatin_memory_data.tar",
+      "method": "HTTP 206 ranges, verified Content-Range and byte count; tar member headers checked using Python tarfile checksum parser; file bytes compared against GitHub checkout",
+      "comparison_git_commit": "81532887abaec462e712321ada698e6359e99e25",
+      "members": [
+        {
+          "archive_path": "README.md",
+          "bytes": 5083,
+          "sha256": "7e1465c442cd5d1c6cc5c61fafaa79ed6e754fd264e46ae9d700f9511055e215",
+          "identical_to_comparison_commit": true
+        },
+        {
+          "archive_path": "chromatin_memory/manifest.json",
+          "bytes": 65988,
+          "sha256": "ba6b4e228ffe564490589e6c347c8c83403918f3ea4539c62685be1892459aaf",
+          "identical_to_comparison_commit": true
+        },
+        {
+          "archive_path": "chromatin_memory/analysis/per_condition.csv",
+          "bytes": 35644,
+          "sha256": "31595da0cd8d45699a8dccbb1867e2e4c63e592a9697af1c3e95f644bf3ddff1",
+          "identical_to_comparison_commit": true
+        },
+        {
+          "archive_path": "chromatin_memory/analysis/per_run.csv",
+          "bytes": 76977,
+          "sha256": "4d9c863fb44f08871b14e7f9537a424bb490e2f35c9ffba21d53476fce2579e6",
+          "identical_to_comparison_commit": true
+        },
+        {
+          "archive_path": "chromatin_memory/analysis/summary.json",
+          "bytes": 193,
+          "sha256": "1a4ede52bb1be4605657320c7fe66009fe25c886bda130fd62916a8980d62617",
+          "identical_to_comparison_commit": true
+        }
+      ]
+    }
+  ]
+}

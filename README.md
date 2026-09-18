@@ -2,15 +2,15 @@
 
 Sequence correlations as a design axis for microphase structure in A/B heteropolymer melts. 
 
-The project asks a single question. If you hold composition, chemistry, chain
+The central study asks: if you hold composition, chemistry, chain
 length and density fixed, and change only how **correlated the A/B pattern is
 along the backbone**, how much does the microphase structure of the melt
 change? The answer is that it changes by roughly two orders of magnitude in
 the composition structure factor peak, and that a one chain sequence statistic
 predicts most of it.
 
-Sections 1-3 describe the model and the paper's results. Section 4 continues
-the program: where the mixed -> demixed transition sits and how it depends on
+Sections 1-3 describe the model and the paper's results. Section 4 examines
+finite-time mixing–demixing crossovers and their dependence on
 sequence correlation, the composition dynamic structure factor for comparison
 with theory, and two applications of the model with asymmetric energetics,
 sequence-programmed condensation of copolymers and epigenetic memory in a
@@ -268,7 +268,7 @@ size scaling and Binder cumulants across several box sizes.
 
 ---
 
-## 4. The incompatibility sweep and the dynamic structure factor
+## 4. Incompatibility, dynamics and biological applications
 
 Two extensions take the model to the next question: at what A/B
 incompatibility does the melt cross from mixed to demixed at fixed sequence
@@ -278,7 +278,7 @@ correlation, and how does the composition pattern relax in time.
 
 | simulation | field theory |
 |---|---|
-| `kappa` | the sequence correlation parameter `lambda` of random copolymer theory |
+| `kappa` and `pi` | positive-lag covariance amplitude `kappa²` and decay factor `lambda = 2*pi - 1`, respectively |
 | `eps_AB` at fixed `eps_AA = eps_BB = 1` | the Flory-Huggins `chi`; the incompatibility axis is `delta_eps = 1 - eps_AB` |
 | `eps_AB = 1` | `chi = 0`: every pair interacts identically, entropy of mixing wins |
 | `eps_AB = 0.1` | the strongly demixed production value of sections 1-3 |
@@ -295,8 +295,8 @@ Everything is held at the production protocol (144 x 40 beads, `L = 22`,
 `kappa = 0.5`, `pi = 0.99`, `f_A = 1/2`, exact global composition,
 `T* = 0.7`, 30,000 equilibration steps at `T* = 5`, 250,000 production steps)
 and only `eps_AB` moves: 37 values from 1.0 down to 0.1 in steps of 0.025,
-four seeds each, 148 runs. The grid is deliberately dense because a
-finite-system transition is sudden and its location is not known in advance;
+four seeds each, 148 runs. The dense grid resolves the finite-time crossover without assuming its
+location or sharpness;
 a second stage refines the bracketed interval with a finer list, more seeds
 and a second box size under a new campaign id.
 
@@ -308,17 +308,17 @@ exact; recording leaves the seeded trajectory bit-identical.
 
 ### 4.3 What is measured
 
-Static, from the trailing half of production (the stationary window):
+Static, from the trailing half of production (the analysis window):
 
 | observable | definition | reads |
 |---|---|---|
 | `S_psi(q*)` | time-averaged peak of `S_AA + S_BB - 2 S_AB` | amplitude of composition fluctuations |
-| coarse-grained variance | `(1/N) sum_q S_psi(q) exp(-q^2 l^2)` | real-space density fluctuation at scale `l` |
+| coarse-grained variance | `(1/N) sum_q S_psi(q) exp(-q^2 l^2)` | real-space composition fluctuation at scale `l` |
 | peak-intensity variance | `Var_t[S_psi(q*, t)] / <S_psi(q*)>^2` | fluctuations of the fluctuations; spikes at a transition |
 | non-Gaussianity ratio | `<|rho_psi(q*)|^4> / <|rho_psi(q*)|^2>^2` | 2 for Gaussian (mixed) amplitudes, 1 for a frozen pattern |
 | seed variance of `S_psi(q*)` | relative variance across seeds | disorder-to-disorder susceptibility |
 
-Dynamic, the two-time object Spakowitz asked for:
+Composition dynamics are measured by the two-time structure factor:
 
 $$
 S_{\psi\psi}(q,\tau)=\frac{1}{N}\left\langle \rho_\psi(q,t_0)\,\rho_\psi^*(q,t_0+\tau)\right\rangle_{t_0,\ |q|\in\text{shell}},
@@ -332,7 +332,7 @@ appears as a plateau in `F(q, tau -> inf)` rather than being removed. Per
 shell the analysis reports the `1/e` relaxation time, the short-time decay
 rate from `-ln F`, a stretched-exponential fit and the late-lag plateau.
 
-### 4.4 Locating the transition
+### 4.4 Locating the finite-time crossover
 
 `melt.epsab_analysis` aggregates a campaign into per-run and per-condition
 tables (mean and SEM over seeds), spectra and `F(q*, tau)` per condition,
@@ -353,15 +353,16 @@ measured `R_g` at `eps_AB = 1`. For a symmetric blend it reproduces
 
 ### 4.5 Results of the sweep program
 
-Seventeen campaigns, 1,592 production runs, all with the 144 x 40 production
-geometry unless stated (details, tables and figures in the `analysis/`
-subdirectories named below; raw output in the Zenodo record, version 4).
+The melt extension comprises 15 campaigns and 1,072 production runs, using
+the 144 × 40 geometry unless stated. Tables and study notes are under
+[`analysis/`](analysis/README.md); raw output is in the melt archive, version 4.
+The two biological applications below add 520 runs in separate Zenodo records.
 
 **The chi = 0 reference is mixed.** At `eps_AB = 1` the composition spectrum
-is flat, `S_psi(q) = 3-5`, matching the ideal single-chain form factor
+is flat, `S_psi(q) = 3-5`, of the same order as the ideal single-chain form factor
 (`S_0(q_min) = 6.9` for `b = 1.24 sigma`). [`analysis/epsab_stage1/`]
 
-**Where demixing sets in at kappa = 0.5, T* = 0.7.** `eps_AB = 0.85 +/- 0.03`
+**Finite-time crossover at kappa = 0.5, T* = 0.7.** `eps_AB = 0.85 +/- 0.03`
 (`delta_eps = 0.15`), from the half-rise of `S_psi(q*)` over a 25-point grid
 with eight seeds; the 144- and 288-chain boxes agree at every point. The
 mean-field spinodal fitted on the mixed side is at `eps_AB = 0.905` with a
@@ -372,25 +373,26 @@ coarsening slowly after 1M steps. [`analysis/epsab_stage1/`, `analysis/epsab_sta
 
 **The dynamic structure factor needs an ergodic melt.** At `T* = 0.7` no
 composition mode below `q ~ 0.5 / sigma` relaxes even in a 6,250-tau window.
-At `T* >= 1.5` the two-time correlation `F(q, tau)` decays fully for every
-shell: at chi = 0 the relaxation time falls from 1,700 tau at `q = 0.29` to
-60 tau at `q = 1.0`, as `q^-4` for `q R_g > 1.6` (Rouse) with a diffusive
-plateau below; toward the transition only the low-q modes slow down
-(critical slowing down); and `S_psi(q*)` collapses across temperatures when
-plotted against `delta_eps / T*`, validating the Flory-Huggins mapping with a
-temperature-independent `alpha`. [`analysis/dsf_series/`]
+At the `chi = 0` reference, raising `T*` to 1.5 or 2.0 makes shell
+relaxation measurable. At `T* = 1.5`, relaxation times fall from about
+1,700 tau at `q = 0.29` to 60 tau at `q = 1.0`, with an approximately
+Rouse-like `q^-4` regime. Low-wavevector modes slow toward the crossover
+and can again outlast the measurement window. Plotting `S_psi(q*)` against
+`delta_eps / T*` gives an approximate collapse across the sampled
+temperatures, consistent with a common incompatibility scaling.
+[`analysis/dsf_series/`](analysis/dsf_series/)
 
-**Sequence correlation programs the transition.** At `T* = 1.5`, an
-uncorrelated copolymer (`kappa = 0`) never demixes over the whole range
+**Sequence correlation shifts the crossover.** At `T* = 1.5`, an
+uncorrelated copolymer (`kappa = 0`) remains weakly structured over the sampled range
 (`S_psi(q*) <= 3`, Gaussian amplitudes); `kappa = 0.25` reaches 13; from
-`kappa = 0.5` a genuine crossover appears at `delta_eps_c` = 0.20, 0.15, 0.115
+`kappa = 0.5` a pronounced crossover appears at `delta_eps_c` = 0.20, 0.15, 0.115
 for `kappa` = 0.5, 0.75, 1 with plateau amplitudes of 120, 500, 1020. The RPA
 spinodal reproduces the trend, matches at `kappa = 0.5`, and sits at about
-half the simulated value for `kappa >= 0.75`. The lamellar (structured)
-signature, shell anisotropy approaching 3, appears only for `kappa = 1` at
-`delta_eps >= 0.7`: of the two transitions in the 2017 random copolymer phase
-diagram, the first exists for `kappa >= 0.5` and the second only for the most
-correlated sequences in this box. [`analysis/kappa_boundary/`]
+half the simulated value for `kappa >= 0.75`. A strongly anisotropic low-wavevector pattern, with shell anisotropy
+approaching 3, is observed for `kappa = 1` at `delta_eps >= 0.7`. This is
+compatible with lamellar ordering, but finite-time data in these boxes do
+not establish two thermodynamic phase transitions.
+[`analysis/kappa_boundary/`](analysis/kappa_boundary/)
 
 **The theory-comparison dataset.** At `T* = 1.5` and `2.0`, mixed side
 (`eps_AB` 1.0 to 0.85), eight seeds, 5M steps with box modes every tau: at
@@ -404,67 +406,149 @@ both the 144- and 288-chain boxes; and the chi = 0 times are 2.2x shorter at
 `T* = 2.0` than at 1.5, more than the 1.33x of a purely thermal mobility.
 [`analysis/dsf_theory/`]
 
-**Coarsening at T* = 0.7.** Over 100,000 tau, quenches just past the
-crossover (`eps_AB = 0.8, 0.7`) coarsen as `S_psi(q*) ~ t^0.5` with
-`q* ~ t^-0.1` for three decades until the domains reach the box, while a
-deeper quench (`eps_AB = 0.5`) arrests after ~10,000 tau at a finite domain
-spacing of ~16 sigma with `S_psi(q*) ~ 100`. Stronger incompatibility gives a
-smaller, frozen pattern. [`analysis/coarsening/`]
+**Coarsening at T* = 0.7.** Runs extending to 100,000 tau show continued
+growth after quenches near the crossover (`eps_AB = 0.8, 0.7`): peak
+intensity grows approximately as `t^0.5` over the final fitted decade,
+while the peak moves toward lower wavevectors. The deeper quench
+(`eps_AB = 0.5`) has much slower intensity growth and smaller characteristic
+spacing; its peak still drifts, so it is not a completely frozen pattern.
+[`analysis/coarsening/`](analysis/coarsening/)
 
-### 4.6 Applications: sequence-programmed condensation and epigenetic memory
+### 4.6 A common model for two biological applications
 
-The melt of sections 1-4 is symmetric: A and B demix into compartments of
-equal density. The two applications the model is meant to serve need the
-asymmetric energetics "B loves B, A-B neutral" in a box with free volume, so
-that B condenses, expels the implicit solvent, and leaves A open. Both are
-run by `melt.condensate_scan` with `eps_AA = eps_AB = 0`, a shared WCA core,
-bead density 0.2 (`L = 30.7 sigma` for 144 x 40 beads) and `T* = 1`; the
-observables (`melt.clusters`) are the B contact clusters: the fraction of B
-in the largest cluster, the number of clusters, the B-B coordination, the
-fraction of B beads in a dense environment, plus the B-density spectrum and
-its two-time correlation `F_BB(q*, t)` from the recorded box modes.
+The applications use asymmetric interactions: B–B attraction, purely
+repulsive A–A and A–B interactions, and a shared WCA core. Both contain
+144 chains of 40 beads at density $0.2\sigma^{-3}$, $T^*=1$, and
+$\pi=0.99$. The lower density leaves free volume for B-rich clusters to
+form. Solvent is implicit.
 
-**Protein mode (quenched sequence).** B is hydrophobic, A polar. The
-campaign scans the B-B attraction `eps_BB` against the sequence correlation
-`kappa` (blockiness of the hydrophobic pattern) at two compositions and asks
-when the chains condense and into what: one dense condensate, many
-micelle-like clusters, or single-chain collapse.
+[`melt.condensate_scan`](melt/condensate_scan.py) runs both campaigns.
+[`melt.clusters`](melt/clusters.py) identifies connected components of the
+B-contact graph using periodic distances within $1.5\sigma$, including
+bonded neighbors. The largest-cluster fraction measures connectivity;
+B–B coordination measures local packing. Neither quantity alone identifies
+an equilibrium phase boundary or whether contacts are within one chain.
 
-**Chromatin mode (dynamic marks, `--marks-dynamic`).** B is a marked
-nucleosome bound by a reader protein, A an unmarked one. Marks become
-dynamical variables (`melt.marks`): every `mark_interval` steps a B bead
-loses its mark at rate `k_off` and an A bead gains one at rate
-`k_on + k_fb H(n_B)`, where `n_B` counts marked beads within `r_c = 1.5 sigma`
-and `H` is a saturating Hill function. `k_on` is chosen so that without
-feedback the B fraction relaxes to its initial value; `k_fb` is the
-reader-writer feedback gain (writers are recruited where marks have
-condensed). Types are pushed into the running OpenMM context in place, the
-full mark history is written to `marks.npz`, and the analysis reports the
-mark autocorrelation time (memory), the persistence fraction, and whether
-the B fraction ran away. The campaign scans turnover against feedback at
-two attractions bracketing the condensation boundary and asks the headline
-questions of the chromatin note: what happens to transient blobs, and under
-what conditions a transient blob is stabilized.
+### 4.7 Protein-inspired design: sequence pattern and association
 
-**Protein result (360 runs).** Whether a condensate forms is decided by the
-sequence pattern, not the attraction: the boundary in the `eps_BB` x `kappa`
-plane is a horizontal line at `kappa ~ 0.5`. Uncorrelated hydrophobic
-patterns never phase separate (at `eps_BB = 3` the largest cluster holds 6%
-of B; the chains collapse individually into ~40 small clusters and shrink by
-10-20%), while blocky patterns (`kappa >= 0.75`) form a shared condensate
-already at `eps_BB = 0.5` with the chains keeping their open size. Strong
-attraction fragments the condensate kinetically. [`analysis/protein_condensation/`]
+Fixed A/B labels represent polar and hydrophobic segments. The study tests
+how their arrangement controls collective association at fixed composition,
+using a minimal copolymer model rather than amino-acid-specific chemistry.
 
-**Chromatin result (160 runs).** Without feedback, marked blobs are
-transient and their lifetime, measured by the two-time B-density
-correlation, is set by mark turnover (16-290 tau, tracking the mark memory
-time `1/(k_on + k_off)`). Feedback stabilizes a blob once
-`k_fb / k_off >= ~10` (marginal at 3), a diagonal boundary that is the same
-at both attractions. A stabilized blob then accretes marks until the B
-fraction reaches a plateau set by the rate ratio alone (0.75 at 10, 0.93 at
-30, full runaway above 100): the minimal feedback model has no intrinsic
-domain-size control, which is the first thing the theory has to supply.
-[`analysis/chromatin_memory/`]
+![Equal-composition dispersed and blocky chains, beside a schematic contact region shared by several continuous chains.](docs/figures/protein-pattern-concept.svg)
+
+**Figure 5. Patterning the attractive segments.** A compares schematic
+40-bead sequences with the same 12 B beads. B illustrates how attractive
+segments on different chains can share a contact region while A-rich tails
+remain outside. Teal denotes A, orange B; thin contact dashes are distinct
+from backbone bonds. These are explanatory drawings, not trajectory snapshots
+or classifications assigned to individual simulated chains.
+
+The campaign varies $\epsilon_{BB}$ from 0.5 to 3, $\kappa$ from 0 to 1,
+and the B fraction between 0.3 and 0.5: 90 conditions, four seeds each,
+360 runs, each lasting 5,000 tau.
+
+![Measured largest-cluster fractions at two B compositions, and the corresponding chain-size and B-contact trends.](docs/figures/protein-condensation-results.svg)
+
+**Figure 6. Sequence-dependent cluster organization.** A–B show the fraction
+of B beads in the largest contact cluster at each sampled condition.
+C–D show mean chain radius of gyration and mean B-neighbor count at
+$f_B=0.3$. Each run contributes its trailing-half mean (250 samples);
+error bars are SEM over four seeds. Heatmap cells show measured condition
+means without a fitted boundary. [Source tables](analysis/protein_condensation/per_condition.csv)
+and [regeneration details](docs/figures/README.md).
+
+**Sequence correlation promotes larger connected clusters.** At $f_B=0.3$
+and $\epsilon_{BB}=0.5$, the largest cluster holds about 1% of B for
+$\kappa=0$, compared with 79% for $\kappa=1$. Attraction also matters:
+at $\kappa=0.5$, this fraction rises from 6% to 38% as
+$\epsilon_{BB}$ increases from 0.5 to 1, then falls to 21% at 3.
+The response is therefore a joint effect of pattern, composition and attraction.
+
+**Local packing and collective connectivity are distinct.** For uncorrelated
+chains at $f_B=0.3$, increasing $\epsilon_{BB}$ from 0.5 to 3 raises
+B–B coordination from 1.24 to 7.06, while the largest cluster still contains
+only 6% of B. Mean $R_g$ decreases by 9.7%, compared with 3.2% for
+$\kappa=1$. These observations establish different organization and chain
+size responses; they do not establish exclusively single-chain collapse.
+For protein engineering, the model motivates controlling the distribution
+of attractive segments as well as their abundance and strength.
+
+[Study details](analysis/protein_condensation/README.md) ·
+[Archived dataset](https://doi.org/10.5281/zenodo.22819768)
+
+### 4.8 Chromatin-inspired memory: dynamic marks and spatial feedback
+
+A and B now represent unmarked and marked chromatin beads. Reader-mediated
+attraction is represented by the effective B–B potential; writer recruitment
+is represented by a local mark-conversion rule. Reader and writer proteins
+are not explicit particles.
+
+![Reversible mark conversion, a folded chain bringing marked neighbors around an unmarked site, and two matched spatial patterns whose individual labels change.](docs/figures/chromatin-feedback-concept.svg)
+
+**Figure 7. Coupling mark state to spatial organization.** A shows reversible
+mark writing and turnover. B shows how folding brings marked segments close
+to a target site: the dashed circle is its local neighborhood, and purple
+contact cues indicate contributions to feedback. C distinguishes spatial
+organization from site identity; outlined sites switch state while a similar
+B-rich pattern remains. Geometry is illustrative and held fixed in C to
+isolate that distinction. Nucleosome motifs convey the biological analogy;
+the simulated particles are spherical beads.
+
+Every 2 tau, marks are updated using the rates
+
+$$
+B\xrightarrow{k_{\mathrm{off}}}A,
+\qquad
+A\xrightarrow{k_{\mathrm{on}}+k_{\mathrm{fb}}H(n_B)}B,
+\qquad
+H(n_B)=\frac{n_B^2}{n_B^2+6^2}.
+$$
+
+Here $n_B$ counts marked neighbors within $1.5\sigma$;
+$k_{\mathrm{on}}=k_{\mathrm{off}}(0.3/0.7)$ sets the no-feedback
+continuous-time reference fraction to 0.3. The implementation converts
+rates to finite-interval switching probabilities. The campaign scans
+turnover and feedback at $\epsilon_{BB}=1$ and 1.5, starting from
+$f_B=0.3$ and $\kappa=0.5$: 40 conditions, four seeds each,
+160 runs of 12,500 tau. Full mark histories are recorded in `marks.npz`.
+
+![Feedback-turnover heatmaps of marked-cluster connectivity, measured density and site-mark correlation times, and marked fraction versus the feedback-to-turnover ratio.](docs/figures/chromatin-memory-results.svg)
+
+**Figure 8. Collective organization under mark turnover.** A–B show the
+largest marked-cluster fraction for the two attractions. C compares measured
+first $1/e$ times of B-density correlations at each run's spectral peak
+with time-centered site-mark correlations (site-mark curve at $\epsilon_{BB}=1$),
+without feedback. D plots the
+trailing-half marked fraction for every condition; points are not a fitted
+ratio-only law. Means and SEM use four seeds, each analyzed over its final
+6,250 tau. [Source tables](analysis/chromatin_memory/per_condition.csv)
+and [regeneration details](docs/figures/README.md).
+
+**Without feedback, density correlations decay faster as turnover increases.**
+The measured B-density relaxation times span 16–290 tau. These are collective
+decorrelation times, not tracked lifetimes of individual clusters. The
+site-mark times also decrease with turnover; finite-window estimates need
+not equal the infinite-time independent-switching prediction
+$1/(k_{\mathrm{on}}+k_{\mathrm{off}})$.
+
+**Feedback sustains density organization while individual marks turn over.**
+At sampled $k_{\mathrm{fb}}/k_{\mathrm{off}}=10$, the largest cluster
+contains 94–100% of the marked beads, compared with about 13% or less at sampled
+ratios up to 3.33. In the strong-feedback regime, B-density correlations do
+not cross $1/e$ within the evaluated lag range (up to 3,122.5 tau), even
+though site marks continue to change. This is persistence of a collective
+pattern in the model, not evidence of inheritance through cell division.
+
+**Feedback also expands the marked population.** Mean $f_B$ reaches
+0.72–0.81 at ratio 10, about 0.93 at ratios near 30, and 0.98–0.99 at
+100–300. The rate ratio organizes the response but does not determine it
+exactly. Strong feedback thus approaches global marking rather than
+selecting a bounded domain, motivating additional regulation in extensions
+of this minimal model.
+
+[Study details](analysis/chromatin_memory/README.md) ·
+[Archived dataset](https://doi.org/10.5281/zenodo.22819770)
 
 ---
 
@@ -498,7 +582,7 @@ melt/                       the simulation engine
   analyze.py  deep_analysis.py  viz.py  io.py  model.py
 
 docs/figures/              README SVGs, PNG exports, and figure provenance
-scripts/render_*_figure*   reproducible README figure generators
+scripts/render_*          reproducible README figure generators
 scripts/fetch_zenodo.py    download and verify the Zenodo archive
 scripts/modes_from_trajectory.py   archived trajectory.npz -> mode_amplitudes.npz
 analysis/                   derived tables and figures, one directory per study; see analysis/README.md
@@ -631,7 +715,7 @@ output is too large for git and lives on Zenodo.
 | `fixed_density_campaign.tar` | 37 MB | the 30 run fixed density finite size study, plus the superseded first execution kept for provenance |
 | `Supplementary_Data_1_source_tables.zip` | 25 MB | per figure source and sensitivity tables, plus figure generation scripts |
 
-The two applications of section 4.6 are separate records:
+The protein and chromatin applications are archived in separate records:
 
 | record | DOI | contents |
 |---|---|---|
