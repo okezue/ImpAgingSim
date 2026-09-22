@@ -37,6 +37,7 @@ Cross-campaign figures and scripts: `scripts/compare_dsf_campaigns.py`,
 
 | directory | contents |
 |---|---|
+| [`submission_rpa/`](submission_rpa/README.md) | matrix-RPA audit for the Scientific Reports correction, reproduced from the published source tables |
 | `figures/` | Fig. S9 finite-size figure (`make_finite_size_figure.py`) |
 | `quantitative/`, `comparison/`, `extended/`, `extended_full/` | four-point susceptibility `chi_4`, overlap collapse and ensemble separation tables and figures for the aging campaigns |
 | `robustness/`, `robustness_full/` | peak-fit robustness and the kappa scan of `chi_4*` |

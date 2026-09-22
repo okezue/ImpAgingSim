@@ -258,6 +258,26 @@ value. The correlated peak occurs at $k_{\min}=2\pi/L$ in the two smaller
 boxes and at $\sqrt{2}k_{\min}$ in the largest. This series therefore does
 not establish a size-independent domain length.
 
+### 3.6a Correction to the RPA treatment (September 2026)
+
+The published RPA discussion presented the scalar composition equation
+without the matrix theory and symmetry assumptions that justify it, and it
+read an uncalibrated bare interaction integral as a physical stability
+result. The correction (`docs/corrections/scientific_reports_rpa/`) keeps
+RPA as an explicitly approximate homogeneous-reference framework: the
+balanced Gaussian intrachain matrix `Omega(k)` and the compressible closure
+`Gamma = Omega^-1 + B(k) J + rho beta w(k) E` are derived
+(`melt/rpa_matrix.py`), the density and composition modes decouple under
+A/B exchange symmetry to `S_psipsi^-1 = S_0^-1 - chi_bare/2`, and the
+formal `q -> 0` value `chi_bare = 9.499` is stated as a failure of the bare
+homogeneous closure rather than as the melt's spinodal. No simulation was
+rerun; the four predictor-fit `R^2` values and the finite-wavevector slope
+(0.1988, `R^2 = 0.8956`) are unchanged. `scripts/submission_rpa_audit.py`
+reproduces every number from the published source tables
+(`analysis/submission_rpa/`); the corrected manuscript, supplementary and
+response-to-reviewer sources and PDFs are in the correction directory, and
+the updated supplementary data package is version 4.1.0 of the Zenodo record.
+
 ### 3.7 What is deliberately not claimed
 
 The data does not establish an order-disorder transition, a universal density
@@ -572,6 +592,7 @@ melt/                       the simulation engine
   modes.py                  exact box-mode amplitudes rho_A(q,t), rho_B(q,t) recorder
   dynamic_structure.py      S(q,tau), F(q,tau) and static fluctuation observables
   rpa.py                    finite-chain S_0(q), RPA S(q), spinodal, eps_AB -> chi bridge
+  rpa_matrix.py             matrix (density + composition) RPA with the compressible closure
   run.py                    single run driver
   scan.py  kappa_scan.py  temperature_scan.py  big_run.py
   campaign.py               shared restartable-campaign machinery (manifest, hashes, locks)
@@ -586,7 +607,9 @@ melt/                       the simulation engine
   analyze.py  deep_analysis.py  viz.py  io.py  model.py
 
 docs/figures/              README SVGs, PNG exports, and figure provenance
+docs/corrections/          Scientific Reports RPA correction: revised sources, PDFs, audit, response
 scripts/render_*          reproducible README figure generators
+scripts/submission_rpa_audit.py   reproduce the RPA correction's numbers from the source tables
 scripts/fetch_zenodo.py    download and verify the Zenodo archive
 scripts/modes_from_trajectory.py   archived trajectory.npz -> mode_amplitudes.npz
 analysis/                   derived tables and figures, one directory per study; see analysis/README.md
