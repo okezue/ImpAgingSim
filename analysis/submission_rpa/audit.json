@@ -1,0 +1,191 @@
+{
+  "parameters": {
+    "chain_length": 40,
+    "n_chains": 144,
+    "L_sigma": 22.0,
+    "density_sigma_minus3": 0.540946656649136,
+    "kBT": 0.7,
+    "epsilon_like": 1.0,
+    "epsilon_ab": 0.1,
+    "b_over_sigma": 1.0,
+    "pi": 0.99
+  },
+  "w_tilde_zero_sigma3": -13.658112881771702,
+  "chi_bare_zero": 9.499256356539727,
+  "reference_packing_stiffness": null,
+  "density_prediction": null,
+  "interpretation": [
+    "The bare attraction closure has a negative composition inverse stiffness at every listed mode and cannot supply a physical homogeneous RPA spectrum.",
+    "This does not establish instability of the interacting MD state: the bare closure omits correlation renormalization and is uncalibrated.",
+    "A common packing stiffness affects density but cancels from composition only at exact ensemble A/B symmetry; no dilute limit is taken.",
+    "q=0 is a formal reference limit, not an accessible canonical mode.",
+    "No molecular-dynamics rerun is required for this audit."
+  ],
+  "modes": [
+    {
+      "kappa": 0.0,
+      "pi": 0.99,
+      "shell_norm2": 0,
+      "q_sigma": 0.0,
+      "w_tilde_sigma3": -13.658112881771702,
+      "chi_bare": 9.499256356539727,
+      "D": 40.0,
+      "S0": 1.0,
+      "ideal_composition_stiffness": 1.0,
+      "bare_attraction_composition_stiffness": -4.749628178269863,
+      "total_bare_composition_stiffness": -3.7496281782698633,
+      "composition_channel_stable": false,
+      "S_psipsi_if_density_stable": null,
+      "mode": "formal_q0_limit"
+    },
+    {
+      "kappa": 0.0,
+      "pi": 0.99,
+      "shell_norm2": 1,
+      "q_sigma": 0.28559933214452665,
+      "w_tilde_sigma3": -13.362302880409866,
+      "chi_bare": 9.293519659231077,
+      "D": 33.64108339391562,
+      "S0": 1.0,
+      "ideal_composition_stiffness": 1.0,
+      "bare_attraction_composition_stiffness": -4.646759829615538,
+      "total_bare_composition_stiffness": -3.6467598296155384,
+      "composition_channel_stable": false,
+      "S_psipsi_if_density_stable": null,
+      "mode": "accessible_exact_shell"
+    },
+    {
+      "kappa": 0.0,
+      "pi": 0.99,
+      "shell_norm2": 2,
+      "q_sigma": 0.40389844892348786,
+      "w_tilde_sigma3": -13.071928698662035,
+      "chi_bare": 9.091563589924867,
+      "D": 28.725768662380105,
+      "S0": 1.0,
+      "ideal_composition_stiffness": 1.0,
+      "bare_attraction_composition_stiffness": -4.5457817949624335,
+      "total_bare_composition_stiffness": -3.5457817949624335,
+      "composition_channel_stable": false,
+      "S_psipsi_if_density_stable": null,
+      "mode": "accessible_exact_shell"
+    },
+    {
+      "kappa": 0.0,
+      "pi": 0.99,
+      "shell_norm2": 3,
+      "q_sigma": 0.4946725538820594,
+      "w_tilde_sigma3": -12.786899231692471,
+      "chi_bare": 8.89332478494872,
+      "D": 24.870676668877344,
+      "S0": 1.0,
+      "ideal_composition_stiffness": 1.0,
+      "bare_attraction_composition_stiffness": -4.44666239247436,
+      "total_bare_composition_stiffness": -3.4466623924743596,
+      "composition_channel_stable": false,
+      "S_psipsi_if_density_stable": null,
+      "mode": "accessible_exact_shell"
+    },
+    {
+      "kappa": 1.0,
+      "pi": 0.99,
+      "shell_norm2": 0,
+      "q_sigma": 0.0,
+      "w_tilde_sigma3": -13.658112881771702,
+      "chi_bare": 9.499256356539727,
+      "D": 40.0,
+      "S0": 31.098299483991493,
+      "ideal_composition_stiffness": 0.0321560990984337,
+      "bare_attraction_composition_stiffness": -4.749628178269863,
+      "total_bare_composition_stiffness": -4.717472079171429,
+      "composition_channel_stable": false,
+      "S_psipsi_if_density_stable": null,
+      "mode": "formal_q0_limit"
+    },
+    {
+      "kappa": 1.0,
+      "pi": 0.99,
+      "shell_norm2": 1,
+      "q_sigma": 0.28559933214452665,
+      "w_tilde_sigma3": -13.362302880409866,
+      "chi_bare": 9.293519659231077,
+      "D": 33.64108339391562,
+      "S0": 26.738371522466515,
+      "ideal_composition_stiffness": 0.037399435457756466,
+      "bare_attraction_composition_stiffness": -4.646759829615538,
+      "total_bare_composition_stiffness": -4.609360394157782,
+      "composition_channel_stable": false,
+      "S_psipsi_if_density_stable": null,
+      "mode": "accessible_exact_shell"
+    },
+    {
+      "kappa": 1.0,
+      "pi": 0.99,
+      "shell_norm2": 2,
+      "q_sigma": 0.40389844892348786,
+      "w_tilde_sigma3": -13.071928698662035,
+      "chi_bare": 9.091563589924867,
+      "D": 28.725768662380105,
+      "S0": 23.295018843854283,
+      "ideal_composition_stiffness": 0.04292763215616892,
+      "bare_attraction_composition_stiffness": -4.5457817949624335,
+      "total_bare_composition_stiffness": -4.502854162806265,
+      "composition_channel_stable": false,
+      "S_psipsi_if_density_stable": null,
+      "mode": "accessible_exact_shell"
+    },
+    {
+      "kappa": 1.0,
+      "pi": 0.99,
+      "shell_norm2": 3,
+      "q_sigma": 0.4946725538820594,
+      "w_tilde_sigma3": -12.786899231692471,
+      "chi_bare": 8.89332478494872,
+      "D": 24.870676668877344,
+      "S0": 20.537320371006963,
+      "ideal_composition_stiffness": 0.04869184401543078,
+      "bare_attraction_composition_stiffness": -4.44666239247436,
+      "total_bare_composition_stiffness": -4.397970548458929,
+      "composition_channel_stable": false,
+      "S_psipsi_if_density_stable": null,
+      "mode": "accessible_exact_shell"
+    }
+  ],
+  "source_data_audit": {
+    "n_seed_rows": 240,
+    "n_condition_rows": 48,
+    "max_form_factor_absolute_error": 4.973799150320701e-14,
+    "max_archived_regression_absolute_error": 5.551115123125783e-16,
+    "fits": {
+      "primary": {
+        "Pk": {
+          "n_conditions": 35,
+          "slope": 0.19880169128741415,
+          "intercept": -0.00044007306326852846,
+          "r_squared": 0.8955978479246897
+        },
+        "P0": {
+          "n_conditions": 35,
+          "slope": 0.19867701078387487,
+          "intercept": 0.011629566017323602,
+          "r_squared": 0.6834369676721355
+        }
+      },
+      "collapsed_boundary": {
+        "Pk": {
+          "n_conditions": 36,
+          "slope": 0.1968142737759474,
+          "intercept": -7.126797692628278e-05,
+          "r_squared": 0.9106208522141113
+        },
+        "P0": {
+          "n_conditions": 36,
+          "slope": 0.19227950720044884,
+          "intercept": 0.012603255494704355,
+          "r_squared": 0.7278744511130968
+        }
+      }
+    },
+    "interpretation": "Response-selected descriptive fits; no chi or packing calibration."
+  }
+}

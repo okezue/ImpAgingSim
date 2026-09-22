@@ -1,0 +1,8 @@
+quantity,value,units,provenance
+baseline number density rho,0.540946656649136,sigma^-3,recomputed as (144 chains x 40 beads)/(22 sigma)^3 from corrected static-scan parameters
+force-equivalent w_tilde(0),-13.6581128817717,sigma^3,recomputed by scipy.integrate.quad from w(r) with r_m=2^(1/6)sigma and r_c=2.5sigma; force branches and parameters verified against repo/melt/integrator.py
+w_tilde(0) quadrature error estimate,1.51635513941993e-13,sigma^3,sum of scipy.integrate.quad absolute-error estimates for the two continuous branches
+bare chi_bare(0),9.49925635653972,dimensionless,"recomputed as -rho*(epsilon_AA-epsilon_AB)*w_tilde(0)/T_star with epsilon_AA=1, epsilon_AB=0.1 and T_star=0.7"
+ideal inverse term at q=0 for kappa=0,1,dimensionless,P_N(0)=1 for kappa=0
+interaction subtraction chi_bare(0)/2,4.74962817826986,dimensionless,recomputed from chi_bare(0); symmetric composition projection of the matrix closure
+bare composition inverse stiffness,-3.74962817826986,dimensionless,"formal q-to-zero limit of 1-chi_bare(0)/2; failure of the uncalibrated bare homogeneous closure, not a measured spinodal"

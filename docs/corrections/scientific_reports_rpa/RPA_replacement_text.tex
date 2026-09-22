@@ -1,0 +1,105 @@
+% Exact principal RPA replacement passages from the corrected manuscript.
+% The complete sources and RPA_changes.patch include all associated edits.
+
+% RESULTS: replaces paragraph preceding old Eq. (11) through its interpretation.
+We use this reference-chain statistic in an empirical comparison with the measured peaks. For each seed, we evaluate $P_N$ at the selected peak-bin centre and then average those values within the condition. We compare the inverse of this average with the inverse condition-mean peak height; both the wavevector and the response therefore come from the measured spectrum. The regression design also respects two exact degeneracies of the generator: when $\kappa=0$ the Markov backbone is never expressed, and when $\pi=0.5$ the backbone itself is uncorrelated. The primary descriptive fit therefore uses the 35 active-interior condition means with $\kappa>0$ and $\pi>0.5$. An affine regression of $\langle C_A\rangle^{-1}$ on $\langle P_N(k_{\mathrm{bin,seed}}^*)\rangle^{-1}$ gives $R^2=0.895598$ (Fig.~\ref{fig:sequence_response}a), compared with $R^2=0.683437$ when $P_N(0)^{-1}$ is used (Fig.~\ref{fig:sequence_response}b). Collapsing all 13 inactive-boundary conditions to a single independent-sequence baseline gives 36 points and $R^2=0.910621$ at finite $k$, versus $0.727875$ at $k=0$. We use $b=\sigma$ without fitting it. Because $k_{\mathrm{bin}}^*$ is selected from the same collective spectrum whose height defines $C_A$, the fit is a response-selected descriptive organization. Its stronger finite-$k$ association supports the relevance of spatial filtering of the sequence covariance.
+
+For the collective theory, retain both A/B number-density modes. In the balanced, exchange-symmetric Gaussian reference, the per-bead intramolecular matrix is
+\[
+\boldsymbol\Omega(k)=\frac14
+\begin{pmatrix}D(k)+S_0(k)&D(k)-S_0(k)\\D(k)-S_0(k)&D(k)+S_0(k)\end{pmatrix},
+\qquad
+D(k)=1+2\sum_{\ell=1}^{N-1}\left(1-\frac\ell N\right)e^{-k^2b^2\ell/6}.
+\]
+Here $D$ is the density form factor. Write $\mathbf J$ for the matrix whose entries are all one, $\mathbf E$ for the attraction-depth matrix with $E_{AA}=E_{BB}=\epsilon_{\mathrm{like}}$ and $E_{AB}=E_{BA}=\epsilon_{AB}$, and $\beta=(k_BT)^{-1}$. A compressible-reference RPA closure and its symmetric projections are
+\begin{equation}
+\begin{aligned}
+\boldsymbol\Gamma(k)&=\boldsymbol\Omega(k)^{-1}+B(k)\mathbf J
+ +\rho\beta\widetilde w(k)\mathbf E,\\
+\mathbf S_{\mathrm{RPA}}(k)&=\boldsymbol\Gamma(k)^{-1}
+ \quad\text{only where }\boldsymbol\Gamma(k)\succ0,\\
+\bigl[S_{nn}^{\mathrm{RPA}}(k)\bigr]^{-1}
+ &=D(k)^{-1}+B(k)+\tfrac12\rho\beta\widetilde w(k)
+ (\epsilon_{\mathrm{like}}+\epsilon_{AB}),\\
+\bigl[S_{\psi\psi}^{\mathrm{RPA}}(k)\bigr]^{-1}
+ &=S_0(k)^{-1}-\tfrac12\chi_{\mathrm{bare}}(k).
+\end{aligned}
+\label{eq:rpa}
+\end{equation}
+A stable homogeneous Gaussian theory requires $\boldsymbol\Gamma(k)\succ0$ at every retained wavevector. All spectra use the per-bead convention, $n=n_A+n_B$, and $\chi_{\mathrm{bare}}=-\rho\beta(\epsilon_{\mathrm{like}}-\epsilon_{AB})\widetilde w$. The finite, dimensionless $B(k)$ represents an approximate repulsive-reference density stiffness. It is not the literal Fourier transform of the WCA core. Density and composition decouple because of A/B exchange symmetry; removing the common interaction from the antisymmetric projection does not remove packing from the melt or take a dilute limit. The Supplementary Information section \emph{Two-component melt response and the symmetric projection} gives the matrix derivation and the coupled expression when this symmetry is absent.
+
+The force-equivalent attractive kernel gives $\widetilde w(0)=-13.6581128818\,\sigma^3$ and $\chi_{\mathrm{bare}}(0)=9.499256357$ at the nominal baseline parameters. Even for $S_0(0)=1$, the resulting long-wavelength composition stiffness is $-3.749628178$; $k=0$ here denotes a formal limit, not a measured canonical mode. This diagnoses failure of the uncalibrated bare closure to yield a stable homogeneous spectrum; it does not determine the physical spinodal of the simulated melt. At a fixed wavevector in the stable symmetric theory, $C_{\mathrm{sym}}=S_{\psi\psi}/2$ gives $C_{\mathrm{sym}}^{-1}=2/S_0-\chi_{\mathrm{bare}}$. That identity is not an equation for the inverses of response-selected condition means fitted above.
+
+Rumyantsev and Gavrilov~\cite{RumyantsevGavrilov2026} use a Gaussian fluctuation free energy to study demixing between separately specified copolymer species with identical composition. Their species-mixture free-energy determinant treats a different ensemble from the present independently drawn, statistically balanced chains, whose individual compositions fluctuate. Their symmetric composition combination $R=g_{AA}-g_{AB}$ corresponds to $S_0/2$ in the present normalization, so their $1-\chi R$ factor has the same structure as the composition projection of Eq.~\ref{eq:rpa}. Their species-demixing criterion and chain-length scaling law are not applied to these post-quench peak data.
+
+
+% METHODS: replaces Interaction-kernel and RPA diagnostic subsection.
+\subsection{Two-component RPA and bare-interaction diagnostic}
+
+The RPA uses the per-bead A/B intramolecular matrix and retains a finite density stiffness $B(k)$ for a repulsive reference. This is an approximate effective description of packing, not a Fourier transform of the divergent WCA potential or an exact excluded-volume theory. A common bare core cancels from the antisymmetric interaction contrast, but still affects density correlations and chain conformations. For the bare attractive contribution only, we define the following continuous force-equivalent unit-depth kernel:
+\begin{equation}
+w(r)=\begin{cases}
+u_{\mathrm{LJ}}(r_m)-u_{\mathrm{LJ}}(r_c), & 0\le r<r_m,\\
+u_{\mathrm{LJ}}(r)-u_{\mathrm{LJ}}(r_c), & r_m\le r<r_c,\\
+0,&r\ge r_c,
+\end{cases}
+\end{equation}
+where $u_{\mathrm{LJ}}(r)=4[(\sigma/r)^{12}-(\sigma/r)^6]$. Its spherical transform is $\widetilde w(k)=4\pi\int_0^{r_c}r^2w(r)\sin(kr)/(kr)\,dr$, giving $\widetilde w(0)=-13.6581128818\sigma^3$. For the symmetric baseline, $\chi_{\mathrm{bare}}(k)=-\rho(\epsilon_{AA}-\epsilon_{AB})\widetilde w(k)/(k_BT)$ and $\chi_{\mathrm{bare}}(0)=9.499256357$. This unweighted transform does not account for the reference melt's pair correlations and is not a calibrated effective Flory interaction; dense-melt contact statistics enter that calibration~\cite{MorseChung2009}. We do not assign $B(k)$ or infer a phase boundary from this bare diagnostic.
+
+
+% SUPPLEMENTARY INFORMATION: append before end of document.
+\section*{Two-component melt response and the symmetric projection}
+
+The one-chain statistic in Eqs.~(S5)--(S7) is evaluated in a Gaussian reference whose conformations are independent of its A/B labels. It is not the collective melt spectrum. To retain density response, define the per-bead intramolecular A/B matrix for an ensemble of chains by
+\[
+\Omega_{\alpha\beta}(k)=\frac1N\sum_{i,j=1}^N
+ \bigl\langle I_i^\alpha I_j^\beta\bigr\rangle
+ e^{-k^2b^2|i-j|/6},\qquad \alpha,\beta\in\{A,B\}.
+\]
+Here $I_i^A=(1+s_i)/2$, $I_i^B=(1-s_i)/2$, and the average is over the specified sequence distribution, with each quenched sequence held fixed during its dynamics. Under balanced A/B exchange symmetry, this gives
+\[
+\boldsymbol\Omega=\frac14
+ \begin{pmatrix}D+S_0&D-S_0\\D-S_0&D+S_0\end{pmatrix},
+\qquad
+D(k)=1+2\sum_{\ell=1}^{N-1}\left(1-\frac\ell N\right)e^{-k^2b^2\ell/6}.
+\]
+The factors of four follow from $\mathbf 1_A=(1+s)/2$ and $\mathbf 1_B=(1-s)/2$. Independent stochastic chains share a target composition, but need not have identical realized compositions. Thus $S_0(0)$ is generally nonzero; it is a property of the sequence ensemble, not the excluded canonical zero mode.
+
+Let $\mathbf S=N_{\mathrm{tot}}^{-1}\langle\delta\mathbf n\,\delta\mathbf n^{\dagger}\rangle$ for $\delta\mathbf n=(\delta n_A,\delta n_B)^{\mathsf T}$ at a nonzero wavevector. In a Gaussian expansion, the dimensionless quadratic free energy is $\beta F^{(2)}=(2N_{\mathrm{tot}})^{-1}\sum_{\bm k}\delta\mathbf n^{\dagger}\boldsymbol\Gamma\delta\mathbf n$. The closure used to display the separate density and composition contributions is
+\[
+\boldsymbol\Gamma=\boldsymbol\Omega^{-1}+\mathbf U,
+\qquad
+\mathbf U=B(k)\mathbf J+\rho\beta\widetilde w(k)\mathbf E,
+\qquad
+\mathbf S_{\mathrm{RPA}}=\boldsymbol\Gamma^{-1}
+\quad(\boldsymbol\Gamma\succ0).
+\]
+Here $J_{\alpha\beta}=1$, $E_{AA}=E_{BB}=\epsilon_{\mathrm{like}}$ and $E_{AB}=E_{BA}=\epsilon_{AB}$. The dimensionless finite function $B(k)$ represents an approximate repulsive-reference contribution to the density stiffness. For example, a measured label-blind reference density response would define $B(k)=[S_{nn}^{\mathrm{ref}}(k)]^{-1}-D(k)^{-1}$ within this closure. No such reference calibration is made here. This ansatz is not an exact theory of excluded volume, and $B$ is not obtained by Fourier transforming the singular WCA potential.
+
+Transform to $\delta n_n=\delta n_A+\delta n_B$ and $\delta n_\psi=\delta n_A-\delta n_B$ using $\mathbf T=\left(\begin{smallmatrix}1&1\\1&-1\end{smallmatrix}\right)$. Then $\mathbf S_{n\psi}=\mathbf T\mathbf S\mathbf T^{\mathsf T}$ and $\mathbf K=\mathbf T^{-\mathsf T}\boldsymbol\Gamma\mathbf T^{-1}$. Under exchange symmetry,
+\[
+\mathbf K=
+\begin{pmatrix}
+ D^{-1}+B+\tfrac12\rho\beta\widetilde w(\epsilon_{\mathrm{like}}+\epsilon_{AB})&0\\
+ 0&S_0^{-1}+\tfrac12\rho\beta\widetilde w(\epsilon_{\mathrm{like}}-\epsilon_{AB})
+\end{pmatrix}.
+\]
+The common repulsive term remains in the density mode and cancels only from the bare antisymmetric contrast. This cancellation follows from symmetry, not dilution. In an incompressible limit the density stiffness grows without bound; in a compressible description it remains finite. For a general real symmetric matrix, including a finite sequence sample without exact exchange symmetry, integration over the density mode instead gives
+\[
+\bigl[S_{\psi\psi}(k)\bigr]^{-1}
+ =K_{\psi\psi}(k)-\frac{K_{n\psi}(k)^2}{K_{nn}(k)},
+\qquad K_{nn}>0,\quad \det\mathbf K>0.
+\]
+This Schur complement shows explicitly where density--composition coupling enters. At symmetry, the per-bead contrast $C_{\mathrm{sym}}=S_{\psi\psi}/2$ obeys $C_{\mathrm{sym}}^{-1}=2/S_0-\chi_{\mathrm{bare}}$ within the stable closure. That fixed-wavevector relation is not preserved by replacing its terms with inverses of separately averaged, response-selected peak quantities.
+
+There is also a formal connection to fluctuation free energies. At a fixed coarse-graining cutoff, the Gaussian determinant contribution relative to the intramolecular reference is
+\[
+\frac{\beta\Delta F_{\mathrm G}}V
+ =\frac1{2V}\sum_{\bm k\ne0}^{\mathrm{cutoff}}
+ \log\det\!\left[\mathbf I+
+ \boldsymbol\Omega^{1/2}\mathbf U\boldsymbol\Omega^{1/2}\right].
+\]
+This expression requires a positive-definite Hessian at every wavevector retained below the cutoff and precedes any model-specific self-energy subtraction or thermodynamic differentiation. A species-demixing calculation must additionally specify the constituent sequence species, their fractions and mixing entropy. The present sequence ensemble and late post-quench peaks do not supply that calculation; no blend-demixing scaling law is inferred.
+
+The bare attraction transform in the main text yields $S_0(0)^{-1}-\chi_{\mathrm{bare}}(0)/2=-3.749628178$ for independent balanced labels. Here $k=0$ denotes the formal long-wavelength limit, not a measured canonical mode. A negative value precludes a positive-definite Hessian for this closure, independently of $B$. It neither calibrates the physical melt's direct correlations nor establishes its spinodal. Packing and conformation changes can renormalize effective composition interactions even though the common bare core cancels algebraically.
+

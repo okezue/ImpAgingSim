@@ -1,0 +1,440 @@
+\documentclass[pdflatex,sn-nature,onecolumn]{sn-jnl}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{microtype}
+\hypersetup{hypertexnames=false}
+\graphicspath{{figures/}}
+\setcounter{secnumdepth}{0}
+\setlength{\abovecaptionskip}{6pt}
+\setlength{\belowcaptionskip}{4pt}
+
+% The bundled Springer class prefixes plain-style page numbers with the
+% draft marker ``ddd''; retain the plain footer but remove that artifact.
+\makeatletter
+\def\ps@plain{\let\@mkboth\@gobbletwo
+  \def\@oddhead{}\def\@evenhead{}%
+  \def\@oddfoot{\vbox to 18pt{\vfill\reset@font\rmfamily\hfil\thepage\hfil}}%
+  \let\@evenfoot\@oddfoot}
+\makeatother
+
+\newcommand{\safeinclude}[1]{%
+  \IfFileExists{figures/#1}{\includegraphics[width=\linewidth]{#1}}%
+  {\fbox{\parbox[c][44mm][c]{0.95\linewidth}{\centering Figure file: \texttt{\detokenize{#1}}}}}}
+
+\makeatletter
+\def\email#1{\global\advance\emailcnt by 1\relax%
+\if@corauemail%
+   \g@addto@macro\corrauthemail{\setcounter{footnote}{0}\textcolor{blue}{#1}}%
+\else%
+   \g@addto@macro\authemail{\setcounter{footnote}{0}\textcolor{blue}{#1}}%
+\fi}
+\makeatother
+
+\title{Supplementary Information for ``Independent control of sequence-correlation amplitude tunes post-quench composition fluctuations in A/B heteropolymer melts''}
+\author*{\fnm{Alexander Okezue} \sur{Bell}}\email{okezue@stanford.edu}
+\affil{\orgname{Stanford University}, \orgaddress{\street{450 Jane Stanford Way}, \city{Stanford}, \state{CA}, \postcode{94305}, \country{USA}}}
+
+\begin{document}
+\maketitle
+\raggedright
+\raggedbottom
+\pagestyle{plain}
+\thispagestyle{plain}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\tablename}{Supplementary Table}
+\renewcommand{\thetable}{S\arabic{table}}
+
+\section*{Exact sequence covariance for the two-stage generator}
+
+Let $x_i\in\{0,1\}$ indicate an A monomer and define the sign label $s_i=2x_i-1$. The target mean and single-site variance are
+\begin{equation}
+\langle s_i\rangle=m=2f_A-1,\qquad
+\langle(s_i-m)^2\rangle=1-m^2=4f_A(1-f_A).
+\tag{S1}
+\end{equation}
+The Markov backbone has transition matrix
+\begin{equation}
+\bm{P}=\begin{pmatrix}
+1-2(1-\pi)(1-f_A) & 2(1-\pi)(1-f_A)\\
+2(1-\pi)f_A & 1-2(1-\pi)f_A
+\end{pmatrix},
+\tag{S2}
+\end{equation}
+where rows and columns are ordered A, B. Its stationary distribution is $(f_A,1-f_A)$ and its second eigenvalue is
+\begin{equation}
+\lambda=1-P(A\rightarrow B)-P(B\rightarrow A)=2\pi-1.
+\tag{S3}
+\end{equation}
+The admissible range at asymmetric composition is $\pi\ge 1-[2\max(f_A,1-f_A)]^{-1}$ so that both transition probabilities remain at most one. Every composition-scan value in the manuscript satisfies this bound.
+
+Write the final label as $s_i=b_i z_i+(1-b_i)u_i$, where $z_i$ is the Markov sign, $b_i$ is an independent Bernoulli($\kappa$) mask and $u_i$ is an independent sign draw with the same mean $m$. For $\ell>0$, a connected contribution survives only when $b_i=b_{i+\ell}=1$, an event of probability $\kappa^2$. Therefore
+\begin{align}
+\operatorname{Cov}(s_i,s_{i+\ell})
+&=\kappa^2\operatorname{Cov}(z_i,z_{i+\ell})\nonumber\\
+&=4f_A(1-f_A)\kappa^2\lambda^\ell,\qquad \ell>0.
+\tag{S4}
+\end{align}
+At $\ell=0$, $s_i$ is always drawn from the same marginal distribution, whichever branch the mask selects, and Eq.~(S1) applies without a factor $\kappa^2$. Treating lag zero as $\kappa^2$-weighted would incorrectly erase the independent-random baseline.
+
+In the primary 144-chain parameter scans, each stochastic chain is initialized from the stationary distribution and generated independently of every other chain. Independence does not mathematically guarantee that all 144 finite sequences are distinct. The fixed-density size series instead draws full chain sets from the same chainwise proposal law and accepts a set only when exactly half of all beads are A (see the section \emph{Fixed-density finite-size comparison}); accepted chains are not required to be unique. The deterministic $A_4B_4$ and alternating controls intentionally use an identical specified sequence on every chain.
+
+\begin{figure}[!htbp]
+\centering
+\safeinclude{FigS1_sequence_validation.pdf}
+\caption{\textbf{Sequence-generator validation.} \textbf{a}, Residual between measured within-chain covariance and Eq.~(S4) versus contour lag for $\kappa=0,0.6,1$ at $\pi=0.99$. Small symbols show individual seeds; larger markers and bars show means and standard errors across five independent seeds. \textbf{b}, Realized A fraction in the four seed-1 example chains displayed for each $\kappa$ in main Fig.~1; these small illustrative sets are not composition-matched samples.}
+\end{figure}
+
+\section*{Intramolecular composition form factor}
+
+For a chain of $N$ monomers in a label-independent Gaussian reference, define the per-monomer intramolecular composition form factor
+\begin{equation}
+S_0(k)=\frac{1}{N}\sum_{i,j=1}^{N}
+\langle\delta s_i\delta s_j\rangle
+\left\langle e^{i\bm{k}\cdot(\bm{r}_i-\bm{r}_j)}\right\rangle,
+\tag{S5}
+\end{equation}
+where $\delta s_i=s_i-m$. The separate label and conformational averages in Eq.~(S5) assume that labels do not alter conformations in this reference; this factorization is not asserted for the interacting post-quench chains. For a Gaussian reference chain with statistical segment length $b$,
+\begin{equation}
+\left\langle e^{i\bm{k}\cdot(\bm{r}_{i+\ell}-\bm{r}_i)}\right\rangle
+=\exp(-k^2b^2\ell/6).
+\tag{S6}
+\end{equation}
+There are $N$ diagonal pairs and $2(N-\ell)$ ordered off-diagonal pairs at contour lag $\ell$. Substitution of Eqs.~(S1) and (S4) into Eq.~(S5) gives
+\begin{equation}
+\frac{S_0(k)}{4f_A(1-f_A)}=
+1+2\kappa^2\sum_{\ell=1}^{N-1}\left(1-\frac{\ell}{N}\right)
+\lambda^\ell e^{-k^2b^2\ell/6}.
+\tag{S7}
+\end{equation}
+No prefactor is fitted in the manuscript; $N=40$ and $b=\sigma$ are used.
+
+For compactness, figures denote the normalized form factor by
+\[
+P_N(k)=\frac{S_0(k)}{4f_A(1-f_A)}.
+\]
+At the balanced composition used for the regression, $4f_A(1-f_A)=1$ and therefore $P_N=S_0$ numerically.
+
+For $x=\lambda\exp(-k^2b^2/6)$, the finite sum can be written
+\begin{align}
+A_N(x)&=\sum_{\ell=1}^{N-1}\left(1-\frac{\ell}{N}\right)x^\ell\nonumber\\
+&=\frac{x(1-x^{N-1})}{1-x}
+-\frac{x[1-Nx^{N-1}+(N-1)x^N]}{N(1-x)^2},
+\tag{S8}
+\end{align}
+with the value at $x=1$ obtained by continuity. The unnormalized $S_0(k)$ is $4f_A(1-f_A)[1+2\kappa^2A_N(x)]$.
+
+At $k=0$,
+\begin{equation}
+S_0(0)=\frac{1}{N}\left\langle\left(\sum_{i=1}^{N}\delta s_i\right)^2\right\rangle,
+\tag{S9}
+\end{equation}
+so the zero-wavevector value measures chain-to-chain fluctuation of net composition. In the $N\rightarrow\infty$, $|\lambda|<1$ limit,
+\begin{equation}
+\frac{S_0(0)}{4f_A(1-f_A)}\rightarrow
+1+\frac{2\kappa^2\lambda}{1-\lambda}.
+\tag{S10}
+\end{equation}
+This is not the observed collective $k=0$ mode. The simulation subtracts the spatial mean and excludes the zero bin, while Eq.~(S9) is a property of the sequence ensemble. Finite $k$ introduces the spatial-dephasing factor in Eq.~(S6) and is consequently the more relevant predictor for a finite-wavevector collective peak.
+
+\begin{figure}[!htbp]
+\centering
+\safeinclude{FigS2_form_factor_limits.pdf}
+\caption{\textbf{Form-factor and predictor sensitivities.} \textbf{a}, Analytical $P_N(k)=S_0(k)/[4f_A(1-f_A)]$ at $\pi=0.99$ for selected $\kappa$, $N=40$ and $b=\sigma$. \textbf{b}, Active-interior inverse-response comparison using $P_N(0)$ ($R^2=0.683437$); colour encodes $\pi$. \textbf{c}, Active-interior finite-$k$ $R^2$ for fixed assumed $b/\sigma=0.5$--2, with the $k=0$ value and the main choice $b=\sigma$ marked. The segment length is not fitted; the response-selected coefficients of determination are descriptive rather than prospective validation.}
+\end{figure}
+
+\section*{Collective partial spectra, symmetry and normalization}
+
+For a nonzero reciprocal vector, define
+\begin{equation}
+\delta n_\alpha(\bm{k})=\sum_{j\in\alpha}e^{i\bm{k}\cdot\bm{r}_j}
+\tag{S11}
+\end{equation}
+and
+\begin{equation}
+S_{\alpha\beta}^{(N)}(\bm{k})=
+\frac{1}{N_{\mathrm{tot}}}\operatorname{Re}
+\left[\delta n_\alpha(\bm{k})\delta n_\beta(\bm{k})^*\right].
+\tag{S12}
+\end{equation}
+For $\delta n_\psi=\delta n_A-\delta n_B$,
+\begin{align}
+S_{\psi\psi}^{(N)}(k)
+&=N_{\mathrm{tot}}^{-1}\langle|\delta n_A-\delta n_B|^2\rangle_{|\bm{k}|}\nonumber\\
+&=S_{AA}^{(N)}(k)+S_{BB}^{(N)}(k)-2S_{AB}^{(N)}(k).
+\tag{S13}
+\end{align}
+This identity is invariant to interchanging the labels A and B. At balanced composition it supplies the fully label-symmetric contrast $C_{\mathrm{sym}}=\tfrac12S_{\psi\psi}^{(N)}(k_{\mathrm{bin}}^*)$. Label symmetry alone, however, does not make Eq.~(S13) a density-orthogonal composition observable away from $f_A=1/2$.
+
+To see the distinction, let $m=2f_A-1$, $n_\rho=n_A+n_B$ and
+\[
+n_c=(1-f_A)n_A-f_A n_B.
+\]
+For every nonzero wavevector, the centred-label field is
+\[
+\sum_j(s_j-m)e^{i\bm{k}\cdot\bm r_j}=2n_c(\bm k),
+\]
+and its spectrum is four times the Bhatia--Thornton composition mode
+\[
+S_{cc}^{(N)}=(1-f_A)^2S_{AA}^{(N)}+f_A^2S_{BB}^{(N)}
+-2f_A(1-f_A)S_{AB}^{(N)}.
+\]
+By contrast, $n_A-n_B=m n_\rho+2n_c$, so
+\[
+S_{\psi\psi}^{(N)}=m^2S_{\rho\rho}^{(N)}+4S_{cc}^{(N)}
++4mS_{\rho c}^{(N)}.
+\]
+Thus Eq.~(S13) contains total-density and density--composition cross terms whenever $m\ne0$. This is the standard Bhatia--Thornton separation (Bhatia and Thornton, \emph{Phys. Rev. B} \textbf{2}, 3004--3012, 1970; cited in the main article).
+
+The balanced-composition peak analysis uses
+\begin{equation}
+C_A(k)=S_{AA}^{(N)}(k)-S_{AB}^{(N)}(k).
+\tag{S14}
+\end{equation}
+At exact A/B statistical symmetry, $S_{AA}=S_{BB}$ and Eqs.~(S13)--(S14) give $C_A=\tfrac12S_{\psi\psi}$. Finite samples need not obey exact equality. Replacing Eq.~(S14) by Eq.~(S13) in a label-symmetrization sensitivity analysis changes 4 of 240 peak-bin calls. The balanced scans therefore use the per-bead $C_A$ estimator consistently, while off-stoichiometric mode separation is treated through the Bhatia--Thornton expression.
+
+The mesh convention is
+\begin{equation}
+S_{\alpha\beta}^{(\mathrm{code})}(\bm{k})=
+\frac{V}{G^6}\operatorname{Re}[\widehat\phi_\alpha(\bm{k})
+\widehat\phi_\beta(\bm{k})^*],
+\tag{S15}
+\end{equation}
+where $\phi_\alpha$ is a cloud-in-cell count field and the discrete fast Fourier transform (FFT) is unnormalized. The exact change of normalization is
+\begin{equation}
+S_{\alpha\beta}^{(N)}=\frac{G^6}{N_{\mathrm{tot}}V}
+S_{\alpha\beta}^{(\mathrm{code})}.
+\tag{S16}
+\end{equation}
+Equation~(S16) changes absolute amplitudes and cross-density comparisons but not a peak ratio within one fixed geometry.
+
+\section*{Radial-bin geometry and cloud-in-cell sensitivity}
+
+With $G=56$, $L=22\sigma$, $G/2$ radial bins and $k_{\max}=\pi G/L$, the bin width is $\Delta k=2\pi/L=0.285599\,\sigma^{-1}$ and centres are $(j+1/2)\Delta k$. The zero-containing bin at $0.142800\,\sigma^{-1}$ is rejected. The first admitted bin has edges $[0.285599,0.571199)\,\sigma^{-1}$ and centre
+\begin{equation}
+k_1=0.428399\,\sigma^{-1}.
+\tag{S17}
+\end{equation}
+Its reciprocal-vector membership is shown in Supplementary Table~S1.
+
+\begin{table}[!htbp]
+\centering
+\caption{\textbf{Reciprocal shells in the first admitted baseline bin.}}
+\label{tab:first-admitted-shells}
+\begin{tabular}{llll}
+\toprule
+$|\bm n|$ & physical $k=(2\pi/L)|\bm n|$ & multiplicity & below bin centre?\\
+\midrule
+$1$ & $0.285599\,\sigma^{-1}$ & 6 & yes\\
+$\sqrt2$ & $0.403899\,\sigma^{-1}$ & 12 & yes\\
+$\sqrt3$ & $0.494671\,\sigma^{-1}$ & 8 & no\\
+\midrule
+total & mixed shell & 26 & 18\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The selection criterion is applied to bin centres, so it does not remove the 18 constituent modes below the centre. The $C_A$ estimator selects this bin in 99 of 240 seed-level persistence--amplitude runs, while the label-symmetric sensitivity estimator selects it in 98. Because angular and shell information is averaged within each radial bin, $k_{\mathrm{bin}}^*$ is reported as a finite-box bin centre rather than converted to an intrinsic $2\pi/k$ length.
+
+Cloud-in-cell assignment convolves a point density with a separable triangular kernel. Its Fourier-amplitude window is
+\begin{equation}
+W_{\mathrm{CIC}}(\bm{k})=\prod_{\mu=x,y,z}
+\left[\frac{\sin(k_\mu h/2)}{k_\mu h/2}\right]^2,
+\qquad h=L/G.
+\tag{S18}
+\end{equation}
+Three auxiliary measurement-validation trajectories at $\pi=0.99$ and $\kappa=0$, 0.5 and 1 use $k_b=100\epsilon/\sigma^2$ and $10^8$ high-temperature preparation steps. They provide a direct point-particle versus cloud-in-cell comparison over their final 25 frames and are kept separate from the primary static simulations, which use $k_b=200\epsilon/\sigma^2$ and 30,000 preparation steps. A self-term-preserving within-bin deconvolution changes peak amplitudes by $0.437$--$4.251\%$ across the persistence scan and changes one of 240 label-symmetric peak assignments; the corresponding amplitude range for the three validation trajectories is $0.437$--$2.493\%$.
+
+\begin{figure}[!htbp]
+\centering
+\safeinclude{FigS3_peak_binning.pdf}
+\caption{\textbf{Peak-estimator sensitivity.} Across the 240 persistence--amplitude runs, label symmetrization changes four peak-bin calls and cloud-in-cell-window correction changes one. The label-symmetric estimator selects the first mixed bin in 98 runs, compared with 99 selections by $C_A$. Cloud-in-cell amplitude changes span $0.437$--$4.251\%$.}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\safeinclude{FigS4_cic_sensitivity.pdf}
+\caption{\textbf{Point-particle and cloud-in-cell measurement validation.} \textbf{a}, Exact point-particle $S_{\psi\psi}^{(N)}(k)/2$ (solid) and raw $G=56$ cloud-in-cell spectra (dashed) for seed-1 trajectories at $\pi=0.99$ and $\kappa=0$, 0.5 and 1; shading is the temporal standard deviation of the direct estimator across the final 25 frames. \textbf{b}, Direct $S_{AA}^{(N)}$, $S_{BB}^{(N)}$ and $S_{AB}^{(N)}$ for $\kappa=1$. \textbf{c}, Raw cloud-in-cell bias relative to direct sums versus wavevector. These measurement-validation trajectories use $k_b=100\epsilon/\sigma^2$ and $10^8$ high-temperature preparation steps; the primary static simulations use $k_b=200\epsilon/\sigma^2$ and 30,000 preparation steps.}
+\end{figure}
+
+\clearpage
+
+\section*{Simulation conditions and averaging rules}
+
+The primary 144-chain scans and the four static $\kappa$-control families use 5,760 beads; the short-chain control retains this bead count with 480 chains. The fixed-density size series described in the section \emph{Fixed-density finite-size comparison} extends the baseline geometry to 11,520 and 23,040 beads while holding bead density fixed. The controls differ only as listed in Supplementary Table~S2. \emph{Dense} denotes a smaller volume and higher number density at fixed particle count.
+
+\begin{table}[!htbp]
+\centering
+\caption{\textbf{Static $\kappa$-control parameters.}}
+\label{tab:kappa-control-parameters}
+\begin{tabular}{llllllll}
+\toprule
+control & chains & $N$ & $L/\sigma$ & $\rho\sigma^3$ & $(\epsilon_{AA},\epsilon_{BB},\epsilon_{AB})$ & $T$/K & seeds\\
+\midrule
+baseline & 144 & 40 & 22 & 0.54095 & $(1,1,0.1)$ & 84.19 & 5\\
+dense & 144 & 40 & 17 & 1.17240 & $(1,1,0.1)$ & 84.19 & 4\\
+soft & 144 & 40 & 22 & 0.54095 & $(0.4,0.4,0.04)$ & 33.676 & 4\\
+short chain & 480 & 12 & 22 & 0.54095 & $(1,1,0.1)$ & 84.19 & 4\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The wrapper converted the nominal $T^*=0.7$ with $\epsilon_{AA}$ as its reference energy. The soft condition therefore used 33.676 K while the common Weeks--Chandler--Andersen (WCA) core depth remained 1; it jointly changes the attractive-tail depths and temperature relative to that core. It is not a one-variable cohesion control.
+
+\begin{table}[!htbp]
+\centering
+\caption{\textbf{Simulation sets and sample sizes.}}
+\label{tab:simulation-sets}
+\begin{tabularx}{\linewidth}{@{}lllX@{}}
+\toprule
+family & conditions & runs & use\\
+\midrule
+four $\kappa$ controls & $8\kappa$ values & 136 & main control analysis\\
+$(\pi,\kappa)$ & $8\times6$, 5 seeds & 240 & main response/theory figures\\
+$(f_A,\kappa)$ & $7\times6$, 4 seeds & 168 & off-stoichiometric mode-mixing analysis\\
+sequence/$\epsilon_{AB}$ & $4\times10$, 5 seeds & 200 & main interaction figure\\
+fixed-density size & 3 sizes $\times2\kappa$, 5 seeds & 30 & finite-size comparison\\
+\midrule
+total & & 774 & 606 balanced; 168 mode-mixing\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Run-level static values average the final five stored spectra. These values support the $\kappa$ controls, persistence--amplitude response, cross-attraction scan and fixed-density size comparison. The fixed-density series additionally stores the immediately preceding five-frame window for convergence context (see the section \emph{Fixed-density finite-size comparison}). The 168 off-stoichiometric summaries are used for the mode-mixing analysis described in \emph{Off-stoichiometric mode mixing and cross-attraction controls}. The three measurement-validation trajectories are analysed over their final 25 frames for Supplementary Fig.~S4. Frames within a run are not treated as independent replicates: every inferential error bar is calculated after forming one value per independent seed.
+
+\begin{figure}[!htbp]
+\centering
+\safeinclude{FigS5_kappa_controls.pdf}
+\caption{\textbf{Reduced-temperature diagnostic for the four finite-system conditions.} Curves compare the baseline, dense, soft and short-chain conditions in Supplementary Table~S2; the dotted line marks the nominal $T^*=0.7$. Each seed-level value first averages the final five stored summaries within a run. Small symbols show individual seeds; coloured markers and bars show means and standard errors across five seeds for the baseline and four for the other conditions.}
+\end{figure}
+
+\section*{Off-stoichiometric mode mixing and cross-attraction controls}
+
+The 168 off-stoichiometric runs span seven target compositions, six $\kappa$ values and four seeds at $\pi=0.95$. For $\bm k\ne0$, the label-difference spectrum in Eq.~(S13) uses $s_j=\pm1$, so its same-particle contribution is
+\[
+N_{\mathrm{tot}}^{-1}\sum_j s_j^2=1
+\]
+at every composition. Dividing this spectrum by $4f_A(1-f_A)$ therefore amplifies the unit self term away from $f_A=1/2$. The density-orthogonal centred-label field instead has spectrum $4S_{cc}^{(N)}$, whose same-particle contribution is $4f_A(1-f_A)$. Reconstructing that observable requires the three partial spectra at common wavevectors before peak maximization. Supplementary Fig.~S6 consequently uses the available label-difference summaries, simple rescaling and an A/B exchange diagnostic to characterize density--composition mode mixing.
+
+\begin{figure}[!htbp]
+\centering
+\safeinclude{FigS6_composition_confounding.pdf}
+\caption{\textbf{Off-stoichiometric mode mixing.} \textbf{a}, Label-difference peak summary $S_{\psi\psi}^{(N)}(k^*)/2$ over $(f_A,\kappa)$ at $\pi=0.95$. \textbf{b}, Selected $\kappa$ sections. \textbf{c}, Division by $4f_A(1-f_A)$, which amplifies the composition-independent unit self term and retains density mixing when $f_A\ne0.5$. \textbf{d}, Ratio between complementary target compositions as an A/B exchange diagnostic. Each seed-level value averages its final five stored spectra. Small symbols in \textbf{b} and \textbf{c} show individual seeds; lines, larger markers and bars show means and standard errors across four seeds. These derived summaries diagnose mode mixing; reconstructing Bhatia--Thornton $S_{cc}^{(N)}$ requires common-wavevector partial arrays not present in the run summaries.}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\safeinclude{FigS7_interaction_statistics.pdf}
+\caption{\textbf{Cross-attraction controls.} \textbf{a}, Per-bead $C_A$ across all ten $\epsilon_{AB}$ values for alternating, independently random, deterministic $A_4B_4$ and independently correlated sequences. Small symbols show individual seeds; lines, larger points and bars show means and standard errors across five seeds. \textbf{b}, Each sequence-class mean divided by its value at $\epsilon_{AB}=0.1$. \textbf{c}, Modal peak-bin centre versus $\epsilon_{AB}$. Each seed-level value averages its final five stored spectra.}
+\end{figure}
+
+\clearpage
+
+\section*{Fixed-density finite-size comparison}
+
+The fixed-density series compares $M=144$, 288 and 576 chains of $N=40$ beads at $\pi=0.99$, $\kappa=0$ and 1, with five seeds per condition. With $\sigma=1$ nm, the cubic box length is
+\[
+L(M)=22(M/144)^{1/3}\sigma,
+\]
+giving $L/\sigma=22.0000$, 27.7183 and 34.9228 and the same bead density, $MN/L^3=0.5409467\,\sigma^{-3}$, at all three sizes. The density grids used during simulation scale as $56^3$, $71^3$ and $89^3$, but the spectra reported here are calculated directly from particle coordinates and do not use those grids. At each $(M,\kappa)$, full chain sets were proposed chainwise and accepted only when they contained exactly $MN/2$ A beads. Separate child random-number streams generated sequences and initial placements. The same five root-seed labels were reused across the two $\kappa$ values at each size, providing a matched design. Initial configurations underwent overlap relaxation to a target minimum separation of $0.8\sigma$ followed by energy minimization.
+
+Each run used 30,000 high-temperature preparation steps at $T^*=5$ followed by 250,000 post-quench steps at $T^*=0.7$, with $\Delta t=0.005$ and configurations stored every 2,000 steps. All 30 simulations completed; at the terminal state each had $0.5<T^*_{\mathrm{inst}}<1.0$, $E_{\mathrm{tot}}<0$ and $\langle R_g\rangle<10\sigma$, and all 30 were included.
+
+For every analysed configuration, point-particle density modes were evaluated at
+\begin{equation}
+\bm q=\frac{2\pi}{L}\bm h,\qquad
+\bm h\in\mathbb Z^3\setminus\{\bm0\},\qquad q\le1.5\,\mathrm{nm}^{-1},
+\tag{S19}
+\end{equation}
+and averaged over exact reciprocal shells with equal $|\bm h|^2$. Because $\sigma=1$ nm, the numerical values of $q\sigma$ and $q$ in nm$^{-1}$ coincide. The partial spectra use Eq.~(S12), with $N_{\mathrm{tot}}=MN$, and the primary label-symmetric channel is $S_{\psi\psi}^{(N)}(q)/2$ from Eq.~(S13).
+The primary $q_\star$ for each $(M,\kappa)$ is the exact shell maximizing the across-seed mean of the final-five-frame spectrum; the amplitude and its standard error are then evaluated across the five seed values at that single shell. A size-independent low-$q$ comparison averages all direct modes in $0.15\le q\sigma<0.30$. The preceding window comprises steps 232,000--240,000 and the final estimator window steps 242,000--250,000. In Supplementary Table~S4, $\Delta_{\mathrm{E}\to\mathrm{F}}$ is the final-five mean minus the preceding-five mean for the common low-$q$ band, and $b_F$ is its ordinary-least-squares slope over the final five frames per simulation step.
+
+\begin{table}[!htbp]
+\centering
+\footnotesize
+\caption{\textbf{Exact-shell, common-low-$q$ and convergence summaries for the fixed-density series.} $S_\star=S_{\psi\psi}^{(N)}(q_\star)/2$ and $S_{[0.15,0.30)}$ is the same channel averaged over direct modes in the fixed band $0.15\le q\sigma<0.30$. Apart from the condition-selected $q_\star$, entries are means $\pm$ standard errors across five seeds. $\Delta_{\mathrm{E}\to\mathrm{F}}$ and $b_F$ refer to the common low-$q$ band.}
+\label{tab:finite-size}
+\begin{tabular}{@{}rrccccc@{}}
+\toprule
+$M$ & $\kappa$ & $q_\star\sigma$ & $S_\star$ & $S_{[0.15,0.30)}$ & $\Delta_{\mathrm{E}\to\mathrm{F}}$ & $10^3 b_F$\\
+\midrule
+144 & 0 & 0.9472 & $6.23\pm1.22$ & $0.679\pm0.124$ & $0.0207\pm0.0316$ & $0.00344\pm0.00482$\\
+144 & 1 & 0.2856 & $540.94\pm13.37$ & $540.94\pm13.37$ & $1.061\pm1.807$ & $0.429\pm0.403$\\
+288 & 0 & 1.0137 & $6.60\pm0.75$ & $0.540\pm0.106$ & $-0.00893\pm0.00760$ & $-0.00680\pm0.00258$\\
+288 & 1 & 0.2267 & $773.32\pm58.60$ & $773.32\pm58.60$ & $26.18\pm7.82$ & $1.577\pm0.915$\\
+576 & 0 & 1.0944 & $6.83\pm1.25$ & $0.608\pm0.057$ & $-0.03285\pm0.01268$ & $-0.00387\pm0.00352$\\
+576 & 1 & 0.2544 & $575.42\pm39.59$ & $551.66\pm45.66$ & $11.24\pm0.99$ & $1.088\pm0.136$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\safeinclude{FigS8_finite_size.pdf}
+\caption{\textbf{Fixed-density finite-size comparison at $\pi=0.99$.} \textbf{a}, Exact-shell $S_{\psi\psi}^{(N)}(q_\star)/2$ versus chain count for $\kappa=0$ and 1. Large symbols and bars show the mean and standard error across five seeds at the condition-selected shell; small symbols show the corresponding seed values. \textbf{b}, The same channel averaged over the size-independent band $0.15\le q\sigma<0.30$. \textbf{c}, Condition-selected $q_\star$; dashed lines show the smallest nonzero reciprocal magnitude $q_{\min}=2\pi/L$. All panels use the final five stored post-quench configurations, and all 30 completed simulations are included.}
+\end{figure}
+
+
+\clearpage
+\section*{Two-component melt response and the symmetric projection}
+
+The one-chain statistic in Eqs.~(S5)--(S7) is evaluated in a Gaussian reference whose conformations are independent of its A/B labels. It is not the collective melt spectrum. To retain density response, define the per-bead intramolecular A/B matrix for an ensemble of chains by
+\[
+\Omega_{\alpha\beta}(k)=\frac1N\sum_{i,j=1}^N
+ \bigl\langle I_i^\alpha I_j^\beta\bigr\rangle
+ e^{-k^2b^2|i-j|/6},\qquad \alpha,\beta\in\{A,B\}.
+\]
+Here $I_i^A=(1+s_i)/2$, $I_i^B=(1-s_i)/2$, and the average is over the specified sequence distribution, with each quenched sequence held fixed during its dynamics. Under balanced A/B exchange symmetry, this gives
+\[
+\boldsymbol\Omega=\frac14
+ \begin{pmatrix}D+S_0&D-S_0\\D-S_0&D+S_0\end{pmatrix},
+\qquad
+D(k)=1+2\sum_{\ell=1}^{N-1}\left(1-\frac\ell N\right)e^{-k^2b^2\ell/6}.
+\]
+The factors of four follow from $\mathbf 1_A=(1+s)/2$ and $\mathbf 1_B=(1-s)/2$. Independent stochastic chains share a target composition, but need not have identical realized compositions. Thus $S_0(0)$ is generally nonzero; it is a property of the sequence ensemble, not the excluded canonical zero mode.
+
+Let $\mathbf S=N_{\mathrm{tot}}^{-1}\langle\delta\mathbf n\,\delta\mathbf n^{\dagger}\rangle$ for $\delta\mathbf n=(\delta n_A,\delta n_B)^{\mathsf T}$ at a nonzero wavevector. In a Gaussian expansion, the dimensionless quadratic free energy is $\beta F^{(2)}=(2N_{\mathrm{tot}})^{-1}\sum_{\bm k}\delta\mathbf n^{\dagger}\boldsymbol\Gamma\delta\mathbf n$. The closure used to display the separate density and composition contributions is
+\[
+\boldsymbol\Gamma=\boldsymbol\Omega^{-1}+\mathbf U,
+\qquad
+\mathbf U=B(k)\mathbf J+\rho\beta\widetilde w(k)\mathbf E,
+\qquad
+\mathbf S_{\mathrm{RPA}}=\boldsymbol\Gamma^{-1}
+\quad(\boldsymbol\Gamma\succ0).
+\]
+Here $J_{\alpha\beta}=1$, $E_{AA}=E_{BB}=\epsilon_{\mathrm{like}}$ and $E_{AB}=E_{BA}=\epsilon_{AB}$. The dimensionless finite function $B(k)$ represents an approximate repulsive-reference contribution to the density stiffness. For example, a measured label-blind reference density response would define $B(k)=[S_{nn}^{\mathrm{ref}}(k)]^{-1}-D(k)^{-1}$ within this closure. No such reference calibration is made here. This ansatz is not an exact theory of excluded volume, and $B$ is not obtained by Fourier transforming the singular WCA potential.
+
+Transform to $\delta n_n=\delta n_A+\delta n_B$ and $\delta n_\psi=\delta n_A-\delta n_B$ using $\mathbf T=\left(\begin{smallmatrix}1&1\\1&-1\end{smallmatrix}\right)$. Then $\mathbf S_{n\psi}=\mathbf T\mathbf S\mathbf T^{\mathsf T}$ and $\mathbf K=\mathbf T^{-\mathsf T}\boldsymbol\Gamma\mathbf T^{-1}$. Under exchange symmetry,
+\[
+\mathbf K=
+\begin{pmatrix}
+ D^{-1}+B+\tfrac12\rho\beta\widetilde w(\epsilon_{\mathrm{like}}+\epsilon_{AB})&0\\
+ 0&S_0^{-1}+\tfrac12\rho\beta\widetilde w(\epsilon_{\mathrm{like}}-\epsilon_{AB})
+\end{pmatrix}.
+\]
+The common repulsive term remains in the density mode and cancels only from the bare antisymmetric contrast. This cancellation follows from symmetry, not dilution. In an incompressible limit the density stiffness grows without bound; in a compressible description it remains finite. For a general real symmetric matrix, including a finite sequence sample without exact exchange symmetry, integration over the density mode instead gives
+\[
+\bigl[S_{\psi\psi}(k)\bigr]^{-1}
+ =K_{\psi\psi}(k)-\frac{K_{n\psi}(k)^2}{K_{nn}(k)},
+\qquad K_{nn}>0,\quad \det\mathbf K>0.
+\]
+This Schur complement shows explicitly where density--composition coupling enters. At symmetry, the per-bead contrast $C_{\mathrm{sym}}=S_{\psi\psi}/2$ obeys $C_{\mathrm{sym}}^{-1}=2/S_0-\chi_{\mathrm{bare}}$ within the stable closure. That fixed-wavevector relation is not preserved by replacing its terms with inverses of separately averaged, response-selected peak quantities.
+
+There is also a formal connection to fluctuation free energies. At a fixed coarse-graining cutoff, the Gaussian determinant contribution relative to the intramolecular reference is
+\[
+\frac{\beta\Delta F_{\mathrm G}}V
+ =\frac1{2V}\sum_{\bm k\ne0}^{\mathrm{cutoff}}
+ \log\det\!\left[\mathbf I+
+ \boldsymbol\Omega^{1/2}\mathbf U\boldsymbol\Omega^{1/2}\right].
+\]
+This expression requires a positive-definite Hessian at every wavevector retained below the cutoff and precedes any model-specific self-energy subtraction or thermodynamic differentiation. A species-demixing calculation must additionally specify the constituent sequence species, their fractions and mixing entropy. The present sequence ensemble and late post-quench peaks do not supply that calculation; no blend-demixing scaling law is inferred.
+
+The bare attraction transform in the main text yields $S_0(0)^{-1}-\chi_{\mathrm{bare}}(0)/2=-3.749628178$ for independent balanced labels. Here $k=0$ denotes the formal long-wavelength limit, not a measured canonical mode. A negative value precludes a positive-definite Hessian for this closure, independently of $B$. It neither calibrates the physical melt's direct correlations nor establishes its spinodal. Packing and conformation changes can renormalize effective composition interactions even though the common bare core cancels algebraically.
+
+\end{document}

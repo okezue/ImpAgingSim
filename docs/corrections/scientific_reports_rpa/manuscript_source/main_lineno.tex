@@ -1,0 +1,389 @@
+\documentclass[pdflatex,sn-nature,onecolumn]{sn-jnl}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{microtype}
+\usepackage[mathlines,switch]{lineno}
+\hypersetup{hypertexnames=false}
+\graphicspath{{figures/}}
+\setcounter{secnumdepth}{0}
+\setlength{\abovecaptionskip}{6pt}
+\setlength{\belowcaptionskip}{4pt}
+
+% The bundled Springer class prefixes plain-style page numbers with the
+% draft marker ``ddd''; retain the plain footer but remove that artifact.
+\makeatletter
+\def\ps@plain{\let\@mkboth\@gobbletwo
+  \def\@oddhead{}\def\@evenhead{}%
+  \def\@oddfoot{\vbox to 18pt{\vfill\reset@font\rmfamily\hfil\thepage\hfil}}%
+  \let\@evenfoot\@oddfoot}
+\makeatother
+
+% This fallback keeps the source compilable while journal-uploaded figure files
+% remain separate. It is replaced automatically when the named file is present.
+\newcommand{\safeinclude}[1]{%
+  \IfFileExists{figures/#1}{\includegraphics[width=\linewidth]{#1}}%
+  {\fbox{\parbox[c][44mm][c]{0.95\linewidth}{\centering Figure file: \texttt{\detokenize{#1}}}}}}
+
+% Review layout: figures are supplied as separate files and the complete
+% legends are collected after the references, following the Scientific Reports
+% submission instructions.
+\newcommand{\figurecallout}[1]{%
+  \refstepcounter{figure}\label{#1}%
+  \begin{center}\textit{[Figure \thefigure\ near here]}\end{center}}
+
+\makeatletter
+\def\email#1{\global\advance\emailcnt by 1\relax%
+\if@corauemail%
+   \g@addto@macro\corrauthemail{\setcounter{footnote}{0}\textcolor{blue}{#1}}%
+\else%
+   \g@addto@macro\authemail{\setcounter{footnote}{0}\textcolor{blue}{#1}}%
+\fi}
+\makeatother
+
+\title[Independent control of sequence-correlation amplitude]{Independent control of sequence-correlation amplitude tunes post-quench composition fluctuations in A/B heteropolymer melts}
+
+\author*{\fnm{Alexander Okezue} \sur{Bell}}\email{okezue@stanford.edu}
+\affil{\orgname{Stanford University}, \orgaddress{\street{450 Jane Stanford Way}, \city{Stanford}, \state{CA}, \postcode{94305}, \country{USA}}}
+
+\abstract{Sequence correlations provide a route to tune composition fluctuations in heteropolymer melts while holding chemistry and mean composition fixed. We simulate short A/B heteropolymers after a quench using a two-stage generator in which one parameter controls correlation persistence and a second independently controls its amplitude. Across 606 balanced-composition static runs, increasing correlation amplitude raises a per-bead composition-peak estimator in the baseline system and three controls. In a matched fixed-density 144/288/576-chain series at high persistence, the high-correlation peak remains 84--117 times the independent-label peak and varies nonmonotonically with system size. A Gaussian-chain intramolecular composition form factor evaluated at the measured finite-wavevector peak bin organizes the inverse collective response more strongly than its zero-wavevector limit, linking contour statistics to spatial fluctuations. A two-component random-phase formulation separates density and composition response and shows why the bare interaction closure cannot provide a quantitative homogeneous-reference prediction for these data. Varying A--B attraction produces a broad low-attraction plateau followed by a decline. Together, these results show how independently tuning sequence-correlation range and amplitude controls late post-quench composition fluctuations in the simulated melts and yields a scattering-based design hypothesis for sequence-defined copolymers.}
+
+\begin{document}
+\maketitle
+\raggedright
+\raggedbottom
+\pagestyle{plain}
+\thispagestyle{plain}
+\linenumbers
+\renewcommand\linenumberfont{\normalfont\tiny\sffamily\color{gray}}
+
+\section{Introduction}
+
+Covalently joining unlike monomers frustrates ordinary macrophase separation. In a diblock copolymer, that frustration produces a characteristic finite-wavevector composition response: the chain architecture determines which spatial fluctuations are available, while the interaction contrast determines how strongly the melt amplifies them. Random-phase approximation (RPA), self-consistent-field theory and strong-segregation descriptions formalize this separation of molecular architecture and collective response \cite{Leibler1980,FredricksonHelfand1987,MatsenBates1996,BatesFredrickson1999}. The physical picture is simple. A long A-rich portion and a long B-rich portion can occupy different local environments without disconnecting the chain, whereas rapid alternation suppresses composition imbalance over distances larger than a few monomers.
+
+The corresponding problem for statistical and multiblock copolymers has a substantial history. Mean-field theories predict sequence-dependent spinodals, Lifshitz points and microphase responses for random-block and correlated-random melts \cite{FredricksonMilnerLeibler1992,Angerman1996,MaoSpakowitz2016,Patyukova2021}. Simulations and theory have examined regular and Markov multiblocks, block-length dispersity, microemulsion-like structures, interfacial properties and slow morphological relaxation \cite{Gavrilov2011CPL,Gavrilov2011PSA,Govorun2017,Rudyak2022,Steinmuller2012Morph,Steinmuller2012Bulk}. Related work treats many-letter heteropolymers, random combs, physical gels and lattice morphologies \cite{Sfatos1994,Foster1995,Glotzer1993,Dotera1999}. Thus, the established result that \emph{blockiness matters} is not the novelty of the present study.
+
+More recent work makes the sequence itself a design variable. Experiments on sequence-controlled multiblocks and block--random copolymers, theory for sequence-specific charged heteropolymers, and studies of gradient or conformation-designed chains all show that phase behaviour and morphology depend on more than overall composition \cite{Zhang2017,Taylor2024,LiMuthukumar2022,Ganesan2012,Govorun2015,Govorun2021}. These studies also expose a recurring identification problem: changing a synthetic protocol generally changes several sequence statistics at once. Mean run length, long-range covariance, composition drift and block-length dispersity can all move together.
+
+The useful bridge from sequence to collective structure is an intramolecular composition form factor. Let a centred monomer label be positive on A and negative on B. The form factor asks how strongly labels on the \emph{same chain} add coherently at wavevector $k$. At $k=0$, every monomer on the chain contributes with the same phase, so the form factor measures fluctuations of the chain's total composition. At finite $k$, labels far apart in space lose phase coherence; the form factor then measures composition power available on the corresponding spatial scale. Interactions and packing act on this one-chain input to produce the collective composition structure factor of the melt. RPA represents this relationship through a matrix of density and composition responses about a homogeneous reference state. The simple scalar composition formula follows when symmetry decouples those modes, and a physical RPA spectrum requires a positive-definite fluctuation Hessian.
+
+Here we ask how late post-quench composition spectra respond when the \emph{range} and \emph{amplitude} of nonzero-lag sequence correlations are varied independently at fixed pair chemistry. We generate a Markov backbone with persistence parameter $\pi$ and express that backbone through an independent Bernoulli mask of mean $\kappa$. For balanced sequences, the covariance range is set by $\lambda=2\pi-1$, whereas every nonzero-lag covariance is multiplied by $\kappa^2$. Each stochastic chain is drawn independently. We then connect these contour statistics to the per-bead collective composition spectrum through an exact covariance calculation, a finite-chain form factor and a normalized peak estimator.
+
+Across the balanced-composition simulations, increasing sequence-correlation amplitude raises the peak estimator in the baseline system and three controls. The separation persists when the fixed-density system is enlarged from 144 to 576 chains, although the peak amplitude varies nonmonotonically across the three sizes. A finite-$k$ one-chain statistic organizes the persistence--amplitude scan, while the cross-attraction scan shows a broad low-attraction plateau followed by a decline. These results identify sequence covariance as a directly tunable input to composition fluctuations in the simulated post-quench melts.
+
+\section{Results}
+
+\subsection{Two sequence parameters separate correlation range from amplitude}
+
+We use A/B monomer labels rather than a \emph{binary melt}: this is not a two-component molecular blend. The chains share one bead--spring architecture but are chemically polydisperse because their stochastic A/B label strings differ. For a target A fraction $f_A$, a stationary Markov backbone $z_i\in\{-1,+1\}$ is generated independently for every stochastic chain. Its transition probabilities are
+\begin{align}
+P(A\rightarrow B)&=2(1-\pi)(1-f_A),\\
+P(B\rightarrow A)&=2(1-\pi)f_A,
+\end{align}
+which give stationary probability $P(A)=f_A$ and nontrivial eigenvalue $\lambda=2\pi-1$. At $f_A=1/2$, $\pi$ is simply the probability of retaining the previous label. A mask $b_i\sim\mathrm{Bernoulli}(\kappa)$ then selects either the Markov label or an independent composition-matched draw $u_i$,
+\begin{equation}
+s_i=b_i z_i+(1-b_i)u_i .
+\label{eq:two-stage}
+\end{equation}
+Representative production strings at fixed $\pi$ are shown in Fig.~\ref{fig:sequence_construction}a.
+
+Writing $\delta s_i=s_i-(2f_A-1)$, the exact connected covariance is
+\begin{equation}
+\left\langle\delta s_i\delta s_{i+\ell}\right\rangle=
+\begin{cases}
+4f_A(1-f_A), & \ell=0,\\
+4f_A(1-f_A)\kappa^2\lambda^{\ell}, & \ell>0.
+\end{cases}
+\label{eq:sequence-covariance}
+\end{equation}
+The lag-zero variance is therefore independent of $\kappa$; only covariance between distinct monomers is attenuated. Empirical within-chain covariances follow Eq.~\ref{eq:sequence-covariance} (Fig.~\ref{fig:sequence_construction}b), and the covariance across chain boundaries is consistent with the zero expectation for independently initialized chains (Fig.~\ref{fig:sequence_construction}c). Consequently, changing $\pi$ changes the correlation length along the contour, while changing $\kappa$ scales the nonzero-lag amplitude without changing its exponential range (Fig.~\ref{fig:sequence_construction}d; Supplementary Fig.~S1).
+
+The primary parameter scans contain 144 independently drawn stochastic sequences, not 144 copies of one stochastic sequence and not a constraint that all sequences be unique. The independent-random control is likewise drawn separately for every chain. By contrast, the deterministic alternating and four-A/four-B block controls repeat their specified sequence on each chain. This distinction matters because the stochastic ensemble permits chain-to-chain composition fluctuations in the finite box.
+
+\figurecallout{fig:sequence_construction}
+
+\subsection{Balanced-composition peak estimator and finite-box measurement}
+
+For each nonzero reciprocal vector $\bm{k}$, let $\delta n_A(\bm{k})$ and $\delta n_B(\bm{k})$ denote the Fourier amplitudes of the A- and B-labelled number-density fluctuations. We normalize the partial spectra per bead,
+\begin{equation}
+S_{\alpha\beta}^{(N)}(\bm{k})=\frac{1}{N_{\mathrm{tot}}}
+\operatorname{Re}\!\left[\delta n_\alpha(\bm{k})\delta n_\beta(\bm{k})^*\right].
+\label{eq:partial-sf}
+\end{equation}
+At balanced composition, the centred composition mode is $\delta n_\psi=\delta n_A-\delta n_B$. Expanding $|\delta n_\psi|^2$ gives
+\begin{equation}
+S_{\psi\psi}^{(N)}(k)=S_{AA}^{(N)}(k)+S_{BB}^{(N)}(k)-2S_{AB}^{(N)}(k).
+\label{eq:symmetric-sf}
+\end{equation}
+Interchanging A and B changes the sign of $\delta n_\psi$ but not Eq.~\ref{eq:symmetric-sf}. A fully symmetric balanced-composition contrast would be
+\begin{equation}
+C_{\mathrm{sym}}=\frac{1}{2}S_{\psi\psi}^{(N)}(k_{\mathrm{bin}}^*),\qquad
+k_{\mathrm{bin}}^*=\underset{k\in\mathcal{K}_{\mathrm{admitted}}}{\operatorname{arg\,max}}\;S_{\psi\psi}^{(N)}(k).
+\label{eq:contrast}
+\end{equation}
+The factor one half makes $C_{\mathrm{sym}}=S_{AA}^{(N)}-S_{AB}^{(N)}$ under exact A/B statistical symmetry.
+
+The balanced-composition analyses use the run-level peak estimator
+\begin{equation}
+C_A=\max_{k\in\mathcal K_{\mathrm{admitted}}}
+\left[S_{AA}^{(N)}(k)-S_{AB}^{(N)}(k)\right],
+\label{eq:peak-estimator}
+\end{equation}
+which equals $C_{\mathrm{sym}}$ under exact A/B statistical symmetry. A label-symmetrization sensitivity analysis changed four of 240 persistence-scan peak-bin calls when Eq.~\ref{eq:symmetric-sf} replaced the A-based expression. The results below therefore use $C_A$ consistently and report the sensitivity separately (Supplementary Fig.~S3).
+
+The mesh convention uses the fast Fourier transform (FFT), $S_{\mathrm{code}}=V|\mathrm{FFT}|^2/G^6$, on a $G=56$ cloud-in-cell grid. Each peak summary is converted to the per-bead convention by multiplying by $G^6/(N_{\mathrm{tot}}V)$. A mesh-window sensitivity analysis gives amplitude changes of $0.437$--$4.251\%$ and one changed peak call among 240 runs. Supplementary Fig.~S4 compares point-particle and cloud-in-cell spectra for three auxiliary trajectories; the primary static analyses use the final-five-frame run summaries.
+
+The finite-box geometry is important for interpreting the peak position. For the baseline length $L=22\sigma$, the first admitted radial bin is centred at $0.428399\,\sigma^{-1}$ but contains 26 reciprocal vectors from $|\bm{n}|=1,\sqrt{2},\sqrt{3}$; 18 of those modes lie below the nominal bin-centre cutoff. That mixed bin is selected by $C_A$ in 99 of the 240 persistence--amplitude runs (Fig.~\ref{fig:persistence_response}b,d), compared with 98 selections in the label-symmetrization sensitivity analysis. Its exact reciprocal-shell membership is listed in Supplementary Table~S1. Accordingly, $k_{\mathrm{bin}}^*$ is interpreted as a finite-box bin label rather than converted into a real-space domain length.
+
+\subsection{Correlation amplitude raises late-time composition peaks across four controls}
+
+At fixed $\pi=0.90$, increasing $\kappa$ raises the late-time balanced estimator in the baseline system (Fig.~\ref{fig:kappa_controls}a). With per-bead normalization, the endpoint means across independent seeds are approximately $C_A=5.18$ at $\kappa=0$ and $96.9$ at $\kappa=1$, an 18.7-fold ratio. The same monotone ordering occurs when the box is compressed at fixed bead number, in the soft condition, and when chains are shortened at fixed total bead number (Fig.~\ref{fig:kappa_controls}a). The corresponding endpoint ratios are 11.9, 15.0 and 15.0; the within-condition ratios are shown in Fig.~\ref{fig:kappa_controls}b.
+
+The term \emph{dense control} means a higher number density, not a larger number of chains: the same 5,760 beads occupy a box of length $17\sigma$ rather than $22\sigma$, changing $\rho$ from $0.54095$ to $1.17240\,\sigma^{-3}$. The soft condition has the baseline geometry but $\epsilon_{AA}=\epsilon_{BB}=0.4$ and $\epsilon_{AB}=0.04$. The execution wrapper defined temperature relative to $\epsilon_{AA}$, so its nominal $T^*=0.7$ corresponds to 33.676 K rather than the baseline 84.19 K, while the shared Weeks--Chandler--Andersen (WCA) core remained at unit depth. It is therefore a combined change of attractive-tail depths and temperature relative to the repulsive core. The short-chain control contains 480 chains of 12 beads, maintaining 5,760 beads and the baseline volume. Each run summary averages its final five stored spectra; error bars describe variation across four or five independent seeds. The reduced-temperature diagnostic and control parameters are provided in Supplementary Fig.~S5 and Supplementary Table~S2.
+
+The peak-bin labels shift toward the first few radial bins at high $\kappa$. Across the discrete finite-box bins, the robust common observation is the growth of spectral amplitude: the ordering persists under changes in concentration, combined attractive-tail depth and temperature, and chain length.
+
+\figurecallout{fig:kappa_controls}
+
+\subsection{Persistence and amplitude jointly organize the composition response}
+
+The persistence--amplitude grid contains eight $\pi$ values, six $\kappa$ values and five independent seeds per condition. Its per-bead $C_A$ response is weak when either the backbone correlation range or its expressed amplitude is small and becomes large when both are large (Fig.~\ref{fig:persistence_response}a). Selected $\pi$ sections show that changing persistence has no sequence-statistical effect at $\kappa=0$, when the Markov backbone is not expressed, but a strong effect at large $\kappa$ (Fig.~\ref{fig:persistence_response}c).
+
+The peak-bin labels also vary across this grid (Fig.~\ref{fig:persistence_response}b). The $C_A$ estimator selects the first admitted baseline bin, centred at $0.428399\,\sigma^{-1}$, in 99 of 240 seed-level runs (Fig.~\ref{fig:persistence_response}d), compared with 98 selections in the label-symmetrization sensitivity analysis.
+
+\figurecallout{fig:persistence_response}
+
+\subsection{The high-persistence response persists in larger fixed-density boxes}
+
+We tested the two sequence-amplitude endpoints in a matched fixed-density series at $\pi=0.99$. Systems contained $M=144$, 288 or 576 chains of $N=40$ beads, with five independent seeds for each $\kappa=0$ and 1 condition. The box length was scaled as $L=22(M/144)^{1/3}\sigma$, giving $L/\sigma=22.000$, 27.718 and 34.923 while holding the bead density at $0.54095\,\sigma^{-3}$. Exact global 50:50 composition was imposed for every run. Direct particle-based partial spectra were combined as $S_{\psi\psi}^{(N)}(q)/2=[S_{AA}^{(N)}(q)+S_{BB}^{(N)}(q)-2S_{AB}^{(N)}(q)]/2$ and averaged over exact reciprocal shells.
+
+For $\kappa=0$, the condition-selected peak means were $6.23\pm1.22$, $6.60\pm0.75$ and $6.83\pm1.25$ at $M=144$, 288 and 576, respectively. The corresponding $\kappa=1$ means were $540.9\pm13.4$, $773.3\pm58.6$ and $575.4\pm39.6$ (mean $\pm$ standard error across five seeds; Supplementary Fig.~S8 and Supplementary Table~S4). Thus the high-correlation peak remained 86.9-, 117.2- and 84.3-fold above the independent-label peak. At the same low-wavevector interval $0.15\le q\sigma<0.30$, the $\kappa=1$ response was $540.9\pm13.4$, $773.3\pm58.6$ and $551.7\pm45.7$, compared with $0.679\pm0.124$, $0.540\pm0.106$ and $0.608\pm0.057$ for $\kappa=0$ (Supplementary Fig.~S8). The low-$q$ separation therefore survives a fourfold increase in chain number and box volume.
+
+The exact-shell maxima occurred at $q_\star\sigma=0.9472$, 1.0137 and 1.0944 for $\kappa=0$, and at $0.2856$, 0.2267 and 0.2544 for $\kappa=1$ (Supplementary Fig.~S8). The high-correlation maximum is the lowest shell for $M=144$ and 288 and the second shell for $M=576$. Its amplitude is nonmonotonic, with an elevated 288-chain value, and the selected low-$q$ shells remain tied to the largest spatial modes admitted by each box. The three sizes establish persistence of the sequence effect, but do not define a thermodynamic scaling exponent or an intrinsic domain wavelength.
+
+\subsection{A finite-\texorpdfstring{$k$}{k} intramolecular statistic organizes the persistence scan}
+
+The sequence covariance can be converted to a one-chain spatial spectrum in a label-independent Gaussian reference with statistical segment length $b$ \cite{RubinsteinColby2003}. In that reference, sequence and conformational averages factorize, giving
+\begin{equation}
+S_0(k)=\frac{1}{N}\sum_{i,j=1}^{N}
+\left\langle\delta s_i\delta s_j\right\rangle
+\left\langle e^{i\bm{k}\cdot(\bm{r}_i-\bm{r}_j)}\right\rangle.
+\label{eq:s0-definition}
+\end{equation}
+Using $\langle e^{i\bm{k}\cdot(\bm{r}_{i+\ell}-\bm{r}_i)}\rangle=\exp(-k^2b^2\ell/6)$ and Eq.~\ref{eq:sequence-covariance} gives
+\begin{equation}
+\frac{S_0(k)}{4f_A(1-f_A)}=
+1+2\kappa^2\sum_{\ell=1}^{N-1}
+\left(1-\frac{\ell}{N}\right)\lambda^\ell
+\exp\!\left(-\frac{k^2b^2\ell}{6}\right).
+\label{eq:finite-form-factor}
+\end{equation}
+This derivation and its Gaussian-chain basis are detailed in the Supplementary Information sections \emph{Exact sequence covariance for the two-stage generator} and \emph{Intramolecular composition form factor} (Supplementary Fig.~S2). The diagonal term is the composition variance of an individual monomer. Each off-diagonal term counts correlated label pairs at contour separation $\ell$ and discounts pairs that have lost spatial phase coherence.
+
+We denote the normalized sequence form factor by $P_N(k)=S_0(k)/[4f_A(1-f_A)]$. All regression data are balanced, so $4f_A(1-f_A)=1$ and $P_N(k)=S_0(k)$ numerically; the separate symbol keeps the figure axes consistent with the analytical normalization.
+
+The $k=0$ limit is physically distinct: $S_0(0)=N^{-1}\langle(\sum_i\delta s_i)^2\rangle$ measures fluctuations of total chain composition. It is useful as a blockiness summary but is not the collective $k=0$ melt mode, which is removed from the canonical density analysis. At finite $k$, Eq.~\ref{eq:finite-form-factor} asks whether the chain supplies composition power on a measured spatial scale (Fig.~\ref{fig:sequence_response}c).
+
+We use this reference-chain statistic in an empirical comparison with the measured peaks. For each seed, we evaluate $P_N$ at the selected peak-bin centre and then average those values within the condition. We compare the inverse of this average with the inverse condition-mean peak height; both the wavevector and the response therefore come from the measured spectrum. The regression design also respects two exact degeneracies of the generator: when $\kappa=0$ the Markov backbone is never expressed, and when $\pi=0.5$ the backbone itself is uncorrelated. The primary descriptive fit therefore uses the 35 active-interior condition means with $\kappa>0$ and $\pi>0.5$. An affine regression of $\langle C_A\rangle^{-1}$ on $\langle P_N(k_{\mathrm{bin,seed}}^*)\rangle^{-1}$ gives $R^2=0.895598$ (Fig.~\ref{fig:sequence_response}a), compared with $R^2=0.683437$ when $P_N(0)^{-1}$ is used (Fig.~\ref{fig:sequence_response}b). Collapsing all 13 inactive-boundary conditions to a single independent-sequence baseline gives 36 points and $R^2=0.910621$ at finite $k$, versus $0.727875$ at $k=0$. We use $b=\sigma$ without fitting it. Because $k_{\mathrm{bin}}^*$ is selected from the same collective spectrum whose height defines $C_A$, the fit is a response-selected descriptive organization. Its stronger finite-$k$ association supports the relevance of spatial filtering of the sequence covariance.
+
+For the collective theory, retain both A/B number-density modes. In the balanced, exchange-symmetric Gaussian reference, the per-bead intramolecular matrix is
+\[
+\boldsymbol\Omega(k)=\frac14
+\begin{pmatrix}D(k)+S_0(k)&D(k)-S_0(k)\\D(k)-S_0(k)&D(k)+S_0(k)\end{pmatrix},
+\qquad
+D(k)=1+2\sum_{\ell=1}^{N-1}\left(1-\frac\ell N\right)e^{-k^2b^2\ell/6}.
+\]
+Here $D$ is the density form factor. Write $\mathbf J$ for the matrix whose entries are all one, $\mathbf E$ for the attraction-depth matrix with $E_{AA}=E_{BB}=\epsilon_{\mathrm{like}}$ and $E_{AB}=E_{BA}=\epsilon_{AB}$, and $\beta=(k_BT)^{-1}$. A compressible-reference RPA closure and its symmetric projections are
+\begin{equation}
+\begin{aligned}
+\boldsymbol\Gamma(k)&=\boldsymbol\Omega(k)^{-1}+B(k)\mathbf J
+ +\rho\beta\widetilde w(k)\mathbf E,\\
+\mathbf S_{\mathrm{RPA}}(k)&=\boldsymbol\Gamma(k)^{-1}
+ \quad\text{only where }\boldsymbol\Gamma(k)\succ0,\\
+\bigl[S_{nn}^{\mathrm{RPA}}(k)\bigr]^{-1}
+ &=D(k)^{-1}+B(k)+\tfrac12\rho\beta\widetilde w(k)
+ (\epsilon_{\mathrm{like}}+\epsilon_{AB}),\\
+\bigl[S_{\psi\psi}^{\mathrm{RPA}}(k)\bigr]^{-1}
+ &=S_0(k)^{-1}-\tfrac12\chi_{\mathrm{bare}}(k).
+\end{aligned}
+\label{eq:rpa}
+\end{equation}
+A stable homogeneous Gaussian theory requires $\boldsymbol\Gamma(k)\succ0$ at every retained wavevector. All spectra use the per-bead convention, $n=n_A+n_B$, and $\chi_{\mathrm{bare}}=-\rho\beta(\epsilon_{\mathrm{like}}-\epsilon_{AB})\widetilde w$. The finite, dimensionless $B(k)$ represents an approximate repulsive-reference density stiffness. It is not the literal Fourier transform of the WCA core. Density and composition decouple because of A/B exchange symmetry; removing the common interaction from the antisymmetric projection does not remove packing from the melt or take a dilute limit. The Supplementary Information section \emph{Two-component melt response and the symmetric projection} gives the matrix derivation and the coupled expression when this symmetry is absent.
+
+The force-equivalent attractive kernel gives $\widetilde w(0)=-13.6581128818\,\sigma^3$ and $\chi_{\mathrm{bare}}(0)=9.499256357$ at the nominal baseline parameters. Even for $S_0(0)=1$, the resulting long-wavelength composition stiffness is $-3.749628178$; $k=0$ here denotes a formal limit, not a measured canonical mode. This diagnoses failure of the uncalibrated bare closure to yield a stable homogeneous spectrum; it does not determine the physical spinodal of the simulated melt. At a fixed wavevector in the stable symmetric theory, $C_{\mathrm{sym}}=S_{\psi\psi}/2$ gives $C_{\mathrm{sym}}^{-1}=2/S_0-\chi_{\mathrm{bare}}$. That identity is not an equation for the inverses of response-selected condition means fitted above.
+
+Rumyantsev and Gavrilov~\cite{RumyantsevGavrilov2026} use a Gaussian fluctuation free energy to study demixing between separately specified copolymer species with identical composition. Their species-mixture free-energy determinant treats a different ensemble from the present independently drawn, statistically balanced chains, whose individual compositions fluctuate. Their symmetric composition combination $R=g_{AA}-g_{AB}$ corresponds to $S_0/2$ in the present normalization, so their $1-\chi R$ factor has the same structure as the composition projection of Eq.~\ref{eq:rpa}. Their species-demixing criterion and chain-length scaling law are not applied to these post-quench peak data.
+
+\figurecallout{fig:sequence_response}
+
+\subsection{Cross attraction gives a low-value plateau, not a resolved optimum}
+
+The interaction scan compares four exactly specified sequence ensembles. \emph{Random} means an independent Bernoulli($1/2$) draw for every chain. \emph{Correlated} means an independent two-stage draw for every chain with $\pi=0.99$ and $\kappa=0.7$. \emph{Block} is the deterministic repeat $A_4B_4A_4B_4\ldots$, and \emph{alternating} is $ABAB\ldots$; the deterministic sequence is repeated on all chains. Every chain has 40 beads, and each point has five independently initialized dynamical seeds.
+
+Across $\epsilon_{AB}\le0.2$, the correlated-sequence data form a broad plateau rather than a statistically resolved maximum (Fig.~\ref{fig:cross_attraction}a). A Friedman statistic over the within-seed ranks is $Q=6.0667$. A reproducible $10^6$-draw within-seed permutation test (fixed random seed 20260803) gives 562,565 exceedances, $p=0.562565$ with Monte Carlo standard error $0.000496070$, and the asymptotic value is $p=0.531986982$ (Fig.~\ref{fig:cross_attraction}b). The low-attraction interval is consequently described as a plateau.
+
+The clearest descriptive change occurs at larger cross attraction. For the correlated sequences, the mean per-bead $C_A$ falls from $61.736\pm5.254$ at $\epsilon_{AB}=0.1$ to $31.849\pm3.046$ at $\epsilon_{AB}=0.8$ (mean $\pm$ standard error; Fig.~\ref{fig:cross_attraction}c). All five paired seed differences have the same sign, with an exact two-sided sign-test value of $p=0.0625$ at $n=5$. Figure~\ref{fig:cross_attraction}d compares all four sequence definitions at the endpoints; Supplementary Fig.~S7 shows the full sequence-class responses, normalized sensitivities and peak-bin controls.
+
+Changing $\epsilon_{AB}$ here changes only the attractive outer force branch; A--B excluded volume remains the same as for like pairs. The scan therefore measures how the late composition spectrum responds to this specific force-field parameter.
+
+\figurecallout{fig:cross_attraction}
+
+\section{Discussion}
+
+The simulations support a quantitative conclusion: within these boxes and over the sampled post-quench interval, independently increasing the nonzero-lag amplitude of sequence correlations increases the balanced-label peak estimator at fixed target composition and pair chemistry. The result is not merely a comparison between a random copolymer and a hand-constructed block copolymer. The two-stage generator separates the contour correlation range, controlled by $\pi$, from its amplitude, controlled by $\kappa^2$, and the two-dimensional scan shows that both enter the response.
+
+This conclusion fits within the established literature on random and multiblock copolymers. Theory and simulation demonstrate sequence-dependent microphase behaviour, the coupled effects of conformational and chemical correlations, block-length and dispersity effects, and slow or defective morphologies \cite{FredricksonMilnerLeibler1992,Gavrilov2011CPL,Govorun2017,MaoSpakowitz2016,Patyukova2021,Rudyak2022,Steinmuller2012Morph}. The contribution here is independent control of covariance amplitude and range, combined with an explicit per-bead measurement. The finite-$k$ form factor supplies the physical connection: correlated labels separated along the contour contribute to the collective mode insofar as their spatial phases remain coherent at the measured wavevector.
+
+The two-component RPA distinguishes density packing from the composition response supplied by sequence statistics. Their decoupling under A/B exchange symmetry explains the scalar composition formula without taking a dilute limit. The negative long-wavelength composition stiffness obtained with the bare attraction transform shows that this uncalibrated closure cannot furnish a physical homogeneous-reference spectrum; it does not establish the simulated melt's spinodal. The finite-$k$ regression additionally evaluates $P_N$ at a $k_{\mathrm{bin}}^*$ selected from the same response spectrum. It remains a response-selected empirical organization, rather than a validation of RPA or a prediction of peak height, peak position or phase boundary.
+
+The fixed-density comparison shows that the high-persistence sequence effect is not peculiar to the original 144-chain box: the $\kappa=1$ peak remains 84--117 times the $\kappa=0$ peak through 576 chains. Its nonmonotonic height and box-dependent low-$q$ shell selection do not define a thermodynamic scaling exponent or intrinsic wavelength. The simulations characterize matched late post-quench configurations, and the mixed first radial bin in the primary scans makes $k_{\mathrm{bin}}^*$ a finite-box bin label rather than an intrinsic inverse length.
+
+The sequence--spectrum connection gives a direct experimental hypothesis. For a sequence library with fixed chemistry, mean composition and molecular-weight distribution, measure the connected sequence covariance and calculate Eq.~\ref{eq:finite-form-factor} at the scattering wavevectors of interest. Samples with greater finite-$k$ intramolecular composition power should, under comparable processing, exhibit a larger composition-sensitive scattering peak. Contrast-matched neutron scattering or chemically sensitive X-ray scattering could test the label-symmetric mode. Longer post-quench trajectories and additional larger boxes can probe how this relation approaches bulk equilibrium.
+
+\section{Methods}
+
+\subsection{Simulation model and protocol}
+
+Static simulations used a coarse-grained bead--spring model implemented in OpenMM \cite{Eastman2017}. Consecutive beads were connected by $U_{\mathrm{bond}}(r)=\tfrac12k_b(r-\sigma)^2$ with $k_b=200$ in the simulation's energy/length units. All beads had equal mass. Langevin dynamics used friction $1\tau^{-1}$ and time step $0.005\tau$. The execution wrapper defined $T^*=k_BT/\epsilon_{AA}$ and converted it explicitly to kelvin using the supplied $\epsilon_{AA}$ in kJ mol$^{-1}$. Thus $T^*=0.7$ is 84.19 K for $\epsilon_{AA}=1$ but 33.676 K in the soft condition with $\epsilon_{AA}=0.4$. The common WCA core depth remained 1 in both cases. Independent seeds controlled sequence draws, initial coordinates and thermostat noise.
+
+The pair force separates a common repulsive core from a type-dependent attractive branch. For $r<r_m=2^{1/6}\sigma$, every pair experiences the same WCA force with core depth $\epsilon_{\mathrm{core}}=1$. For $r_m\le r<r_c=2.5\sigma$, the force is the Lennard--Jones force with depth $\epsilon_{\alpha\beta}$; it is zero beyond $r_c$. Thus changing $\epsilon_{AB}$ does not remove A--B excluded volume. Like-pair depths were equal in every reported scan. The baseline values were $\epsilon_{AA}=\epsilon_{BB}=1$ and $\epsilon_{AB}=0.1$.
+
+Chains were placed with random orientations in a periodic cube, energy-minimized and evolved for 30,000 steps at $T^*=5$ before an instantaneous quench to $T^*=0.7$. Production continued for 250,000 steps, with configurations analysed every 2,000 steps. Run-level values average the final five stored spectra; statistical error bars use independent runs, not frames, as replicates. Sequence generation was performed independently inside each chain boundary using Eq.~\ref{eq:two-stage}. The parameter grids and run counts are listed in Supplementary Tables~S2 and S3.
+
+\subsection{Simulation sets and analyzed observables}
+
+The balanced-composition analyses contain 606 static runs: 136 in the four $\kappa$ controls, 240 in the $(\pi,\kappa)$ grid, 200 in the sequence-class/cross-attraction scan and 30 in the fixed-density size comparison. An additional 168 $(f_A,\kappa)$ runs are used to quantify off-stoichiometric density--composition mode mixing in the Supplementary Information section \emph{Off-stoichiometric mode mixing and cross-attraction controls} (Supplementary Fig.~S6). All reported observables are position-based sequence, structure-factor and chain-conformation quantities.
+
+\subsection{Fixed-density size comparison}
+
+The fixed-density comparison used $M=144$, 288 and 576 chains of $N=40$ beads at $\pi=0.99$, with $\kappa=0$ and 1 and five root seeds per condition. Complete $M$-chain sequence sets were sampled from the two-stage generator and accepted only when they contained exactly $MN/2$ A beads. The accepted ensemble is therefore the independent-chain generator law conditioned on exact global composition; chain strings may coincide. Sequence generation and initial placement used separate child streams of each root seed. A deterministic geometric push-off removed nonbonded contacts below $0.8\sigma$ before energy minimization. The subsequent equilibration and production protocol matched the primary simulations. Here $\sigma=1$ nm, so the numerical values of $q$ in nm$^{-1}$ equal those of $q\sigma$.
+
+Particle-level partial spectra were evaluated directly, without mesh interpolation, at $\bm q=2\pi\bm h/L$ for $\bm h\in\mathbb Z^3\setminus\{\bm0\}$ and $q\le1.5\,\sigma^{-1}$. Modes were averaged within exact shells of equal $|\bm h|^2$. One seed-level observation is the mean spectrum over the final five stored frames at steps 242,000--250,000. For each $(M,\kappa)$ condition, $q_\star$ is the shell maximizing the across-seed mean final-window spectrum; the amplitude and its standard error are evaluated from the five seed values at that common shell. A sensitivity analysis uses the same physical wavevector interval $0.15\le q\sigma<0.30$ for both sequence conditions and all sizes. All 30 runs completed the full trajectory and entered the analysis.
+
+\subsection{Structure factors and peak selection}
+
+A cloud-in-cell assignment placed A and B counts on a $56^3$ periodic mesh. For nonzero reciprocal vectors, the saved code convention is related to Eq.~\ref{eq:partial-sf} by
+\begin{equation}
+S_{\alpha\beta}^{(N)}(\bm{k})=
+\frac{G^6}{N_{\mathrm{tot}}V}S_{\alpha\beta}^{(\mathrm{code})}(\bm{k}).
+\label{eq:normalization-conversion}
+\end{equation}
+Equation~\ref{eq:normalization-conversion} was applied to each balanced $S_{AA}-S_{AB}$ peak summary, yielding Eq.~\ref{eq:peak-estimator} in per-bead units. Radial averages use equal-width bins. The zero-containing bin is excluded, and the maximum among the remaining admitted bin centres defines $k_{\mathrm{bin}}^*$. The Supplementary Information sections \emph{Collective partial spectra, symmetry and normalization} and \emph{Radial-bin geometry and cloud-in-cell sensitivity} quantify reciprocal-shell membership, label symmetrization and the cloud-in-cell window (Supplementary Fig.~S3 and Supplementary Table~S1).
+
+Away from $f_A=1/2$, neither $S_{AA}-S_{AB}$ nor $S_{AA}+S_{BB}-2S_{AB}$ is generally orthogonal to total-density fluctuations. The Bhatia--Thornton composition mode is \cite{BhatiaThornton1970}
+\begin{equation}
+S_{cc}(k)=(1-f_A)^2S_{AA}(k)+f_A^2S_{BB}(k)
+-2f_A(1-f_A)S_{AB}(k).
+\label{eq:bhatia-thornton}
+\end{equation}
+The off-stoichiometric run summaries do not contain the common-wavevector partial arrays needed to reconstruct Eq.~\ref{eq:bhatia-thornton}. They are therefore used only to characterize density--composition mode mixing, as described in the Supplementary Information section \emph{Off-stoichiometric mode mixing and cross-attraction controls} (Supplementary Fig.~S6).
+
+For each seed in the $(\pi,\kappa)$ scan, the finite-$k$ predictor used $P_N(k)=S_0(k)/[4f_A(1-f_A)]$ from Eq.~\ref{eq:finite-form-factor}, with $N=40$, $b=\sigma$ and that seed's selected peak-bin centre; $P_N(k_{\mathrm{bin,seed}}^*)$ was then averaged within condition. The primary regression used the 35 active-interior conditions with $\kappa>0$ and $\pi>0.5$, avoiding exact duplication of the independent-label boundary. The inverse-response regressions included a freely fitted slope and intercept and were not fits of Eq.~\ref{eq:rpa}. The fixed-wavevector RPA identity for $C_{\mathrm{sym}}$ does not apply to inverses of condition averages at seed-dependent, response-selected peak bins. Their $R^2$ values describe an empirical association; neither the slope nor the intercept estimates an effective interaction or a transition parameter.
+
+\subsection{Two-component RPA and bare-interaction diagnostic}
+
+The RPA uses the per-bead A/B intramolecular matrix and retains a finite density stiffness $B(k)$ for a repulsive reference. This is an approximate effective description of packing, not a Fourier transform of the divergent WCA potential or an exact excluded-volume theory. A common bare core cancels from the antisymmetric interaction contrast, but still affects density correlations and chain conformations. For the bare attractive contribution only, we define the following continuous force-equivalent unit-depth kernel:
+\begin{equation}
+w(r)=\begin{cases}
+u_{\mathrm{LJ}}(r_m)-u_{\mathrm{LJ}}(r_c), & 0\le r<r_m,\\
+u_{\mathrm{LJ}}(r)-u_{\mathrm{LJ}}(r_c), & r_m\le r<r_c,\\
+0,&r\ge r_c,
+\end{cases}
+\end{equation}
+where $u_{\mathrm{LJ}}(r)=4[(\sigma/r)^{12}-(\sigma/r)^6]$. Its spherical transform is $\widetilde w(k)=4\pi\int_0^{r_c}r^2w(r)\sin(kr)/(kr)\,dr$, giving $\widetilde w(0)=-13.6581128818\sigma^3$. For the symmetric baseline, $\chi_{\mathrm{bare}}(k)=-\rho(\epsilon_{AA}-\epsilon_{AB})\widetilde w(k)/(k_BT)$ and $\chi_{\mathrm{bare}}(0)=9.499256357$. This unweighted transform does not account for the reference melt's pair correlations and is not a calibrated effective Flory interaction; dense-melt contact statistics enter that calibration~\cite{MorseChung2009}. We do not assign $B(k)$ or infer a phase boundary from this bare diagnostic.
+
+\subsection{Statistical analysis}
+
+Means and standard errors are across independent seeds, and the decision threshold for inferential tests was $\alpha=0.05$. Because the same five seed labels were used across attraction conditions, seed was treated as a matched block. Under the null hypothesis of no attraction-label effect, attraction labels are exchangeable within each seed block but not across blocks. For the correlated-sequence scan at $\epsilon_{AB}\le0.2$, we therefore used a nonparametric Friedman rank statistic and independently relabelled the eight conditions within each seed row. The omnibus comparison is nondirectional; its permutation probability is the upper-tail fraction $P(Q_{\mathrm{perm}}\ge Q_{\mathrm{obs}})$. A NumPy \texttt{default\_rng(20260803)} stream generated $10^6$ relabellings in 20,000-draw chunks using \texttt{Generator.permuted}; 562,565 draws met the upper-tail criterion. We also report the asymptotic chi-square probability and the Monte Carlo standard error $\sqrt{p(1-p)/10^6}$. The endpoint comparison used an exact two-sided sign test for the five nonzero paired seed differences. Under the null, their signs are exchangeable with equal positive and negative probability, so five concordant signs give $p=2/2^5=0.0625$. These rank, permutation and sign procedures avoid a normality assumption at $n=5$. The low-range omnibus test and endpoint sign test address distinct comparisons and are reported separately; no across-test multiplicity adjustment was applied. Numerical work used NumPy \cite{Harris2020}, SciPy \cite{Virtanen2020} and Matplotlib \cite{Hunter2007}.
+
+\section{Data availability}
+
+The Supplementary Data supply the source and sensitivity tables needed to reproduce the reported figures, including the fixed-density per-seed, condition, exact-shell, common-wavevector and convergence tables, together with the normalization and statistical-analysis tables and three measurement-validation trajectories. The complete simulation output, including every per-run trajectory and the full fixed-density campaign, is archived at Zenodo, \url{https://doi.org/10.5281/zenodo.20499120}.
+
+\section{Code availability}
+
+Simulation code and the completed fixed-density campaign are available at \url{https://github.com/okezue/ImpAgingSim}. The repository includes the fixed-density launcher \texttt{melt/fixed\_density\_size\_scan.py}, direct reciprocal-shell estimator \texttt{melt/direct\_structure.py}, deterministic aggregation in \texttt{melt/fixed\_density\_analysis.py}, focused tests, study documentation and all 30 fixed-density run outputs. The article-wide data-rebuild and figure-generation scripts are included with Supplementary Data under \texttt{analysis\_scripts/}; the checksum-verifying finite-size reanalysis is included there as \texttt{fixed\_density/analyze\_and\_plot.py}.
+
+\section{Acknowledgements}
+
+I thank Professor Andrew Spakowitz for sustained guidance throughout this project, including the development of the multi-chain off-lattice model and the analysis priorities that motivated the simulations.
+
+\section{Funding}
+
+This work received no external funding.
+
+\section{Author contributions}
+
+A.O.B. conceived the project, designed and implemented the simulation engine and analysis pipeline, executed the production simulations, performed the analysis, generated the figures and wrote the manuscript.
+
+\section{Competing interests}
+
+The author declares no competing interests.
+
+\section*{ORCID}
+
+A.O.B.: 0009-0004-9419-3962
+
+\begingroup
+\hbadness=2000
+\begin{thebibliography}{99}
+
+\bibitem{Leibler1980} Leibler, L. Theory of microphase separation in block copolymers. \textit{Macromolecules} \textbf{13}, 1602--1617 (1980). doi:10.1021/ma60078a047.
+\bibitem{FredricksonHelfand1987} Fredrickson, G. H. \& Helfand, E. Fluctuation effects in the theory of microphase separation in block copolymers. \textit{J. Chem. Phys.} \textbf{87}, 697--705 (1987). doi:10.1063/1.453566.
+\bibitem{MatsenBates1996} Matsen, M. W. \& Bates, F. S. Unifying weak- and strong-segregation block copolymer theories. \textit{Macromolecules} \textbf{29}, 1091--1098 (1996). doi:10.1021/ma951138i.
+\bibitem{BatesFredrickson1999} Bates, F. S. \& Fredrickson, G. H. Block copolymers---designer soft materials. \textit{Phys. Today} \textbf{52}, 32--38 (1999). doi:10.1063/1.882522.
+\bibitem{FredricksonMilnerLeibler1992} Fredrickson, G. H., Milner, S. T. \& Leibler, L. Multicritical phenomena and microphase ordering in random block copolymer melts. \textit{Macromolecules} \textbf{25}, 6341--6354 (1992). doi:10.1021/ma00049a034.
+\bibitem{Angerman1996} Angerman, H. J., ten Brinke, G. \& Erukhimovich, I. Microphase separation in correlated random copolymers. \textit{Macromolecules} \textbf{29}, 3255--3262 (1996). doi:10.1021/ma950961b.
+\bibitem{MaoSpakowitz2016} Mao, S., MacPherson, Q. J., He, S. S., Coletta, E. \& Spakowitz, A. J. Impact of conformational and chemical correlations on microphase segregation in random copolymers. \textit{Macromolecules} \textbf{49}, 4358--4368 (2016). doi:10.1021/acs.macromol.5b02639.
+\bibitem{Patyukova2021} Patyukova, E., Xi, E. \& Wilson, M. R. Phase behavior of correlated random copolymers. \textit{Macromolecules} \textbf{54}, 2763--2773 (2021). doi:10.1021/acs.macromol.0c02840.
+\bibitem{Gavrilov2011CPL} Gavrilov, A. A., Kudryavtsev, Y. V., Khalatur, P. G. \& Chertovich, A. V. Microphase separation in regular and random copolymer melts by DPD simulations. \textit{Chem. Phys. Lett.} \textbf{503}, 277--282 (2011). doi:10.1016/j.cplett.2011.01.024.
+\bibitem{Gavrilov2011PSA} Gavrilov, A. A., Kudryavtsev, Y. V., Khalatur, P. G. \& Chertovich, A. V. Simulation of phase separation in melts of regular and random multiblock copolymers. \textit{Polym. Sci. Ser. A} \textbf{53}, 827--836 (2011). doi:10.1134/S0965545X11090033.
+\bibitem{Govorun2017} Govorun, E. N. \& Chertovich, A. V. Microphase separation in random multiblock copolymers. \textit{J. Chem. Phys.} \textbf{146}, 034903 (2017). doi:10.1063/1.4973933.
+\bibitem{Rudyak2022} Rudyak, V. Yu., Larin, D. E. \& Govorun, E. N. Microphase separation of statistical multiblock copolymers. \textit{Macromolecules} \textbf{55}, 9345--9357 (2022). doi:10.1021/acs.macromol.2c00065.
+\bibitem{Steinmuller2012Morph} Steinm\"uller, B., M\"uller, M., Hambrecht, K. R., Smith, G. D. \& Bedrov, D. Properties of random block copolymer morphologies: Molecular dynamics and single-chain-in-mean-field simulations. \textit{Macromolecules} \textbf{45}, 1107--1117 (2012). doi:10.1021/ma202311e.
+\bibitem{Steinmuller2012Bulk} Steinm\"uller, B., M\"uller, M., Hambrecht, K. R. \& Bedrov, D. Random block copolymers: Structure, dynamics, and mechanical properties in the bulk and at selective substrates. \textit{Macromolecules} \textbf{45}, 9841--9853 (2012). doi:10.1021/ma302151z.
+\bibitem{Sfatos1994} Sfatos, C. D., Gutin, A. M. \& Shakhnovich, E. I. Phase transitions in a ``many-letter'' random heteropolymer. \textit{Phys. Rev. E} \textbf{50}, 2898--2905 (1994). doi:10.1103/PhysRevE.50.2898.
+\bibitem{Foster1995} Foster, D. P., Jasnow, D. \& Balazs, A. C. Macrophase and microphase separation in random comb copolymers. \textit{Macromolecules} \textbf{28}, 3450--3462 (1995). doi:10.1021/ma00113a052.
+\bibitem{Glotzer1993} Glotzer, S. C. \textit{et al.} Physical gels and microphase separation in multiblock copolymers. \textit{Physica A} \textbf{201}, 482--495 (1993). doi:10.1016/0378-4371(93)90121-J.
+\bibitem{Dotera1999} Dotera, T., Hatano, A. \& Gemma, T. Microphase separation morphology in multiblock copolymer melts obtained from Monte Carlo simulations. \textit{Kobunshi Ronbunshu} \textbf{56}, 667--673 (1999). doi:10.1295/koron.56.667.
+\bibitem{Zhang2017} Zhang, J. \textit{et al.} Evolution of microphase separation with variations of segments of sequence-controlled multiblock copolymers. \textit{Macromolecules} \textbf{50}, 7380--7387 (2017). doi:10.1021/acs.macromol.7b01831.
+\bibitem{Taylor2024} Taylor, L. W., Priestley, R. D. \& Register, R. A. Control of solution phase behavior through block--random copolymer sequence. \textit{Macromolecules} \textbf{57}, 916--925 (2024). doi:10.1021/acs.macromol.3c02111.
+\bibitem{LiMuthukumar2022} Li, S.-F. \& Muthukumar, M. Theory of microphase separation in concentrated solutions of sequence-specific charged heteropolymers. \textit{Macromolecules} \textbf{55}, 5535--5549 (2022). doi:10.1021/acs.macromol.2c00008.
+\bibitem{Ganesan2012} Ganesan, V., Kumar, N. A. \& Pryamitsyn, V. Blockiness and sequence polydispersity effects on the phase behavior and interfacial properties of gradient copolymers. \textit{Macromolecules} \textbf{45}, 6281--6297 (2012). doi:10.1021/ma301136y.
+\bibitem{Govorun2015} Govorun, E. N., Gavrilov, A. A. \& Chertovich, A. V. Multiblock copolymers prepared by patterned modification: Analytical theory and computer simulations. \textit{J. Chem. Phys.} \textbf{142}, 204903 (2015). doi:10.1063/1.4921685.
+\bibitem{Govorun2021} Govorun, E. N., Shupanov, R. M., Pavlenko, S. A. \& Khokhlov, A. R. Conformation-dependent sequence design of polymer chains in melts. \textit{J. Phys. A: Math. Theor.} \textbf{54}, 235004 (2021). doi:10.1088/1751-8121/abfac8.
+\bibitem{RubinsteinColby2003} Rubinstein, M. \& Colby, R. H. \textit{Polymer Physics} (Oxford University Press, 2003). doi:10.1093/oso/9780198520597.001.0001.
+\bibitem{BhatiaThornton1970} Bhatia, A. B. \& Thornton, D. E. Structural aspects of the electrical resistivity of binary alloys. \textit{Phys. Rev. B} \textbf{2}, 3004--3012 (1970). doi:10.1103/PhysRevB.2.3004.
+\bibitem{Eastman2017} Eastman, P. \textit{et al.} OpenMM 7: Rapid development of high performance algorithms for molecular dynamics. \textit{PLoS Comput. Biol.} \textbf{13}, e1005659 (2017). doi:10.1371/journal.pcbi.1005659.
+\bibitem{Hunter2007} Hunter, J. D. Matplotlib: A 2D graphics environment. \textit{Comput. Sci. Eng.} \textbf{9}, 90--95 (2007). doi:10.1109/MCSE.2007.55.
+\bibitem{Harris2020} Harris, C. R. \textit{et al.} Array programming with NumPy. \textit{Nature} \textbf{585}, 357--362 (2020). doi:10.1038/s41586-020-2649-2.
+\bibitem{Virtanen2020} Virtanen, P. \textit{et al.} SciPy 1.0: Fundamental algorithms for scientific computing in Python. \textit{Nat. Methods} \textbf{17}, 261--272 (2020). doi:10.1038/s41592-019-0686-2.
+
+\bibitem{RumyantsevGavrilov2026} Rumyantsev, A. M. \& Gavrilov, A. A. Scaling law for sequence-induced demixing of compositionally identical copolymers. \textit{ACS Macro Lett.} \textbf{15}, 589--594 (2026). doi:10.1021/acsmacrolett.6c00084.
+\bibitem{MorseChung2009} Morse, D. C. \& Chung, J. K. On the chain length dependence of local correlations in polymer melts and a perturbation theory of symmetric polymer blends. \textit{J. Chem. Phys.} \textbf{130}, 224901 (2009). doi:10.1063/1.3108460.
+\end{thebibliography}
+\endgroup
+
+\clearpage
+\section*{Figure legends}
+
+\noindent\textbf{Figure \ref{fig:sequence_construction} | Independent control of sequence-correlation range and amplitude.} \textbf{a}, Representative 40-monomer input strings for the first four chains at $f_A=0.5$, $\pi=0.99$, seed 1 and $\kappa=0,0.6,1$; these are examples, not ensemble averages. \textbf{b}, Within-chain connected covariance at $\pi=0.99$. Small symbols show individual seeds, larger markers and bars show means and standard errors across five seeds, and lines show Eq.~\ref{eq:sequence-covariance}. \textbf{c}, Lag-one within-chain covariance compared with covariance across chain boundaries. Small symbols show individual seeds, bars show means and standard errors, and horizontal markers show theoretical values; the expected across-boundary covariance is zero under independent chain initialization. \textbf{d}, Analytical finite-chain $P_N(0)=S_0(0)/[4f_A(1-f_A)]$ for $N=40$ as $\kappa$ and $\pi$ vary, showing their separate amplitude and range contributions.
+
+\medskip
+\noindent\textbf{Figure \ref{fig:kappa_controls} | Correlation amplitude raises the balanced-composition peak estimator in four finite systems.} \textbf{a}, Per-bead $C_A$ versus $\kappa$ for baseline, dense, soft and short-chain conditions. \textbf{b}, The same responses divided by each condition's $\kappa=0$ mean. \textbf{c}, Modal peak-bin centre. \textbf{d}, Mean chain radius of gyration. All conditions use $f_A=0.5$, $\pi=0.90$ and nominal $T^*=0.7$. Baseline: 144 chains of 40 beads, $L=22\sigma$, $(\epsilon_{AA},\epsilon_{BB},\epsilon_{AB})=(1,1,0.1)$; dense: the same chains and interactions at $L=17\sigma$; soft: baseline geometry with $(0.4,0.4,0.04)$; short-chain: 480 chains of 12 beads at $L=22\sigma$ with baseline interactions. The soft wrapper reference was $\epsilon_{AA}=0.4$, giving 33.676 K while the WCA core remained at unit depth; the other conditions used 84.19 K. Each stochastic chain is an independent draw. Each run value averages its final five stored spectra. Small symbols in \textbf{a}, \textbf{b} and \textbf{d} show individual seeds; coloured markers and bars show means and standard errors across five seeds for baseline and four for the other conditions (40, 32, 32 and 32 runs).
+
+\medskip
+\noindent\textbf{Figure \ref{fig:persistence_response} | Persistence and expression amplitude jointly organize the balanced finite-system response.} \textbf{a}, Mean per-bead $C_A$ across five independent seeds over the $(\pi,\kappa)$ grid. \textbf{b}, Modal peak-bin centre over the same grid. \textbf{c}, $C_A$ versus $\kappa$ for $\pi=0.50,0.85,0.99$; small symbols show individual seeds, and larger markers and bars show means and standard errors across five seeds. \textbf{d}, Fraction of the five seeds in each condition for which $C_A$ selects the mixed first admitted bin centred at $0.428399\,\sigma^{-1}$; it is selected in 99 of 240 runs overall. The grid uses $\pi=0.50,0.70,0.85,0.95,0.98,0.99,0.995,0.999$ and $\kappa=0,0.3,0.6,0.8,0.9,1$. All runs contain 144 chains of 40 beads at $f_A=0.5$, $L=22\sigma$, $T^*=0.7$ and $(\epsilon_{AA},\epsilon_{BB},\epsilon_{AB})=(1,1,0.1)$. Per-bead values use $C_A=G^6C_{\mathrm{code}}/(N_{\mathrm{tot}}L^3)$, and each seed-level run value averages its final five stored spectra.
+
+\medskip
+\noindent\textbf{Figure \ref{fig:sequence_response} | Finite-wavevector sequence statistics and the bare RPA closure.} \textbf{a}, Inverse condition-mean response versus the inverse condition mean of $P_N$ evaluated at each seed's response-selected $k_{\mathrm{bin}}^*$ for the 35 active-interior conditions ($\kappa>0$, $\pi>0.5$); the affine fit has $R^2=0.895598$. Colour encodes $\pi$. \textbf{b}, Comparison with the analogous zero-wavevector predictor ($R^2=0.683437$). \textbf{c}, Gaussian-chain $P_N(k)=S_0(k)/[4f_A(1-f_A)]$ from Eq.~\ref{eq:finite-form-factor} for $\kappa=1$, selected $\pi$, $N=40$ and fixed $b=\sigma$. \textbf{d}, Ideal, bare-attraction and total contributions to the random-sequence long-wavelength composition stiffness in the symmetric projection of Eq.~\ref{eq:rpa}; the total is $-3.749628178$. This negative value diagnoses failure of the bare closure and is not a calibrated stability result for the simulated melt. Condition means in a and b average five seed-level values, each obtained from the final five stored spectra. The fits are response-selected descriptive organizations; collapsing all inactive-boundary conditions to one baseline gives $R^2=0.910621$ at finite $k$ and $0.727875$ at $k=0$.
+
+\medskip
+\noindent\textbf{Figure \ref{fig:cross_attraction} | Sequence class and cross attraction.} \textbf{a}, Per-bead $C_A$ versus $\epsilon_{AB}$ for independently drawn correlated sequences ($\pi=0.99$, $\kappa=0.7$). \textbf{b}, Correlated-sequence low-to-moderate range ($\epsilon_{AB}\le0.2$); the within-seed analysis gives Friedman $Q=6.0667$ and permutation $p=0.562565$ ($n=5$ seeds), so the data do not resolve a nonzero optimum. \textbf{c}, Paired correlated-sequence values at $\epsilon_{AB}=0.1$ and 0.8; the exact two-sided sign-test value is $p=0.0625$. \textbf{d}, Endpoint comparison among correlated and independently random sequences, deterministic $A_4B_4$ repeats and deterministic alternating chains. All systems contain 144 chains of 40 beads at $f_A=0.5$, $L=22\sigma$, $T^*=0.7$ and $\epsilon_{AA}=\epsilon_{BB}=1$. Each seed-level run value averages its final five stored spectra. Small symbols in \textbf{a} and \textbf{d} and grey trajectories in \textbf{b} and \textbf{c} show individual seeds; coloured markers and bars show means and standard errors across five seeds (200 runs over ten attraction values).
+
+\end{document}
