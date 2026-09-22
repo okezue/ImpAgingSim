@@ -19,7 +19,7 @@ chromatin fiber with dynamic marks. Every study has a findings note under
 
 All simulation data is archived on Zenodo: the melt archive at
 **[10.5281/zenodo.20499120](https://doi.org/10.5281/zenodo.20499120)**
-(concept DOI, always resolves to the newest version, currently 4.0.0), the
+(concept DOI, always resolves to the newest version, currently 4.1.0), the
 copolymer condensation dataset at
 [10.5281/zenodo.22819768](https://doi.org/10.5281/zenodo.22819768) and the
 chromatin epigenetic-memory dataset at
@@ -732,7 +732,7 @@ The repository holds the code and small derived tables. The raw simulation
 output is too large for git and lives on Zenodo.
 
 **DOI [10.5281/zenodo.20499120](https://doi.org/10.5281/zenodo.20499120)**
-(concept DOI, resolves to the newest version, currently 4.0.0)
+(concept DOI, resolves to the newest version, currently 4.1.0)
 
 | file | size | contents |
 |---|---|---|
@@ -740,7 +740,8 @@ output is too large for git and lives on Zenodo.
 | `heteropolymer_microphase_data.tar` | 3,328 MB | full raw output of the production campaigns, mirroring the AWS results bucket. Per run `meta.json`, `snapshots.csv`, `structure_factor.npz`, and `trajectory.npz` where applicable |
 | `complete_local_archive.tar` | 106 MB | the earlier single chain study, robustness sweeps, development runs, manuscript builds and working notes |
 | `fixed_density_campaign.tar` | 37 MB | the 30 run fixed density finite size study, plus the superseded first execution kept for provenance |
-| `Supplementary_Data_1_source_tables.zip` | 25 MB | per figure source and sensitivity tables, plus figure generation scripts |
+| `Supplementary_Data_1_source_tables.zip` | 25 MB | per figure source and sensitivity tables, plus figure generation scripts; [version 4.1.0] three files updated for the RPA correction (names and provenance only, no numerical change) |
+| `Scientific_Reports_RPA_correction.zip` | 4.6 MB | [version 4.1.0] the RPA correction: revised manuscript and supplementary sources and PDFs, response to reviewer, exact text changes, corrected Fig. 4, numerical audit |
 
 The protein and chromatin applications are archived in separate records:
 
