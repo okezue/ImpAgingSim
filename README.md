@@ -15,8 +15,7 @@ sequence correlation, the composition dynamic structure factor for comparison
 with theory, and two applications of the model with asymmetric energetics,
 sequence-programmed condensation of copolymers and epigenetic memory in a
 chromatin fiber with dynamic marks. Every study has a findings note under
-[`analysis/`](analysis/README.md); a one-document summary against the
-advisor's work plan is in [`docs/briefings/`](docs/briefings/2026-09_spakowitz_briefing.md).
+[`analysis/`](analysis/README.md).
 
 All simulation data is archived on Zenodo: the melt archive at
 **[10.5281/zenodo.20499120](https://doi.org/10.5281/zenodo.20499120)**
@@ -609,7 +608,6 @@ melt/                       the simulation engine
 
 docs/figures/              README SVGs, PNG exports, and figure provenance
 docs/corrections/          Scientific Reports RPA correction: revised sources, PDFs, audit, response
-docs/briefings/            meeting briefings (September 2026: results against the work plan, next steps)
 scripts/render_*          reproducible README figure generators
 scripts/submission_rpa_audit.py   reproduce the RPA correction's numbers from the source tables
 scripts/fetch_zenodo.py    download and verify the Zenodo archive
