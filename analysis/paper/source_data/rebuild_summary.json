@@ -1,0 +1,11 @@
+{
+  "input_processed_rows": 789,
+  "positive_quantitative_rows": 576,
+  "composition_diagnostic_rows": 168,
+  "excluded_prequench_duration_rows": 45,
+  "grid_size": 56,
+  "default_archive_to_number_factor": 502.84905250855667,
+  "representative_spectrum_frames_per_condition": 25,
+  "representative_spectrum_modes": 1418,
+  "repository_commit": "23fa2d03b4199d1d4e0c196f477a9569d10481b8"
+}

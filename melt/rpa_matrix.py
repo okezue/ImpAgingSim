@@ -4,7 +4,6 @@ All structure factors are normalized per bead.  The bare attractive-potential
 closure is an uncalibrated diagnostic, not a prediction for a post-quench state.
 Packing enters through an explicit effective reference stiffness; a Fourier
 transform of the divergent WCA core is neither needed nor well defined here.
-Existing scalar routines used by later applications are intentionally unchanged.
 """
 from __future__ import annotations
 

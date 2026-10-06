@@ -1,10 +1,9 @@
 """Publish a new version of the project's Zenodo record with additional archive files.
 
     export ZENODO_TOKEN=...      # personal access token with deposit:write and deposit:actions
-    python scripts/publish_zenodo.py --version 4.0.0 \
-        --file output/zenodo_v4/incompatibility_sweep_campaigns.tar \
-        --file output/zenodo_v4/README.md \
-        --description-file output/zenodo_v4/description.html [--publish]
+    python scripts/publish_zenodo.py --version VERSION \
+        --file Supplementary_Data_1_source_tables.zip \
+        --description-file paper-description.html [--publish]
 
 Without ``--publish`` the new version is left as a draft for review in the Zenodo web UI.
 Files already in the previous version are carried over unchanged; a file given here with

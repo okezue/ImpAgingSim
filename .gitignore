@@ -58,7 +58,7 @@ output/aws/
 .claude/plans/
 
 # Manuscript directories not tracked
-paper/
+/paper/
 manuscript_v*/
 output/aws_corrected/
 
@@ -73,8 +73,6 @@ texput.log
 # Obsidian vault: local only
 obsidian-notes/
 
-# Zenodo archive downloads and Sherlock sync-back (large, never versioned)
+# Downloaded raw archives and regenerated paper figures
 output/zenodo/
-output/sherlock/
-output/devbox/
-output/zenodo_v4/
+output/paper_figures/

@@ -84,24 +84,6 @@ def build_openmm_system(types,mp):
     sys.addForce(att)
     return sys
 
-def attraction_force(system):
-    """The type-dependent attractive CustomNonbondedForce built by build_openmm_system."""
-    _require_openmm()
-    for k in range(system.getNumForces()):
-        f=system.getForce(k)
-        if isinstance(f,mm.CustomNonbondedForce) and f.getNumPerParticleParameters()==1 \
-                and f.getPerParticleParameterName(0)=="tA":
-            return f
-    raise ValueError("system has no type-dependent attraction force")
-
-def update_types_in_context(system,ctx,types):
-    """Push new bead types into a running context (marks that changed identity)."""
-    att=attraction_force(system)
-    t=np.asarray(types)
-    for k in range(t.size):
-        att.setParticleParameters(k,[1.0 if int(t[k])==1 else 0.0])
-    att.updateParametersInContext(ctx)
-
 def make_langevin_integrator(temperature_kelvin,friction,dt,seed=None):
     """temperature_kelvin must be in Kelvin. Use tstar_to_kelvin() to convert from reduced T*."""
     _require_openmm()
@@ -145,62 +127,17 @@ def kinetic_temperature_kelvin(ke_kjmol,n_particles):
 def kinetic_tstar(ke_kjmol,n_particles,eps_kjmol=1.0):
     return kelvin_to_tstar(kinetic_temperature_kelvin(ke_kjmol,n_particles),eps_kjmol)
 
-def run_simulation(ctx,n_steps,snapshot_interval,callback=None,
-                   mode_interval=None,mode_callback=None,
-                   mark_interval=None,mark_callback=None):
-    """Advance ``n_steps`` and invoke ``callback`` every ``snapshot_interval`` steps.
-
-    ``mode_callback(step,pos)`` fires every ``mode_interval`` steps with positions only;
-    ``mark_callback(step,pos)`` fires every ``mark_interval`` steps after the recorders, and
-    is where dynamic marks update bead types in the context.  All intervals must divide
-    ``n_steps``; the integrator advances in chunks of their greatest common divisor and the
-    state is fetched once per chunk.  Chunking does not change the seeded Langevin
-    trajectory, so recording modes leaves the dynamics identical.
-    """
+def run_simulation(ctx,n_steps,snapshot_interval,callback=None):
+    """Advance ``n_steps`` and invoke ``callback`` every ``snapshot_interval`` steps."""
     _require_openmm()
     integ=ctx.getIntegrator()
     n_steps=int(n_steps);snapshot_interval=int(snapshot_interval)
     if snapshot_interval<1 or n_steps%snapshot_interval!=0:
         raise ValueError("snapshot_interval must be positive and divide n_steps")
-    use_modes=mode_callback is not None and mode_interval is not None
-    use_marks=mark_callback is not None and mark_interval is not None
-    if not use_modes and not use_marks:
-        n_snap=n_steps//snapshot_interval
-        for s in range(n_snap):
-            integ.step(snapshot_interval)
-            if callback is not None:
-                step=(s+1)*snapshot_interval
-                pos,vel,pe,ke=get_state_arrays(ctx)
-                callback(step,pos,vel,pe,ke)
-        return
-    intervals=[snapshot_interval]
-    if use_modes:
-        mode_interval=int(mode_interval)
-        if mode_interval<1 or n_steps%mode_interval!=0:
-            raise ValueError("mode_interval must be positive and divide n_steps")
-        intervals.append(mode_interval)
-    if use_marks:
-        mark_interval=int(mark_interval)
-        if mark_interval<1 or n_steps%mark_interval!=0:
-            raise ValueError("mark_interval must be positive and divide n_steps")
-        intervals.append(mark_interval)
-    chunk=int(np.gcd.reduce(np.asarray(intervals,dtype=np.int64)))
-    for s in range(n_steps//chunk):
-        integ.step(chunk)
-        step=(s+1)*chunk
-        want_snapshot=callback is not None and step%snapshot_interval==0
-        want_modes=use_modes and step%mode_interval==0
-        want_marks=use_marks and step%mark_interval==0
-        if not (want_snapshot or want_modes or want_marks):
-            continue
-        if want_snapshot:
+    n_snap=n_steps//snapshot_interval
+    for s in range(n_snap):
+        integ.step(snapshot_interval)
+        if callback is not None:
+            step=(s+1)*snapshot_interval
             pos,vel,pe,ke=get_state_arrays(ctx)
-        else:
-            st=ctx.getState(getPositions=True)
-            pos=np.asarray(st.getPositions(asNumpy=True).value_in_unit(unit.nanometer))
-        if want_modes:
-            mode_callback(step,pos)
-        if want_snapshot:
             callback(step,pos,vel,pe,ke)
-        if want_marks:
-            mark_callback(step,pos)

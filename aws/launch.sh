@@ -3,17 +3,22 @@ set -euo pipefail
 
 REGION="${REGION:-us-east-1}"
 INSTANCE_TYPE="${INSTANCE_TYPE:-g5.2xlarge}"
-AMI_ID="${AMI_ID:-ami-0ff290337e78c83bf}"
-KEY_NAME="${KEY_NAME:-okezue}"
-KEY_FILE="${KEY_FILE:-$HOME/Downloads/okezue.pem}"
+AMI_ID="${AMI_ID:?must export an AMI_ID valid in REGION}"
+KEY_NAME="${KEY_NAME:?must export KEY_NAME}"
+KEY_FILE="${KEY_FILE:?must export KEY_FILE}"
 S3_BUCKET="${S3_BUCKET:?must export S3_BUCKET=...}"
-SCAN_KIND="${SCAN_KIND:-all}"
+SCAN_KIND="${SCAN_KIND:-rerun}"
 GIT_REF="${GIT_REF:-master}"
-SECURITY_GROUP="${SECURITY_GROUP:-default}"
+SECURITY_GROUP="${SECURITY_GROUP:?must export SECURITY_GROUP}"
 SUBNET_ID="${SUBNET_ID:-}"
 TAG_NAME="${TAG_NAME:-imp-aging-$(date +%Y%m%d-%H%M%S)}"
 STS_DURATION="${STS_DURATION:-43200}"
 SKIP_CONFIRM="${SKIP_CONFIRM:-no}"
+
+case "${SCAN_KIND}" in
+  smoke|kappa|rerun|fixed_density|all) ;;
+  *) echo "unknown SCAN_KIND=${SCAN_KIND}" >&2; exit 2 ;;
+esac
 
 if [ ! -f "${KEY_FILE}" ]; then
   echo "ERROR: KEY_FILE not found: ${KEY_FILE}" >&2

@@ -1,0 +1,8 @@
+scan,grid_size_G,n_chains,chain_length,n_total,box_size_L,volume,archive_to_number_factor_G6_over_NV,formula
+fig1_baseline,56,144,40,5760,22,10648,502.849052508557,S_N(q)=G^6 S_code(q)/(N_total L^3)
+fig1_dense,56,144,40,5760,17,4913,1089.83039102608,S_N(q)=G^6 S_code(q)/(N_total L^3)
+fig1_soft,56,144,40,5760,22,10648,502.849052508557,S_N(q)=G^6 S_code(q)/(N_total L^3)
+fig1_short_chain,56,480,12,5760,22,10648,502.849052508557,S_N(q)=G^6 S_code(q)/(N_total L^3)
+fig2_pi_kappa,56,144,40,5760,22,10648,502.849052508557,S_N(q)=G^6 S_code(q)/(N_total L^3)
+fig3_fA_kappa,56,144,40,5760,22,10648,502.849052508557,S_N(q)=G^6 S_code(q)/(N_total L^3)
+fig4_epsAB,56,144,40,5760,22,10648,502.849052508557,S_N(q)=G^6 S_code(q)/(N_total L^3)

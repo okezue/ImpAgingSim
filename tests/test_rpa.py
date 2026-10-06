@@ -1,9 +1,7 @@
 from __future__ import annotations
 import numpy as np
-import pytest
 from melt.rpa import (sequence_covariance, single_chain_composition_form_factor,
-                      rpa_structure_factor, rpa_spinodal_chi, chi_from_eps_AB,
-                      eps_AB_from_chi, segment_length_from_rg, fit_alpha_from_mixed_side)
+                      rpa_structure_factor, rpa_spinodal_chi)
 
 
 class TestSequenceCovariance:
@@ -99,88 +97,3 @@ class TestRPA:
         assert q_star == 0.3
         assert np.isclose(chi_s, 2.0 / single_chain_composition_form_factor(0.3, N, kappa, pi))
         assert chi_s > rpa_spinodal_chi(N, kappa, pi)[0]
-
-
-class TestChiBridge:
-    def test_round_trip(self):
-        eps = np.array([1.0, 0.8, 0.5, 0.1])
-        chi = chi_from_eps_AB(eps, 3.0, 0.7)
-        assert np.allclose(eps_AB_from_chi(chi, 3.0, 0.7), eps)
-
-    def test_zero_at_eps_like(self):
-        assert chi_from_eps_AB(1.0, 3.0, 0.7) == 0.0
-        assert chi_from_eps_AB(0.4, 3.0, 0.7, eps_like=0.4) == 0.0
-
-    def test_increases_as_eps_AB_decreases(self):
-        eps = np.linspace(1.0, 0.0, 11)
-        chi = chi_from_eps_AB(eps, 2.0, 0.7)
-        assert np.all(np.diff(chi) > 0)
-        assert np.isclose(chi[-1], 2.0 / 0.7)
-
-    def test_inverse_rejects_zero_alpha(self):
-        with pytest.raises(ValueError):
-            eps_AB_from_chi(0.1, 0.0, 0.7)
-
-
-class TestSegmentLength:
-    def test_round_trip(self):
-        N, b = 40, 0.92
-        rg = b * np.sqrt(N / 6.0)
-        assert np.isclose(segment_length_from_rg(rg, N), b)
-        rgs = np.array([1.0, 2.0])
-        assert np.allclose(segment_length_from_rg(rgs, N), rgs * np.sqrt(6.0 / N))
-
-
-class TestFitAlpha:
-    N, kappa, pi, f_A, T_star, b = 40, 0.5, 0.99, 0.5, 0.7, 0.92
-    q_peak = 2 * np.pi / 22
-    alpha_true = 3.0
-
-    def _synthetic(self, eps, seed=0, sigma=0.02):
-        chi = chi_from_eps_AB(eps, self.alpha_true, self.T_star)
-        S = rpa_structure_factor(self.q_peak, chi, self.N, self.kappa, self.pi, self.f_A, self.b)
-        rng = np.random.default_rng(seed)
-        return S * rng.lognormal(0.0, sigma, size=len(eps))
-
-    def test_recovers_alpha(self):
-        # eps_AB grid kept on the mixed side: chi_s(q_peak)~0.264 for these parameters,
-        # so chi(eps_AB) must stay below that for RPA to give finite S_peak.
-        eps = np.array([1.0, 0.98, 0.96, 0.95])
-        S = self._synthetic(eps)
-        assert np.all(np.isfinite(S))
-        out = fit_alpha_from_mixed_side(eps, S, self.N, self.kappa, self.pi, self.f_A,
-                                        self.T_star, self.b, self.q_peak)
-        assert abs(out["alpha"] - self.alpha_true) < 0.3
-        assert out["n_points"] == 4
-        assert out["chi_values"].shape == (4,) and out["predicted"].shape == (4,)
-        assert np.all(np.isfinite(out["predicted"]))
-        assert out["residual_rms"] < 0.1
-        eps_sp = out["eps_AB_spinodal"]
-        assert np.isfinite(eps_sp) and 0.0 < eps_sp < 1.0
-        chi_s, _ = rpa_spinodal_chi(self.N, self.kappa, self.pi, self.f_A, self.b, q=self.q_peak)
-        assert np.isclose(eps_sp, eps_AB_from_chi(chi_s, out["alpha"], self.T_star))
-
-    def test_ignores_nonfinite_points(self):
-        eps = np.array([1.0, 0.98, 0.96, 0.95, 0.9])
-        S = self._synthetic(eps[:4])
-        S = np.concatenate([S, [np.nan]])
-        out = fit_alpha_from_mixed_side(eps, S, self.N, self.kappa, self.pi, self.f_A,
-                                        self.T_star, self.b, self.q_peak)
-        assert out["n_points"] == 4
-        assert abs(out["alpha"] - self.alpha_true) < 0.3
-
-    def test_spec_grid_is_past_spinodal(self):
-        # With alpha=3 and T*=0.7 the grid [1.0,0.9,0.8,0.7] has chi>=0.43>chi_s at
-        # q_peak, so RPA yields NaN there and only one finite point survives.
-        eps = np.array([1.0, 0.9, 0.8, 0.7])
-        chi = chi_from_eps_AB(eps, self.alpha_true, self.T_star)
-        S = rpa_structure_factor(self.q_peak, chi, self.N, self.kappa, self.pi, self.f_A, self.b)
-        assert np.isfinite(S[0]) and np.all(np.isnan(S[1:]))
-        with pytest.raises(ValueError):
-            fit_alpha_from_mixed_side(eps, S, self.N, self.kappa, self.pi, self.f_A,
-                                      self.T_star, self.b, self.q_peak)
-
-    def test_too_few_points_raises(self):
-        with pytest.raises(ValueError):
-            fit_alpha_from_mixed_side([1.0, 0.9], [2.0, np.nan], self.N, self.kappa, self.pi,
-                                      self.f_A, self.T_star, self.b, self.q_peak)

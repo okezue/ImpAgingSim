@@ -4,7 +4,7 @@ exec > >(tee -a /var/log/imp-bootstrap.log) 2>&1
 
 REGION="${REGION:-us-east-1}"
 S3_BUCKET="${S3_BUCKET}"
-SCAN_KIND="${SCAN_KIND:-all}"
+SCAN_KIND="${SCAN_KIND:-rerun}"
 GIT_REF="${GIT_REF:-master}"
 N_THREADS="${N_THREADS:-$(nproc)}"
 
@@ -72,31 +72,6 @@ run_kappa(){
     --n_steps 250000 --equilibration 30000 --snapshot_interval 2000 \
     --grid_size 56 ${PLATFORM_FLAG}
 }
-run_temperature(){
-  sudo -u ubuntu ${PY} -m melt.temperature_scan \
-    --scan_id tscan_aws \
-    --T_quenches 0.25 0.35 0.5 0.65 0.8 1.0 1.3 1.7 \
-    --sequences random block correlated \
-    --seeds 1 2 3 4 5 \
-    --n_chains 144 --chain_length 40 --box_size 22.0 \
-    --lj_eps_AB 0.1 \
-    --n_steps 250000 --equilibration 30000 --snapshot_interval 2000 \
-    --grid_size 56 ${PLATFORM_FLAG}
-}
-run_big(){
-  for seq in correlated random block; do
-    sudo -u ubuntu ${PY} -m melt.big_run \
-      --sequence ${seq} \
-      --n_chains 400 --chain_length 50 --box_size 32.0 \
-      --T_equilibrate 5.0 --T_quench 0.7 --lj_eps_AB 0.1 \
-      --n_steps 500000 --equilibration 60000 --snapshot_interval 5000 \
-      --grid_size 80 \
-      --run_id big_${seq} ${PLATFORM_FLAG}
-  done
-  for d in output/melt/big/big_*; do
-    sudo -u ubuntu ${PY} -m melt.viz "$d" || true
-  done
-}
 run_smoke(){
   sudo -u ubuntu ${PY} -m melt.run \
     --sequence correlated --n_chains 32 --chain_length 20 --box_size 12.0 \
@@ -111,11 +86,6 @@ run_rerun(){
        S3_BUCKET="${S3_BUCKET}" REGION="${REGION}" \
        bash aws/rerun_corrected.sh
 }
-run_seed_extension(){
-  sudo -u ubuntu env PY="${PY}" PLATFORM_FLAG="${PLATFORM_FLAG}" \
-       S3_BUCKET="${S3_BUCKET}" REGION="${REGION}" \
-       bash aws/seed_extension.sh
-}
 run_fixed_density(){
   sudo -u ubuntu env PY="${PY}" PLATFORM_FLAG="${PLATFORM_FLAG}" \
        S3_BUCKET="${S3_BUCKET}" REGION="${REGION}" \
@@ -125,12 +95,9 @@ run_fixed_density(){
 case "${SCAN_KIND}" in
   smoke) run_smoke ;;
   kappa) run_kappa ;;
-  temperature) run_temperature ;;
-  big) run_big ;;
   rerun) run_rerun ;;
-  seed_extension) run_seed_extension ;;
   fixed_density) run_fixed_density ;;
-  all) run_kappa; run_temperature; run_big ;;
+  all) run_rerun; run_fixed_density ;;
   *) echo "unknown SCAN_KIND=${SCAN_KIND}"; exit 2 ;;
 esac
 

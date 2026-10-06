@@ -1,6 +1,6 @@
 """Download and verify the project's Zenodo archive (concept DOI 10.5281/zenodo.20499120).
 
-    python scripts/fetch_zenodo.py --dest output/zenodo                 # all files
+    python scripts/fetch_zenodo.py --dest output/zenodo                 # paper files
     python scripts/fetch_zenodo.py --only fixed_density_campaign.tar    # one file
     python scripts/fetch_zenodo.py --extract 'seed_extension/k0.5_'     # extract matching members
 
@@ -20,11 +20,17 @@ import urllib.request
 
 CONCEPT_DOI = "10.5281/zenodo.20499120"
 API = "https://zenodo.org/api/records/"
+PAPER_FILES = (
+    "heteropolymer_microphase_data.tar",
+    "fixed_density_campaign.tar",
+    "Supplementary_Data_1_source_tables.zip",
+    "Scientific_Reports_RPA_correction.zip",
+)
 
 
 def latest_record() -> dict:
     query = urllib.parse.quote(f'conceptdoi:"{CONCEPT_DOI}"')
-    with urllib.request.urlopen(f"{API}?q={query}") as response:
+    with urllib.request.urlopen(f"{API}?q={query}&sort=mostrecent&size=1") as response:
         hits = json.load(response)["hits"]["hits"]
     if not hits:
         raise RuntimeError(f"no Zenodo record found for concept DOI {CONCEPT_DOI}")
@@ -56,15 +62,19 @@ def download(url: str, dest: str) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--dest", default="output/zenodo")
-    parser.add_argument("--only", nargs="*", default=None, help="file names to fetch (default: all)")
+    parser.add_argument("--only", nargs="+", choices=PAPER_FILES, default=list(PAPER_FILES),
+                        help="paper archive files to fetch (default: all four paper files)")
     parser.add_argument("--extract", default=None, help="substring; extract matching tar members under DEST/extracted")
     args = parser.parse_args(argv)
     record = latest_record()
+    missing = set(args.only) - {entry["key"] for entry in record["files"]}
+    if missing:
+        raise RuntimeError(f"paper files missing from record {record['id']}: {', '.join(sorted(missing))}")
     print(f"record {record['id']} version {record['metadata'].get('version')} doi {record.get('doi')}")
     os.makedirs(args.dest, exist_ok=True)
     for entry in record["files"]:
         name = entry["key"]
-        if args.only is not None and name not in args.only:
+        if name not in args.only:
             continue
         path = os.path.join(args.dest, name)
         expected = entry["checksum"].split(":", 1)[-1]

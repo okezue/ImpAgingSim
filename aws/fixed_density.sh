@@ -10,7 +10,7 @@
 
 set -euxo pipefail
 
-PY=${PY:-/home/ubuntu/miniconda3/envs/imp/bin/python}
+PY=${PY:-python}
 PLATFORM_FLAG=${PLATFORM_FLAG:---platform CUDA}
 CAMPAIGN=${CAMPAIGN:-fixed_density_pi099_v2}
 # Write outside output/melt/fixed_density_size/: that path is deliberately
@@ -18,10 +18,12 @@ CAMPAIGN=${CAMPAIGN:-fixed_density_pi099_v2}
 # there shows up as untracked and trips the campaign's clean-git-tree guard.
 OUT=${OUT:-output/melt/fd_v2}
 
-${PY} -m melt.fixed_density_size_scan --manifest-only --out ${OUT} --campaign-id ${CAMPAIGN} ${PLATFORM_FLAG}
-${PY} -m melt.fixed_density_size_scan --run --out ${OUT} --campaign-id ${CAMPAIGN} ${PLATFORM_FLAG}
-${PY} -m melt.fixed_density_size_scan --analyze --out ${OUT} --campaign-id ${CAMPAIGN} ${PLATFORM_FLAG}
+${PY} -m melt.fixed_density_size_scan --manifest-only --out "${OUT}" --campaign-id "${CAMPAIGN}" ${PLATFORM_FLAG}
+${PY} -m melt.fixed_density_size_scan --run --out "${OUT}" --campaign-id "${CAMPAIGN}" ${PLATFORM_FLAG}
+${PY} -m melt.fixed_density_size_scan --analyze --out "${OUT}" --campaign-id "${CAMPAIGN}" ${PLATFORM_FLAG}
 
-aws s3 sync ${OUT}/ \
-  "s3://${S3_BUCKET}/$(date +%Y-%m-%d)_fixed_density_$(hostname -s)/" \
-  --region "${REGION:-us-east-1}"
+if [ -n "${S3_BUCKET:-}" ]; then
+  aws s3 sync "${OUT}/" \
+    "s3://${S3_BUCKET}/$(date +%Y-%m-%d)_fixed_density_$(hostname -s)/" \
+    --region "${REGION:-us-east-1}"
+fi

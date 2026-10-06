@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import numpy as np
-from scipy.optimize import minimize_scalar
 
 
 def _unwrap(out: np.ndarray):
@@ -90,97 +89,3 @@ def rpa_spinodal_chi(chain_length: int, kappa: float, pi: float, f_A: float = 0.
         q_star = float(q_arr[i])
     chi_s = 2.0 / s0_max if s0_max > 0.0 else float("inf")
     return float(chi_s), q_star
-
-
-def chi_from_eps_AB(eps_AB, alpha: float, T_star: float, eps_like: float = 1.0):
-    """Flory-Huggins ``chi = alpha*(eps_like-eps_AB)/T_star`` from the LJ cross attraction.
-
-    ``eps_AA=eps_BB=eps_like``; lowering ``eps_AB`` raises ``chi``.  ``alpha`` is an
-    effective contact number fitted from simulation.  Vectorized over ``eps_AB``.
-    """
-    eps = np.asarray(eps_AB, dtype=np.float64)
-    out = float(alpha) * (float(eps_like) - eps) / float(T_star)
-    return _unwrap(np.asarray(out, dtype=np.float64))
-
-
-def eps_AB_from_chi(chi, alpha: float, T_star: float, eps_like: float = 1.0):
-    """Inverse of :func:`chi_from_eps_AB`: ``eps_AB = eps_like - chi*T_star/alpha``."""
-    if float(alpha) == 0.0:
-        raise ValueError("alpha must be nonzero to invert chi(eps_AB)")
-    chi_arr = np.asarray(chi, dtype=np.float64)
-    out = float(eps_like) - chi_arr * float(T_star) / float(alpha)
-    return _unwrap(np.asarray(out, dtype=np.float64))
-
-
-def segment_length_from_rg(rg, chain_length: int):
-    """Gaussian-chain segment length from ``Rg^2 = N b^2/6``: ``b = rg*sqrt(6/N)``."""
-    N = int(chain_length)
-    if N < 1:
-        raise ValueError(f"chain_length must be positive, got {chain_length}")
-    out = np.asarray(rg, dtype=np.float64) * np.sqrt(6.0 / N)
-    return _unwrap(np.asarray(out, dtype=np.float64))
-
-
-def fit_alpha_from_mixed_side(eps_ABs, S_peak, chain_length: int, kappa: float, pi: float,
-                              f_A: float, T_star: float, b: float, q_peak: float,
-                              eps_like: float = 1.0, alpha_bounds=(0.0, 50.0),
-                              q_accessible=None) -> dict:
-    """Fit the contact number ``alpha`` to measured ``S_psipsi(q_peak)`` on the mixed side.
-
-    Minimizes ``sum (log S_meas - log S_rpa(q_peak, chi(eps_AB; alpha)))^2`` over
-    ``alpha`` in ``alpha_bounds`` with a bounded scalar search.  Entries with
-    non-finite (or non-positive, since the fit is in log space) ``S_peak`` are ignored.
-    ``eps_AB_spinodal`` uses ``chi_s`` restricted to ``q_accessible`` (default ``q_peak``).
-    Raises ValueError if fewer than 2 usable points remain.
-    """
-    eps = np.atleast_1d(np.asarray(eps_ABs, dtype=np.float64)).ravel()
-    S = np.atleast_1d(np.asarray(S_peak, dtype=np.float64)).ravel()
-    if eps.shape != S.shape:
-        raise ValueError("eps_ABs and S_peak must have the same length")
-    mask = np.isfinite(S) & np.isfinite(eps) & (S > 0.0)
-    n_points = int(mask.sum())
-    if n_points < 2:
-        raise ValueError(f"need at least 2 finite positive S_peak values, got {n_points}")
-    eps = eps[mask]
-    log_S = np.log(S[mask])
-    N = int(chain_length)
-    q0 = float(q_peak)
-    S0 = float(single_chain_composition_form_factor(q0, N, kappa, pi, f_A, b))
-
-    lo, hi = (float(alpha_bounds[0]), float(alpha_bounds[1]))
-    # RPA has no finite S past the spinodal, so alpha is capped where the most
-    # incompatible data point would reach 1-(chi/2)*S0=0; this keeps the objective finite.
-    incompat_max = float(np.max(float(eps_like) - eps))
-    if incompat_max > 0.0 and S0 > 0.0:
-        alpha_max = 2.0 * float(T_star) / (S0 * incompat_max)
-        hi = min(hi, alpha_max * (1.0 - 1e-9))
-    if not hi > lo:
-        raise ValueError(f"alpha_bounds {alpha_bounds} leave no RPA-valid alpha (max {hi})")
-
-    def objective(alpha: float) -> float:
-        chi = chi_from_eps_AB(eps, alpha, T_star, eps_like)
-        pred = np.atleast_1d(rpa_structure_factor(q0, chi, N, kappa, pi, f_A, b))
-        if not np.all(np.isfinite(pred)):
-            return 1e300
-        r = log_S - np.log(pred)
-        return float(np.dot(r, r))
-
-    res = minimize_scalar(objective, bounds=(lo, hi), method="bounded",
-                          options={"xatol": 1e-8})
-    alpha = float(res.x)
-    chi_values = np.atleast_1d(chi_from_eps_AB(eps, alpha, T_star, eps_like))
-    predicted = np.atleast_1d(rpa_structure_factor(q0, chi_values, N, kappa, pi, f_A, b))
-    residual_rms = float(np.sqrt(np.mean((log_S - np.log(predicted)) ** 2)))
-
-    q_sp = q0 if q_accessible is None else q_accessible
-    chi_s, _ = rpa_spinodal_chi(N, kappa, pi, f_A, b, q=q_sp)
-    eps_AB_spinodal = (float(eps_AB_from_chi(chi_s, alpha, T_star, eps_like))
-                       if alpha > 0.0 and np.isfinite(chi_s) else float("nan"))
-    return {
-        "alpha": alpha,
-        "chi_values": chi_values,
-        "predicted": predicted,
-        "residual_rms": residual_rms,
-        "eps_AB_spinodal": eps_AB_spinodal,
-        "n_points": n_points,
-    }

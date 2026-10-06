@@ -1,49 +1,62 @@
-# Derived tables and figures
+# Paper analysis and source data
 
-Each study directory below holds the aggregated tables (CSV/JSON), the campaign
-`manifest.json` that pins the design and code commit, the figures, and a `README.md`
-with the findings. Raw simulation output is not versioned; it is on Zenodo (DOIs
-listed at the end of the top-level README).
+ImpAgingSim contains the analysis supporting **Independent control of
+sequence-correlation amplitude tunes post-quench composition fluctuations
+in A/B heteropolymer melts**. The corrected manuscript and Supplementary
+Information define the reported estimator, normalization, run counts and
+interpretation. Follow-up campaigns are maintained in
+[HetPoly](https://github.com/okezue/HetPoly).
 
-## The `eps_AB` sweep program (September 2026): transition and dynamics of the melt
-
-Everything at the production geometry (144 x 40 beads, `L = 22 sigma`) with
-`eps_AA = eps_BB = 1` and the A-B attraction `eps_AB` swept; `delta_eps = 1 - eps_AB`
-is the incompatibility. Zenodo record 10.5281/zenodo.22803471 (version 4.0.0 of the
-main archive).
-
-| directory | campaign(s) | runs | question | one-line result |
-|---|---|---|---|---|
-| [`epsab_stage1/`](epsab_stage1/README.md) | `epsab_kappa05` | 148 | coarse scan of the mixed -> demixed transition at `kappa = 0.5`, `T* = 0.7` | demixing sets in for `0.1 <= delta_eps <= 0.3`; the chi = 0 melt is mixed; the 250k-step protocol does not equilibrate the demixed side |
-| [`epsab_stage2/`](epsab_stage2/README.md) | `epsab_stage2_kappa05` | 400 | refine the location, test finite size (144 vs 288 chains) | `eps_AB,c = 0.85 +/- 0.03`, identical in both boxes; RPA spinodal 0.905, `alpha ~ 2`; domain spacing ~14 sigma is not box-limited |
-| [`dsf_series/`](dsf_series/README.md) | `dsf_T0p7 ... dsf_T2p0` | 176 | at which temperature does the composition field relax? | `T* >= 1.5` is ergodic (Rouse `q^-4` regime, critical slowing at low q, chi-axis collapse); `T* = 0.7` is arrested |
-| [`dsf_theory/`](dsf_theory/README.md) | `dsf_theory_T1p5`, `dsf_theory_T2p0`, `dsf_chi0_M288_T1p5` | 116 | the dataset for comparison with the dynamic theory | single-exponential decay, `tau ~ q^-3.9`, `Gamma(q) S(q) ~ const`; puzzles: relaxation plateau below `q ~ 0.3`, 2.2x speed-up from `T* = 1.5` to 2.0 |
-| [`kappa_boundary/`](kappa_boundary/README.md) | `kappa0p0_T1p5 ... kappa1p0_T1p5` | 220 | the phase boundary versus sequence correlation | no transition for `kappa <= 0.25`; `delta_eps_c = 0.20, 0.15, 0.115` for `kappa = 0.5, 0.75, 1`; lamellar signal only at `kappa = 1` |
-| [`coarsening/`](coarsening/README.md) | `coarsening_T0p7` | 12 | how the demixed pattern grows over 100,000 tau | `S ~ t^0.5` for three decades near the crossover; deeper quenches arrest at a finite domain size |
-
-## Applications with asymmetric energetics (B loves B, A-B neutral, free volume)
-
-Separate Zenodo records.
-
-| directory | campaign | runs | question | one-line result | DOI |
-|---|---|---|---|---|---|
-| [`protein_condensation/`](protein_condensation/README.md) | `protein_condensation` | 360 | when does a copolymer solution condense, and into what? | condensation is programmed by sequence blockiness (`kappa >= 0.5`), nearly independent of sticker strength; scattered patterns collapse chain by chain | 10.5281/zenodo.22819768 |
-| [`chromatin_memory/`](chromatin_memory/README.md) | `chromatin_memory` | 160 | do transient marked blobs get stabilized by reader-writer feedback? | blobs are transient with a turnover-set lifetime; stabilized once `k_fb / k_off >~ 10`; a stabilized blob then spreads to a fraction set by that ratio | 10.5281/zenodo.22819770 |
-
-Cross-campaign figures and scripts: `scripts/compare_dsf_campaigns.py`,
-`scripts/compare_kappa_campaigns.py`, `scripts/coarsening_analysis.py`.
-
-## Paper-era analyses (sections 1-3 of the top-level README)
-
-| directory | contents |
+| Location | Contents and use |
 |---|---|
-| [`submission_rpa/`](submission_rpa/README.md) | matrix-RPA audit for the Scientific Reports correction, reproduced from the published source tables |
-| `figures/` | Fig. S9 finite-size figure (`make_finite_size_figure.py`) |
-| `quantitative/`, `comparison/`, `extended/`, `extended_full/` | four-point susceptibility `chi_4`, overlap collapse and ensemble separation tables and figures for the aging campaigns |
-| `robustness/`, `robustness_full/` | peak-fit robustness and the kappa scan of `chi_4*` |
-| `plots/`, `chi4_*.png` | per-condition `chi_4` curves |
-| `quench_evolution/` | scripts for the pre-quench evolution animation |
-| `regen/` | regeneration package for the paper figures |
-| `summary_condition.csv`, `summary_per_tw.csv` | aging summary tables |
+| [`paper/`](paper/README.md) | Final manuscript source and sensitivity tables from the checksum-verified supplementary archive, with provenance and portable figure-regeneration instructions |
+| [`submission_rpa/`](submission_rpa/README.md) | Reproduced matrix-RPA audit, formal long-wavelength bare-kernel diagnostic and finite-wavevector predictor fits |
+| [`../output/melt/fixed_density_size/fixed_density_pi099_v2/analysis/`](../output/melt/fixed_density_size/fixed_density_pi099_v2/analysis/) | Exact-shell spectra by seed and condition, condition-selected peaks, common-wavevector comparisons and convergence diagnostics for all 30 fixed-density runs |
+| [`../docs/corrections/scientific_reports_rpa/`](../docs/corrections/scientific_reports_rpa/) | Corrected manuscript/supplementary sources, figure PDFs, clean and review PDFs, numerical audit and source-table updates |
+| [`../docs/figures/`](../docs/figures/README.md) | README schematics, exact exports of manuscript figures and their regeneration instructions |
 
-The AWS campaign tables of the paper live in `analysis_aws/`.
+## Measurement conventions
+
+The balanced primary scans report the peak of
+$C_A(k)=S_{AA}^{(N)}(k)-S_{AB}^{(N)}(k)$, with all partial spectra normalized
+by total bead count. A run summary averages its final five stored spectra;
+independent seeds supply the statistical replicates. At exact A/B exchange
+symmetry, $C_A=S_{\psi\psi}^{(N)}/2$; finite samples need not have exactly
+equal A and B partial spectra.
+
+The fixed-density comparison measures $S_{\psi\psi}^{(N)}/2$ directly at
+nonzero periodic reciprocal vectors and averages within exact shells. Each
+condition chooses the maximum of its across-seed mean spectrum, then reports
+the seed mean and SEM at that common shell. This differs from averaging
+independently selected per-seed maxima. The committed `condition_summary.csv`
+records both quantities with explicit column names.
+
+The finite-$k$ predictor fit uses each seed's measured peak-bin centre and
+fixed $N=40$, $b=\sigma$. Its $R^2$ describes a response-selected association.
+The bare RPA kernel gives a negative formal long-wavelength composition
+stiffness; it is a diagnostic of the uncalibrated homogeneous closure and
+does not locate the physical melt spinodal. Off-stoichiometric scans require
+separation of total-density and composition modes, as detailed in the
+Supplementary Information.
+
+## Reproduce the audit and figures
+
+```bash
+python3 scripts/paper/figures.py --out output/paper_figures
+python3 -m scripts.submission_rpa_audit \
+  --source-data analysis/paper/source_data --output /tmp/impaging-rpa
+python3 scripts/render_structure_figure.py
+```
+
+The [committed final tables](paper/source_data/) reproduce the predictor
+fits as well as the bare-kernel diagnostic. Their original source is
+`Supplementary_Data_1_source_tables.zip` in the
+[paper archive](https://doi.org/10.5281/zenodo.20499120); the ZIP also contains
+selected validation trajectories and the original article-wide plotting scripts.
+
+The RPA-only figure regeneration command, source dependencies and manuscript
+build commands are documented in the
+[correction instructions](../docs/corrections/scientific_reports_rpa/RPA_correction_instructions.md).
+The [top-level README](../README.md) gives the production protocol and
+checksum-verified fixed-density launcher. Regenerating the static summaries
+or the RPA correction requires no new simulation campaign.

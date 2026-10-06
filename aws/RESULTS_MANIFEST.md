@@ -1,175 +1,83 @@
-# Multi-chain copolymer melt campaign, results manifest
+# Paper simulation and source-data manifest
 
-Campaign run on AWS g6e.2xlarge (NVIDIA L40S) instances against branch `melt-pipeline-aws`. All bulk simulation outputs live in S3 (gitignored locally), this manifest is the in-repo index.
+The scope is defined by the manuscript and Supplementary Information in
+[`docs/corrections/scientific_reports_rpa/`](../docs/corrections/scientific_reports_rpa/).
+Supplementary Table S3 specifies 606 balanced-composition static runs and 168
+off-stoichiometric runs used to diagnose density/composition mode mixing.
+Three auxiliary trajectories support the point-particle/cloud-in-cell
+measurement comparison. Historical scan IDs below are retained for compatibility
+with the source-data scripts; their numbers differ from the final figure numbers.
 
-## Bucket
-
-`s3://okezue-imp-aging-results/` (us-east-1, account 545338549082)
-
-Pull locally:
-```bash
-S3_BUCKET=okezue-imp-aging-results bash aws/sync_back.sh
-```
-
-## Campaign structure
-
-12 chunks ran across ~12 g6e.2xlarge GPU-hours of L40S compute. Each chunk launched as a fresh instance with its own short-lived STS session token, periodically synced results to its own S3 prefix, and self-terminated on completion. A local credential-refresher daemon rotated STS tokens every 4h to handle long-running chunks.
-
-| Prefix | Workload | Files | Size |
-|---|---|---:|---:|
-| `seminal_20260427_133456/` | V1: kappa scan + temperature scan + 3 cinematic big runs (400×50=20k beads) | 507 | 409 MB |
-| `chunkB_20260427_141413/` | Long-time aging deep dive (5 t_w up to 2M steps) + multi-quench protocol (3 T_first × 4 T_second) | 486 | 35 MB |
-| `chunkC_20260427_141356/` | Composition (f_A) scan + persistence (π) scan | 795 | 32 MB |
-| `chunkD_20260427_141359/` | **21×15 dense (κ, T) phase diagram** + 7-point finite-size scaling | 3,150 | 107 MB |
-| `chunkF_20260427_184248/` | Kappa fine scan v2 (200 chains × 50 beads, 11 κ × 8 seeds) + 10-point ε scan | 714 | 37 MB |
-| `chunkG_20260427_184248/` | Temperature scan v2 (12 T × 4 sequences × 6 seeds at 200×50) + block-length scan | 1062 | 69 MB |
-| `chunkH_20260427_184248/` | **9×8×4 (κ, ε_AB) phase diagram** | 864 | 35 MB |
-| `chunkI_20260427_184249/` | **11×6×4 (f_A, κ) phase diagram** | 792 | 32 MB |
-| `chunkJ_20260427_184256/` | Bond stiffness scan + density (box size) scan | 468 | 19 MB |
-| `chunkK_20260427_211516/` | **6×3×3×4 (T_q × t_w × sequence) aging-temperature diagram** | 428+ | 23 MB+ |
-| `chunkL_20260427_202933/` | 11×5×4 extended (π, κ) scan | 660 | 27 MB |
-| `chunkE_20260427_184248/` | ❌ FAILED, 1500×80=120k-bead mega cinematic runs blew up numerically (NaN energies, Rg→10¹¹). Aborted after 4.4hr | 2 | 1 MB |
-| `smoke_test/` | Pre-campaign validation | 8 | 2 MB |
-
-**Total valid: ~9,924 files, ~825 MB, ~10,000 simulation runs.**
-
-## Cinematic visualizations (already rendered)
-
-`seminal_20260427_133456/melt/big/` contains for each of 3 sequences (correlated, random, block):
-
-- `polymer_3d.gif` (~18 MB), animated 3D bead cloud, A red / B blue
-- `density_slice.gif` (~7 MB), 2D φ_A and φ_B density evolution (z-projection)
-- `Sk_evolution.gif` (~1 MB), log-log structure factor S(k) over time
-- `final_3d.png` (~1 MB), high-res final-state snapshot
-- `trajectory.npz` (~21 MB), full position trajectory (re-render at any resolution)
-- `density_grids.npz` (~73 MB), full 64³ density field tensor
-- `snapshots.csv`, `meta.json`, `structure_factor.npz`, analysis-ready
-
-## Parameter coverage
-
-| Knob | Range | Where |
+| Historical scan or campaign ID | Conditions / runs | Manuscript use |
 |---|---|---|
-| κ (correlation strength) | {0.0, 0.05, 0.1, ..., 1.0} (21 values) | chunkD, chunkF |
-| T_quench | {0.2, 0.3, ..., 2.5} (15 values) | chunkD, chunkG |
-| (κ, T) 2D | 21 × 15 grid | chunkD |
-| (κ, ε_AB) 2D | 9 × 8 grid | chunkH |
-| (f_A, κ) 2D | 11 × 6 grid | chunkI |
-| ε_AB (interaction asymmetry) | {0.0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.5, 0.8, 1.0} | chunkF, chunkH |
-| Composition f_A | {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8} | chunkC, chunkI |
-| Persistence π | {0.5, 0.55, 0.6, ..., 0.99} (11 values) | chunkC, chunkL |
-| Block length | {1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20} (11 values) | chunkG |
-| Bond stiffness | {50, 100, 200, 400, 800, 1600} | chunkJ |
-| Box size (density) | {16, 18, 20, 22, 25, 28, 32} | chunkJ |
-| Chain length N | {12, 16, 20, 32, 48, 64, 96, 128} | chunkD, chunkJ |
-| Waiting time t_w | {30k, 50k, 100k, 200k, 250k, 300k, 400k, 500k, 1M, 2M} | chunkB, chunkK |
-| Sequences | random, block, alternating, correlated | every chunk |
+| `fig1_baseline` | Eight κ values, five seeds: 40 runs | Main Fig. 2; Supplementary Fig. S5 |
+| `fig1_dense` | Eight κ values, four seeds: 32 runs | Main Fig. 2; Supplementary Fig. S5 |
+| `fig1_soft` | Eight κ values, four seeds: 32 runs | Main Fig. 2; Supplementary Fig. S5 |
+| `fig1_short_chain` | Eight κ values, four seeds: 32 runs | Main Fig. 2; Supplementary Fig. S5 |
+| `fig2_pi_kappa` | Eight π × six κ values, five seeds: 240 runs | Main Figs. 3–4; Supplementary Figs. S1–S3 |
+| `fig3_fA_kappa` | Seven compositions × six κ values, four seeds: 168 runs | Supplementary Fig. S6, mode-mixing diagnostic |
+| `fig4_epsAB` | Four sequence classes × ten cross-attraction values, five seeds: 200 runs | Main Fig. 5; Supplementary Fig. S7 |
+| `fixed_density_pi099_v2` | 144/288/576 chains × κ=0/1, five seeds: 30 runs | Main finite-size comparison; Supplementary Fig. S8 and Table S4 |
 
-## Analysis entry points
+`aws/rerun_corrected.sh` defines the first seven campaigns, and
+`aws/fixed_density.sh` defines the size comparison. Across the four κ controls,
+π=0.90; the fixed-density series uses π=0.99 and exact global 50:50 composition.
+The soft control changes both attractive-tail depth and temperature relative to
+the common repulsive core, as specified in Supplementary Table S2. The current
+driver uses the core as its temperature reference; the soft rerun therefore uses
+`T_equilibrate=2.0` and `T_quench=0.28` to preserve the paper's physical
+temperatures, including its 33.676 K quench.
+
+## Archived source and provenance
+
+- The manuscript source, figure PDFs, correction texts and audit outputs are
+  bundled in `docs/corrections/scientific_reports_rpa/`, with file checksums in
+  `SHA256SUMS.json`.
+- All 30 completed fixed-density runs, their campaign manifest, run metadata and
+  per-run hashes are retained at
+  `output/melt/fixed_density_size/fixed_density_pi099_v2/`. Its
+  `analysis/analysis_manifest.json` records input/output hashes, analysis
+  provenance and estimator definitions; `analysis/summary.json` records the
+  completed-run count and condition summaries.
+- The final Supplementary Data figure and sensitivity tables are retained in
+  [`analysis/paper/source_data/`](../analysis/paper/source_data/), including the
+  fixed-density source tables. The portable figure generator is
+  `scripts/paper/figures.py`.
+- The manuscript identifies
+  [10.5281/zenodo.20499120](https://doi.org/10.5281/zenodo.20499120) as the complete
+  simulation archive. The final source package is pinned to
+  [version 4.1.0, record 22887076](https://doi.org/10.5281/zenodo.22887076).
+  Select the manuscript's simulation families using this manifest; the archive
+  also contains material used by subsequent studies.
+
+Static scan summaries use each run's final five stored spectra before averaging
+across independent seeds. The primary fixed-density estimator instead selects
+the maximum of the across-seed mean direct exact-shell
+`S_ψψ^(N)(q)/2` spectrum, then reports the five seed values at that common shell.
+Mesh-normalized and per-bead values must be converted before combining data
+across geometries. The final manuscript and SI document these conventions and
+the finite-box limits on peak-wavevector interpretation.
+
+## Reanalysis
+
+The completed fixed-density campaign can be reanalysed from its retained inputs:
 
 ```bash
-# Pull everything home
-S3_BUCKET=okezue-imp-aging-results bash aws/sync_back.sh
-
-# Cross-run analysis on a scan (xi(t) overlays + final-state S(k) + summary CSV)
-python3 -m melt.analyze output/aws/seminal_20260427_133456/melt/scans/kscan_aws/
-
-# Same for any chunk's scan dir
-python3 -m melt.analyze output/aws/chunkD_20260427_141359/melt/scans/kt_dense/
-
-# Two-time density-field observables (Q and chi_4 on phi_A(k_*))
-python3 -c "from melt.twotime import compute_twotime_for_scan; print(compute_twotime_for_scan('output/aws/chunkB_20260427_141413/melt/scans/aging_deep'))"
-
-# Re-render an animation from a saved trajectory.npz
-python3 -m melt.viz output/aws/seminal_20260427_133456/melt/big/big_correlated/
+python -m melt.fixed_density_size_scan --analyze \
+  --out output/melt/fixed_density_size --campaign-id fixed_density_pi099_v2
 ```
 
-## Compute summary
+The paper figures and corrected RPA diagnostic can be rebuilt from the retained
+source tables without OpenMM or new simulations:
 
-- **Hardware:** g6e.2xlarge with NVIDIA L40S (24GB VRAM, ~80M atom-steps/sec)
-- **Total spend:** ~$120 (~$15 wasted on chunk E numerical blowup)
-- **Wall time:** ~10 hours including all parallel chunks
-- **Peak parallelism:** 7 instances (vCPU bucket cap = 64 = 8 g6e.2xlarge)
+```bash
+python scripts/paper/figures.py --out output/paper_figures
+python -m scripts.submission_rpa_audit --source-data analysis/paper/source_data \
+  --output analysis/submission_rpa
+```
 
-## Known issues
-
-1. **Chunk E lost.** 120k-bead mega-scale cinematic runs were numerically unstable at dt=0.005. For future runs at this scale, reduce dt to 0.001-0.002, increase friction, or use a softer pair potential (WCA-cut LJ) at startup.
-2. **Original V2/V3 chained runs lost** on instance A. The shutdown-cancellation race between V1's `shutdown -h +5` and the V2-waiter polling killed the chain. The new chunks (E-L launched as separate instances) covered the missed science.
-
-## Phase 5 follow-up chunks (M, N, O)
-
-| Prefix | Variation | Purpose |
-|---|---|---|
-| `chunkM_*` | (a) **High density** (box=17, ρ≈1.0) | Eliminate globule formation → see microphase signal in raw S_AA |
-| `chunkN_*` | (b) **Soft LJ** (ε_AA=ε_BB=0.4) | Θ-solvent regime, chains stay extended |
-| `chunkO_*` | (c) **Short chains** (N=12, 480 chains) | Too short to collapse |
-
-Each: 11 κ × 6 T × 4 seeds = 264 scan runs + 3 trajectory recordings at κ ∈ {0,0.5,1.0} for sub-block / intra-globule analysis.
-
-## Headline science findings
-
-After analysis with `melt/deep_analysis.py`:
-
-### 1. Original κ-tuning hypothesis confirmed in true melt (chunkM)
-The IMP single-chain finding, **sequence correlation κ tunes microphase structure at fixed marginal coupling variance**, translates directly to multi-chain melts when the system is at high enough density to suppress chain-vacuum globule formation. At ρ≈1.0:
-
-- Raw S_AA peak grows **5.13×** from κ=0 to κ=1 at T_q=0.7 *(complete-data result; partial-data preview was 2.26×)*
-- Contrast peak grows **5.15×**, basically identical to raw, confirming this is a clean microphase signal not contaminated by globule artifacts
-- Not visible at ρ≈0.54 (baseline) where globule positions dominate the signal
-
-### 2. Contrast observable (S_AA − S_AB) extracts the microphase signal at any density
-Even at low density where globules dominate raw S_AA, the contrast observable reveals the microphase signal hidden underneath:
-
-- chunkD baseline: contrast grows **3.52×** from κ=0 to κ=1 at T=0.7
-- The subtraction removes the trivial gas-liquid (globule) contribution
-
-### 3. Energy ordering is universal across all conditions
-κ → energy is monotonic and significant in every regime:
-
-- Baseline ρ=0.54: −10.0%
-- High density ρ=1.0: −3.5%  
-- Soft LJ ε=0.4: −5.2%
-- Short chains N=12: −6.0%
-
-The smaller drop at high density / soft LJ is consistent with reduced LJ contribution to the total potential energy.
-
-### 4. Sub-block + intra-globule structure (V1 big runs)
-Trajectory analysis on V1's 400-chain × 50-bead big runs:
-
-| sequence | Rg_A/Rg_full | intra-globule var enhancement |
-|---|---|---|
-| correlated κ=0.7 | 0.956 | **3.42× over random** |
-| block (length=4) | 0.991 | **3.41× over random** |
-| random | 0.985 | 2.36× over random |
-
-Correlated and block sequences produce strong A-bead clustering within globules; random shows weaker but still elevated signal.
-
-### 5. Sub-block + intra-globule structure scales with κ (M/N/O trajectory recordings)
-Trajectory analysis on the 9 deep recordings (3 conditions × 3 κ values at T_q=0.7):
-
-| condition | Rg_A/Rg_full at κ=0 | Rg_A/Rg_full at κ=1 | Δ (chain compaction) |
-|---|---|---|---|
-| M high density | 0.994 | 0.864 | **13%** |
-| N soft LJ | 0.990 | 0.855 | **14%** |
-| O short chains | 0.915 | 0.780 | **22%** ← strongest |
-
-Direct geometric evidence that increasing κ drives A-beads to cluster within their own chain.
-
-| condition | intra-globule var enhancement κ=0 → κ=1 |
-|---|---|
-| N soft LJ | 2.23× → **3.49×** |
-| O short chains | 2.21× → **3.60×** |
-| M high density |, (no globules form, by design) |
-
-The absence of an intra-globule signal in M (high density) is an internal consistency check, globules don't form in a true melt, so there's nothing for the metric to measure. The structure-factor signal is correspondingly *strongest* there because no gas-liquid phase separation masks the microphase.
-
-## Analysis artifacts
-
-`analysis_aws/` directory holds:
-- `figures/Fig_kT_heatmaps_4conditions.png`, (κ, T) phase maps for raw S_AA + contrast across baseline, M, N, O
-- `figures/Fig_headline_kappa_tuning.png`, κ-tuning curves at T=0.7 across all 4 conditions
-- `figures/Fig_energy_kT_4conditions.png`, energy heatmaps
-- `figures/Fig_kT_heatmaps_4conditions.png`, (κ, T) phase diagrams
-- `figures/contrast_analysis.png`, original contrast finding
-- `tables/headline_summary_T07.csv`, top-line numerical comparison
-- `tables/<condition>_runs.csv`, per-run metrics
-- `tables/<condition>_agg_by_kT.csv`, (κ, T) aggregated means with seed counts
+The correction workflow is documented in
+[`RPA_correction_instructions.md`](../docs/corrections/scientific_reports_rpa/RPA_correction_instructions.md).
+Its full historical data rebuild requires archived simulation inputs; use the
+portable generator above to render the paper figures directly from their source
+tables.

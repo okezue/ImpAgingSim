@@ -1,131 +1,89 @@
-# README figures
+# Paper figures
 
-The figures use a common palette and a white background for legibility in
-both GitHub themes. SVGs are the canonical README assets; PNGs are convenient
-raster exports. Text is outlined in the final SVGs for consistent mathematical
-symbols and spacing across browsers. Change labels in the Python sources;
-the SVG geometry remains editable in Figma, Inkscape, or Illustrator.
+These assets document the sequence-controlled heteropolymer melt study. SVGs
+provide vector artwork for the repository; PNGs provide raster copies. Captions
+belong in the root README and manuscript rather than inside the artwork.
 
-| Figure | What is drawn | Source |
+## Manuscript exports
+
+The five `paper-*` figures are unmodified exports of the submitted figure PDFs
+in the [corrected manuscript package](../corrections/scientific_reports_rpa/manuscript_source/).
+Their axes, data, panel labels and layouts are preserved. The original plotted
+peak notation `Ĉ_N` denotes the per-bead estimator called `C_A` in the corrected
+manuscript text. Each export is checked against the correction package's source
+PDF checksum; [the export manifest](paper-source-verification.json) records the
+source path and SHA-256 hashes for the PDF, SVG and PNG.
+
+| Asset | Paper figure | What it shows |
 |---|---|---|
-| [Polymer model](polymer-model.svg) | A 40-bead chain and periodic continuation in a schematic melt | [`render_schematic_figures.py`](../../scripts/render_schematic_figures.py); geometry follows [`melt/box.py`](../../melt/box.py) and the README's production parameters |
-| [Sequence construction](sequence-construction.svg) | Keep/redraw inheritance and analytic normalized covariance | [`render_schematic_figures.py`](../../scripts/render_schematic_figures.py); [`melt/sequences.py`](../../melt/sequences.py) |
-| [Interaction potential](interaction-potential.svg) | The exact step-gated nonbonded energy | [`render_potential_figure.py`](../../scripts/render_potential_figure.py); [`melt/integrator.py`](../../melt/integrator.py) |
-| [Measured structure](measured-structure.svg) | Exact-shell scattering and peak amplitudes with five-seed SEM | [`render_structure_figure.py`](../../scripts/render_structure_figure.py); [corrected fixed-density campaign tables](../../output/melt/fixed_density_size/fixed_density_pi099_v2/analysis/) |
-| [Protein pattern concept](protein-pattern-concept.svg) | Equal-composition chains and an explicit multichain contact topology | [`render_protein_concept.py`](../../scripts/render_protein_concept.py); schematic 40-bead chains, each 12 B / 28 A |
-| [Protein condensation results](protein-condensation-results.svg) | Largest-cluster fractions, chain dimensions and local B contacts | [`render_protein_figure.py`](../../scripts/render_protein_figure.py); [protein campaign tables](../../analysis/protein_condensation/) |
-| [Chromatin feedback concept](chromatin-feedback-concept.svg) | Mark conversion, spatially local feedback and changing site identity | [`render_chromatin_concept.py`](../../scripts/render_chromatin_concept.py); effective rules in [`melt/marks.py`](../../melt/marks.py) |
-| [Chromatin memory results](chromatin-memory-results.svg) | Cluster connectivity, correlation times and mark abundance | [`render_chromatin_figure.py`](../../scripts/render_chromatin_figure.py); [chromatin campaign tables](../../analysis/chromatin_memory/) |
+| [Sequence statistics](paper-sequences.svg) | [Figure 1](../corrections/scientific_reports_rpa/manuscript_source/figures/Fig1_sequence_construction.pdf) | Representative sequences, within-chain covariance, chain-boundary checks and the finite-chain zero-wavevector form factor |
+| [Correlation-amplitude controls](paper-kappa-controls.svg) | [Figure 2](../corrections/scientific_reports_rpa/manuscript_source/figures/Fig2_kappa_controls.pdf) | Peak amplitude, normalized response, selected bin and chain dimensions for the baseline and three controls |
+| [Persistence–amplitude response](paper-sequence-response.svg) | [Figure 3](../corrections/scientific_reports_rpa/manuscript_source/figures/Fig3_pi_kappa_response.pdf) | The sampled persistence–amplitude grid, response sections and first-bin selection frequency |
+| [Finite-wavevector predictor and RPA diagnostic](paper-rpa-diagnostic.svg) | [Figure 4](../corrections/scientific_reports_rpa/manuscript_source/figures/Fig4_sequence_response_theory.pdf) | The finite-wavevector descriptive regression, its zero-wavevector comparison, form factors and bare-closure stiffness |
+| [Cross-attraction response](paper-cross-attraction.svg) | [Figure 5](../corrections/scientific_reports_rpa/manuscript_source/figures/Fig5_cross_attraction.pdf) | Attraction scan, within-seed comparisons and sequence-class endpoints |
 
-The geometry is schematic, not a trajectory rendering. Teal denotes A and orange
-B; purple highlights periodic continuation or a comparison parameter, according
-to the local labels. The mask example includes a redraw that retains the same
-species, and the covariance plot shows the separate lag-zero value explicitly.
-The covariance law describes the unconditioned generator; conditioning on an
-exact global A count can change it.
+The full captions, normalization, run counts and uncertainty definitions are in
+[main.tex](../corrections/scientific_reports_rpa/manuscript_source/main.tex).
+The empirical peak estimator uses each seed's mean over its final five stored
+spectra; error bars are SEM across independent seeds. The finite-wavevector
+regression uses the response-selected peak bin and describes the observed data;
+it is not a prospective prediction. The negative bare RPA stiffness diagnoses an
+uncalibrated homogeneous closure, not a measured spinodal. The cross-attraction
+scan does not resolve a nonzero optimum at low attraction.
 
-The interaction plot uses `sigma = eps_core = eps_AA = eps_BB = 1`,
-`eps_AB = 0.1`, and `r_cut = 2.5 sigma`. The implemented attractive branch is zero
-below `2^(1/6) sigma`; its onset therefore has an energy jump. This plot reflects
-the existing implementation. Adjacent bonded beads are excluded from these
-nonbonded interactions.
+These exports preserve the supplied manuscript PDFs. The final numerical source
+tables are available in [analysis/paper](../../analysis/paper/), with a portable
+plotting script for regeneration from those tables. The RPA correction also
+retains its updated diagnostic CSV and analysis scripts.
 
-The measured figure reads `shell_spectra_condition.csv` and
-`condition_summary.csv` from `fixed_density_pi099_v2/analysis`. Its channel is
-`S_psi,psi^(N)/2`, with total-bead normalization. Each seed contributes the mean of
-its final five saved configurations (steps 242000–250000). Bands and error bars
-are the standard error across five independent seeds, not variation across
-reciprocal vectors. Lines connect sampled values without smoothing. The selected
-peak is the maximum of the across-seed mean spectrum, not the mean of per-seed
-maxima. At kappa = 1 the first two system sizes peak at the first reciprocal
-shell; the largest peaks at the second shell. No extrapolation below the first
-shell or synthetic morphology is shown.
+## Model and fixed-density artwork
+
+| Asset | Source |
+|---|---|
+| [Polymer model](polymer-model.svg) | [`render_schematic_figures.py`](../../scripts/render_schematic_figures.py); a schematic 40-bead A/B chain and periodic multichain melt |
+| [Sequence construction](sequence-construction.svg) | [`render_schematic_figures.py`](../../scripts/render_schematic_figures.py), [`melt/sequences.py`](../../melt/sequences.py); keep/redraw inheritance and analytic covariance |
+| [Interaction potential](interaction-potential.svg) | [`render_potential_figure.py`](../../scripts/render_potential_figure.py), [`melt/integrator.py`](../../melt/integrator.py); the implemented step-gated nonbonded energy |
+| [Measured structure](measured-structure.svg) | [`render_structure_figure.py`](../../scripts/render_structure_figure.py); [corrected fixed-density analysis tables](../../output/melt/fixed_density_size/fixed_density_pi099_v2/analysis/) |
+
+The polymer and sequence geometry is schematic. In those drawings, teal denotes
+A and orange B; the manuscript exports retain their own local colour keys. The
+mask example includes a redraw that happens to retain the same species. The
+analytic covariance law describes the unconditioned generator; conditioning on
+an exact global A count can change it.
+
+The potential uses `sigma = eps_core = eps_AA = eps_BB = 1`, `eps_AB = 0.1` and
+`r_cut = 2.5 sigma`. Its implemented attractive branch is zero below
+`2^(1/6) sigma`, so its onset has an energy jump. Adjacent bonded beads are
+excluded from the nonbonded interactions.
+
+The measured-structure figure reads `shell_spectra_condition.csv` and
+`condition_summary.csv` from `fixed_density_pi099_v2/analysis`. It displays
+`S_psi,psi^(N)/2` with total-bead normalization. Each seed contributes the mean of
+its final five saved configurations (steps 242000–250000). Bands and bars are SEM
+across five independent seeds. Lines connect measured shell values without
+smoothing. The selected peak maximizes the across-seed mean spectrum; it is not
+the mean of per-seed maxima. At kappa = 1, the first two system sizes select the
+first reciprocal shell and the largest selects the second. The figure does not
+extrapolate below the smallest admitted shell or portray a measured morphology.
 
 ## Regeneration
 
-From the repository root, with NumPy, SciPy, Matplotlib, and Inkscape installed:
+From the repository root:
 
 ```bash
+python scripts/render_paper_figures.py
+python scripts/paper/figures.py --out output/paper_figures
 python scripts/render_schematic_figures.py --export
 python scripts/render_potential_figure.py
 python scripts/render_structure_figure.py
-python scripts/render_protein_concept.py
-python scripts/render_protein_figure.py
-python scripts/render_chromatin_concept.py
-python scripts/render_chromatin_figure.py
 ```
 
-The schematic script can also run without `--export` to produce SVGs with live
-text. Its optional `--figma-json-dir DIRECTORY` emits geometry and label
-coordinates for reconstructing native editable text layers in Figma. No raw
-trajectory download or OpenMM installation is needed for these figure scripts.
-
-## Application figure sources and interpretation
-
-The protein results use 360 runs, grouped into 90 conditions. Each seed contributes
-its mean over steps 502,000–1,000,000, with 250 saved cluster summaries. The heatmaps
-show the largest B-contact-cluster fraction at both compositions; the lower panels
-show radius of gyration and B–B coordination at B fraction 0.3. Color is a condition
-mean, with no smoothing or fitted phase boundary. Attraction-axis cell widths follow
-the sampled numerical spacing.
-
-The chromatin results use 160 runs, grouped into 40 conditions. The final 6,250 tau
-of each run form the analysis window. Panel A combines the two attractions in
-one categorical heatmap: each cell's upper-left triangle shows eps_BB=1 and its
-lower-right triangle shows eps_BB=1.5, with the same 0–1 color scale. Both measured
-values are retained; they are not averaged. The two attractions show nearly the
-same sampled connectivity boundary.
-
-Panel B shows first 1/e times at fixed k_off=0.01 and eps_BB=1.5. Three feedback
-conditions have finite B-density crossings in every seed. The remaining two have
-no crossing in any seed; upward arrows start at the 3,122.5-tau evaluated lag
-limit, derived from the archived manifest's sampling protocol. They are lower
-bounds, with no invented finite estimate, SEM, or connecting curve. Site-mark
-times remain finite. Panel C shows the no-feedback times; its site-mark curve
-uses eps_BB=1, where mark kinetics are independent of the spatial neighborhood.
-Density times use each run's selected spectral peak and an uncentered density
-correlation, whereas site-mark correlations are time-centered per site. Thus the
-comparison concerns different observables and is not at a common wavevector. The
-mark-fraction panel shows every condition separately, without a ratio-only fit;
-its horizontal scale is logarithmic above 0.3 and linear near zero.
-
-Both result generators read `per_condition.csv` and independently verify every
-plotted mean and SEM against `per_run.csv`. SEM is across four independent seeds,
-not across time samples. Contacts include bonded B neighbors within 1.5 sigma.
-Density decorrelation is not the survival of a tracked cluster. Persistent density
-also does not mean that individual marks remain unchanged, or establish biological
-inheritance. All time units are simulation units.
-
-The concept figures are exact, editable vector drawings. They illustrate the
-model and do not portray measured morphologies. Protein sequences have verified
-bead counts; associated backbones have no crossings or overlapping beads. The
-chromatin neighborhood includes contour-distant marked sites. Nucleosome motifs
-are visual analogies: the simulation contains spherical polymer beads, with no
-explicit DNA, readers, writers or replication. Positions in its paired time
-illustrations are intentionally held fixed to isolate changes of site identity.
-
-BioRender was used to explore the [protein concept](https://app.biorender.com/illustrations/87fa61e4275edb336d2cc92a)
-and [chromatin concept](https://app.biorender.com/illustrations/9d226c6d7f51ab80995c6b7b).
-Those are working drafts. The canonical final figures are the SVGs above, rebuilt
-with explicit geometry and outlined labels for reproducible editing and export.
-
-## Zenodo verification
-
-On 2026-09-18, `per_run.csv`, `per_condition.csv`, `summary.json`, `manifest.json`
-and the original study README were extracted from both published archives using
-validated HTTP byte ranges and checked against commit
-`81532887abaec462e712321ada698e6359e99e25`. Every file was byte-identical.
-The [verification manifest](application-source-verification.json) records SHA-256
-hashes and archive member names. This verifies the extracted members; the full
-multi-gigabyte archives were not downloaded to recompute their overall MD5 sums.
-The study READMEs have since been revised to distinguish measurements from
-interpretation; the numerical source files are unchanged.
-
-- Protein: [Zenodo 22819768, version 1.0.0](https://zenodo.org/records/22819768),
-  `protein_condensation_data.tar`.
-- Chromatin: [Zenodo 22819770, version 1.0.0](https://zenodo.org/records/22819770),
-  `chromatin_memory_data.tar`.
-
-These archives provide cluster summaries, Fourier modes and mark histories;
-coordinate trajectories were not present in the sampled completion manifests.
-No new figure is presented as a trajectory rendering.
+The manuscript exporter requires Poppler's `pdftocairo`; PNGs are exported at
+300 dpi. It validates source PDF hashes and exports SVG glyph outlines. The
+portable numerical plotter writes rebuilt paper figures to `output/paper_figures`
+without changing these exact manuscript exports. The schematic and measured renderers require NumPy, SciPy and Matplotlib; the
+schematic `--export` option also requires Inkscape to outline SVG text and create
+PNGs. Without `--export`, the schematic renderer retains editable text. Its
+optional `--figma-json-dir DIRECTORY` emits geometry and label coordinates for
+reconstructing native Figma text layers. These figure scripts do not require
+OpenMM or raw-trajectory downloads.

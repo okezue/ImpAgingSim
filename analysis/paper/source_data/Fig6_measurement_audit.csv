@@ -1,0 +1,7 @@
+audit_item,minimum,maximum,units,affected_peak_calls,denominator_runs,provenance
+CIC self-term-aware amplitude change across pi-kappa scan,0.437,4.251,percent,1,240,retained prior raw-spectrum audit
+CIC amplitude change for representative pi=0.99 conditions,0.437,2.493,percent,,,retained prior raw-spectrum audit
+archived asymmetric versus revised symmetric peak rule,,,peak calls,4,240,retained prior raw-spectrum audit
+revised symmetric selections of first admitted mixed bin,,,runs,98,240,retained prior raw-spectrum audit
+reciprocal modes in first admitted mixed bin,,,modes,26,,"exact mode enumeration for L=22,G=56"
+modes in that bin below nominal center cutoff,,,modes,18,,"exact mode enumeration for L=22,G=56"

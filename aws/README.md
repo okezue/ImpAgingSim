@@ -1,81 +1,85 @@
-# AWS deployment for ImpAgingSim melt experiments
+# Run the paper's static simulations on AWS
 
-End-to-end pipeline: launch a GPU/CPU EC2 instance, sync code from GitHub, run the full set of multi-chain copolymer-melt scans (kappa scan + temperature scan + big production run), upload all results to S3, terminate.
+These scripts run the parameter sweeps and fixed-density validation used in
+the manuscript, *Independent control of sequence-correlation amplitude tunes
+post-quench composition fluctuations in A/B heteropolymer melts*.
+The run-to-figure mapping and archived inputs are in
+[RESULTS_MANIFEST.md](RESULTS_MANIFEST.md).
 
-## Prerequisites
+## Run in an existing environment
 
-1. AWS CLI configured: `aws configure` (credentials for IAM user with EC2 + S3 permissions)
-2. SSH key pair `okezue` registered in your AWS account, private key at `~/Downloads/okezue.pem` (chmod 600)
-3. An S3 bucket you own to receive results
-4. A security group allowing SSH (port 22) inbound from your IP
-
-## Files
-
-| file | purpose |
-|---|---|
-| `launch.sh` | Provisions an EC2 instance and kicks off the experiment campaign. Asks for confirmation before billing. |
-| `userdata.sh` | EC2 boot script: installs deps, clones repo, runs scans, syncs results to S3, shuts down. |
-| `sync_back.sh` | Pulls completed results from S3 to your laptop. |
-| `Dockerfile` | Optional containerized form (CUDA 12.4) for ECS / Batch / Sagemaker. |
-
-## Usage
-
-### Launch a full campaign
+From the repository root, with the dependencies in `requirements.txt` installed:
 
 ```bash
-export S3_BUCKET=okezue-imp-aging-results          # your S3 bucket
-export REGION=us-east-1                            # your region
-export INSTANCE_TYPE=g5.2xlarge                    # GPU: $1.21/hr; or c6i.4xlarge for CPU at $0.68/hr
-export AMI_ID=ami-0e2c8caa4b6378d8c                # Ubuntu 22.04 LTS in us-east-1
-export KEY_NAME=okezue                             # AWS-side key name
-export KEY_FILE=~/Downloads/okezue.pem
-export SCAN_KIND=all                               # all | kappa | temperature | big
-export GIT_REF=master                              # branch / tag / commit to run
-export SECURITY_GROUP=default
-# optional:
-# export SUBNET_ID=subnet-xxxxxxxx
-# export INSTANCE_PROFILE=ImpAgingSimRunner       # IAM role granting S3 write
+PY=python PLATFORM_FLAG="--platform CUDA" bash aws/rerun_corrected.sh
+PY=python PLATFORM_FLAG="--platform CUDA" bash aws/fixed_density.sh
+```
 
+The first command runs 744 simulations: the four amplitude controls, the
+persistence/amplitude grid, the off-stoichiometric diagnostic and the
+sequence-class/cross-attraction scan. The second runs the 30 matched
+fixed-density size comparisons. Use `--platform CPU` when CUDA is unavailable.
+The scripts write to `output/melt/scans_corrected/` and `output/melt/fd_v2/`,
+respectively. Existing completed runs are reused; fixed-density runs additionally
+verify their recorded hashes. Set `S3_BUCKET` to upload results after a campaign.
+
+## Launch an EC2 instance
+
+Configure the AWS CLI, an SSH key pair, an S3 bucket, and a security group that
+permits SSH from your address. Choose an Ubuntu GPU AMI valid in your region
+with drivers compatible with the CUDA environment created by `userdata.sh`.
+The launcher requires these configuration values rather than assuming an old AMI
+or account-specific key. Set `GIT_REF` to the reviewed commit or tag to run.
+
+```bash
+export REGION=us-east-1
+export INSTANCE_TYPE=g5.2xlarge
+export AMI_ID=your-regional-ubuntu-gpu-ami
+export KEY_NAME=your-ec2-key-name
+export KEY_FILE=/path/to/your-key.pem
+export SECURITY_GROUP=your-security-group
+export S3_BUCKET=your-paper-results-bucket
+export GIT_REF=your-reviewed-commit-or-tag
+export SCAN_KIND=rerun
 bash aws/launch.sh
 ```
 
-The script prints a summary, then prompts `Proceed and create instance? (yes/no)` before doing anything that costs money.
+`launch.sh` displays the configuration and asks before creating the instance.
+`userdata.sh` installs the simulation environment, checks CUDA availability,
+runs the selected workload, uploads results, and schedules shutdown after a
+successful upload. EC2 is configured to terminate on shutdown. A failure before
+that final step can leave the instance running; inspect its status and log.
 
-### What runs on the instance
+| `SCAN_KIND` | Workload |
+|---|---|
+| `smoke` | Small setup/trajectory check |
+| `kappa` | Baseline static amplitude scan |
+| `rerun` | The 744-run static parameter suite |
+| `fixed_density` | The 30-run fixed-density size comparison |
+| `all` | Static suite followed by fixed-density comparison |
 
-`SCAN_KIND=all` runs three back-to-back campaigns:
-
-1. **Kappa scan**, 6 kappa values × 4 seeds = 24 runs at 96 chains × 30 beads, 150k BD steps each. ~6-10 GPU-hours.
-2. **Temperature scan**, 6 T values × 3 sequences × 3 seeds = 54 runs same size. ~12-20 GPU-hours.
-3. **Big run**, single 256 chains × 30 beads, 400k steps, full position+grid recording. ~4-8 GPU-hours.
-
-Total: ~25-40 GPU-hours on a g5.2xlarge → ~$30-50 in compute.
-
-You can override via `SCAN_KIND=kappa`, `temperature`, or `big`.
-
-### Pull results back
-
-```bash
-export S3_BUCKET=okezue-imp-aging-results
-bash aws/sync_back.sh
-```
-
-Results land in `output/aws/<date>_<hostname>/melt/` mirroring the on-instance layout.
-
-### Generate animations from a completed run
+Results and logs use date/hostname prefixes in your bucket. The launcher prints
+the instance ID, SSH command and bootstrap-log command. To terminate an instance:
 
 ```bash
-python3 -m melt.viz output/aws/.../big_correlated_*/   # produces density_slice.gif, polymer_3d.gif, Sk_evolution.gif, final_3d.png
-python3 -m melt.analyze output/aws/.../scans/kscan_aws/   # cross-run plots + summary.csv
+aws ec2 terminate-instances --instance-ids YOUR_INSTANCE_ID --region "$REGION"
 ```
 
-### Cost & safety
+## Retrieve and analyse results
 
-- Instance is launched with `--instance-initiated-shutdown-behavior terminate`. The userdata calls `shutdown -h +5` after the S3 sync, so the instance self-terminates ~5 min after the job completes. **No long-running zombie costs.**
-- If you cancel the SSH session, the simulation keeps running (it's invoked from userdata, not from your shell).
-- To force-kill: `aws ec2 terminate-instances --instance-ids i-XXXX --region $REGION`
-- Check status: `aws ec2 describe-instances --filters "Name=tag:Project,Values=ImpAgingSim" --region $REGION --query 'Reservations[].Instances[].[InstanceId,State.Name,PublicIpAddress]' --output table`
+Select a prefix containing the paper campaign you need:
 
-### Resuming a failed run
+```bash
+S3_BUCKET=your-paper-results-bucket S3_PREFIX=your-campaign-prefix \
+  LOCAL_DIR=output/aws/paper bash aws/sync_back.sh
 
-The userdata is idempotent for git-clone (does `git pull` if repo exists). To resume after a partial failure, SSH in, `cd ImpAgingSim`, and re-run whichever scan command from `aws/userdata.sh` you need, no AMI rebuild needed.
+python -m melt.analyze output/melt/scans_corrected/fig1_baseline
+python -m melt.fixed_density_size_scan --analyze \
+  --out output/melt/fd_v2 --campaign-id fixed_density_pi099_v2
+```
+
+The checked-in completed fixed-density data are under
+`output/melt/fixed_density_size/fixed_density_pi099_v2/`; preserve them when
+running a new campaign. Rebuild the submission figures from the retained source
+tables with `python scripts/paper/figures.py --out output/paper_figures`.
+The RPA correction instructions are under [`docs/corrections/scientific_reports_rpa/`](../docs/corrections/scientific_reports_rpa/).
