@@ -51,8 +51,8 @@ $s_i=b_i z_i+(1-b_i)u_i$. A redraw can produce the same species.
 ![A Markov backbone, keep/redraw mask and final sequence, with separate effects on correlation amplitude and range.](docs/figures/sequence-construction.svg)
 
 **Independent sequence controls.** For the unconditioned generator,
-$\operatorname{Var}(s_i)=4f_A(1-f_A)$, while at positive contour lag
-$\operatorname{Cov}(s_i,s_{i+\ell})=4f_A(1-f_A)\kappa^2\lambda^\ell$.
+$\mathrm{Var}(s_i)=4f_A(1-f_A)$, while at positive contour lag
+$\mathrm{Cov}(s_i,s_{i+\ell})=4f_A(1-f_A)\kappa^2\lambda^\ell$.
 Thus $\pi$ sets the exponential range and $\kappa$ scales its nonzero-lag
 amplitude. The plotted covariance curves are analytical illustrations.
 
