@@ -1,20 +1,15 @@
 # ImpAgingSim
 
-Code, simulation data and figure sources for the Scientific Reports manuscript
-**Independent control of sequence-correlation amplitude tunes post-quench
-composition fluctuations in A/B heteropolymer melts**.
-
-The study asks how rearranging A/B labels along a polymer backbone changes
-collective composition fluctuations when chemistry, mean composition, chain
-length and density are held fixed. It separates the **range** of sequence
-correlations from their **amplitude**, then measures the melt's late post-quench
-scattering response. Follow-up studies are maintained in
+Simulation code and study data for sequence-controlled A/B heteropolymer melts.
+The model separates the range of sequence correlations from their amplitude
+and measures post-quench composition fluctuations at fixed chemistry, chain
+length, density and mean composition. Follow-up studies are maintained in
 [HetPoly](https://github.com/okezue/HetPoly).
 
-[Manuscript PDF](docs/corrections/scientific_reports_rpa/pdf/Manuscript_RPA_CLEAN.pdf)
-· [Supplementary Information](docs/corrections/scientific_reports_rpa/pdf/Supplementary_RPA_CLEAN.pdf)
-· [Analysis and source tables](analysis/README.md)
-· [Data archive](https://doi.org/10.5281/zenodo.20499120)
+[Committed run data](output/melt/fixed_density_size/fixed_density_pi099_v2/) ·
+[Campaigns and datasets](aws/RESULTS_MANIFEST.md) ·
+[Figure sources](docs/figures/README.md) ·
+[Data archive](https://doi.org/10.5281/zenodo.20499120)
 
 ## Model and sequence construction
 
@@ -62,47 +57,7 @@ is fixed in expectation. The fixed-density size comparison conditions full
 chain sets on an exact global 50:50 composition. Deterministic alternating
 and $A_4B_4$ controls repeat the specified sequence on every chain.
 
-## Paper results
-
-The main balanced-composition results use **606 static runs**: 136 in four
-amplitude controls, 240 in the persistence–amplitude grid, 200 in the
-sequence-class/cross-attraction comparison and 30 in the fixed-density size
-series. An additional 168 off-stoichiometric runs support the supplementary
-analysis of density–composition mode mixing.
-
-For the balanced primary scans, the per-bead peak estimator is
-$C_A=\max_{k\ne0}[S_{AA}^{(N)}(k)-S_{AB}^{(N)}(k)]$. Under exact A/B
-exchange symmetry this equals the peak of
-$[S_{AA}^{(N)}+S_{BB}^{(N)}-2S_{AB}^{(N)}]/2$; finite samples need not satisfy
-$S_{AA}=S_{BB}$ exactly. Error bars use independent seeds as replicates,
-rather than individual stored frames. Exported manuscript panels denote
-the per-bead $C_A$ estimator by $\widehat C_N$.
-
-### Correlation amplitude raises the composition peak
-
-![The paper's per-bead composition response and endpoint amplification across four model controls.](docs/figures/paper-kappa-controls.svg)
-
-**Amplitude controls, reproduced from manuscript Fig. 2.** At $\pi=0.90$,
-the late post-quench peak increases with $\kappa$ in the baseline, compressed
-box, soft-tail/temperature and short-chain conditions. Run summaries average
-the final five stored spectra; uncertainty is across independent seeds.
-
-| Control | Design | Peak ratio, $\kappa=1$ / $\kappa=0$ |
-|---|---|---|
-| Baseline | 144 × 40 beads, $L=22\sigma$ | 18.7× |
-| Higher density | Same bead count, $L=17\sigma$ | 11.9× |
-| Soft tail/temperature | Attraction depths multiplied by 0.4 | 15.0× |
-| Short chains | 480 × 12 beads, same bead count and volume | 15.0× |
-
-The historical soft-control wrapper scaled temperature with
-$\epsilon_{AA}$: its nominal $T^*=0.7$ was 33.676 K, compared with 84.19 K
-in the baseline, while the WCA core stayed at unit depth. This control changes
-both attractive depths and temperature relative to the core. Current launches
-use the core as the reduced-temperature reference; reproducing the soft
-control therefore requires `--T_quench 0.28 --T_equilibrate 2` with
-`--lj_eps_AA 0.4 --lj_eps_BB 0.4 --lj_eps_AB 0.04`.
-
-### The high-persistence response survives larger boxes
+## Committed study data
 
 ![Measured exact-shell spectra and composition peaks in the matched fixed-density size series.](docs/figures/measured-structure.svg)
 
@@ -124,68 +79,13 @@ peak lies at $q_{\min}=2\pi/L$ in the two smaller boxes and
 $\sqrt2q_{\min}$ in the largest. Its nonmonotonic amplitude and box-dependent
 position leave the bulk wavelength and scaling unresolved.
 
-### A finite-wavevector sequence statistic organizes the response
+The committed campaign includes its design manifest, metadata, completion
+checksums, saved spectra, snapshots and derived condition summaries. The
+matrix-RPA implementation is in [`melt/rpa_matrix.py`](melt/rpa_matrix.py);
+it returns structure factors only for stable homogeneous kernels. The
+baseline bare closure is unstable and does not determine a physical spinodal.
 
-For a Gaussian reference chain with statistical segment length $b$, the
-normalized intramolecular composition form factor is
-
-$$
-P_N(k)=\frac{S_0(k)}{4f_A(1-f_A)}
-=1+2\kappa^2\sum_{\ell=1}^{N-1}
-\left(1-\frac\ell N\right)\lambda^\ell
-e^{-k^2b^2\ell/6}.
-$$
-
-![The paper's inverse-response comparisons, analytical form factor and bare RPA stiffness diagnostic.](docs/figures/paper-rpa-diagnostic.svg)
-
-**Sequence response and approximate theory, reproduced from manuscript Fig. 4.**
-For the 35 active-interior conditions ($\kappa>0$, $\pi>0.5$), the
-finite-$k$ inverse-response fit has $R^2=0.8956$, versus $0.6834$ for the
-zero-wavevector predictor. $N=40$ and $b=\sigma$ are fixed. Each seed's
-measured peak-bin centre selects the predictor wavevector, so this is a
-descriptive association with the measured response. The final panel shows
-the failure of the uncalibrated bare RPA closure.
-
-The corrected two-component RPA retains both density and composition modes:
-$\boldsymbol\Gamma=\boldsymbol\Omega^{-1}+B(k)\mathbf J+
-\rho\beta\widetilde w(k)\mathbf E$ and
-$\mathbf S_{\mathrm{RPA}}=\boldsymbol\Gamma^{-1}$ only where
-$\boldsymbol\Gamma$ is positive definite. $B(k)$ is an approximate
-repulsive-reference density stiffness. A/B symmetry decouples the modes and
-gives $S_{\psi\psi}^{-1}=S_0^{-1}-\chi_{\mathrm{bare}}/2$ while packing
-still affects density and chain conformations.
-
-At the formal $k\rightarrow0$ limit, the baseline bare kernel gives
-$\chi_{\mathrm{bare}}=9.4993$ and random-sequence composition stiffness
-$-3.7496$. The closure consequently cannot supply a stable homogeneous
-prediction at these parameters. Neither that diagnostic nor the empirical
-regression determines the simulated melt's physical spinodal. The full
-[RPA correction](docs/corrections/scientific_reports_rpa/RPA_correction_instructions.md)
-includes the matrix derivation and reproducible numerical audit.
-
-### Cross attraction gives a broad low-value plateau
-
-![The paper's A–B attraction scan, matched-seed permutation comparison and sequence-class endpoints.](docs/figures/paper-cross-attraction.svg)
-
-**Cross-attraction comparison, reproduced from manuscript Fig. 5.** The
-correlated ensemble uses $\pi=0.99$ and $\kappa=0.7$; the controls are
-independent random, alternating and $A_4B_4$ sequences. Each condition has
-five independent dynamical seeds. The low-attraction interval
-$\epsilon_{AB}\le0.2$ has no resolved optimum (blocked permutation
-$p=0.5626$). For correlated sequences, the mean $C_A$ decreases from
-$61.736\pm5.254$ at $\epsilon_{AB}=0.1$ to $31.849\pm3.046$ at
-$\epsilon_{AB}=0.8$; all five paired differences have the same sign
-(exact two-sided sign-test $p=0.0625$).
-
-These measurements characterize finite-time post-quench configurations.
-The primary scans' first admitted radial bin mixes several reciprocal shells,
-so its selected centre is a bin label and cannot define an intrinsic domain
-length. Away from $f_A=1/2$, the label-difference spectrum also mixes density
-and composition; the supplementary analysis explains the Bhatia–Thornton
-mode required to separate them. Equilibrium phase boundaries and dynamical
-aging laws require additional measurements beyond the paper's static evidence.
-
-## Reproduce the study
+## Run and reproduce
 
 Install Python dependencies and the test runner:
 
@@ -209,20 +109,20 @@ python3 -m melt.run \
 
 `melt.scan` runs the original sequence, persistence–amplitude, composition
 and cross-attraction grids; use `python3 -m melt.scan --help` for the grid
-arguments and the supplementary tables for the exact production designs.
+arguments and the [campaign manifest](aws/RESULTS_MANIFEST.md) for the production designs.
 
 Plan and launch a fresh 30-run fixed-density campaign from a clean committed
-checkout. Store its output outside the checkout so tracked paper outputs and
+checkout. Store its output outside the checkout so committed study outputs and
 their manifests remain intact:
 
 ```bash
 python3 -m melt.fixed_density_size_scan --dry-run
 python3 -m melt.fixed_density_size_scan \
-  --manifest-only --out ../paper-runs --campaign-id reproduction --platform CUDA
+  --manifest-only --out ../study-runs --campaign-id reproduction --platform CUDA
 python3 -m melt.fixed_density_size_scan \
-  --run --out ../paper-runs --campaign-id reproduction --platform CUDA
+  --run --out ../study-runs --campaign-id reproduction --platform CUDA
 python3 -m melt.fixed_density_size_scan \
-  --analyze --out ../paper-runs --campaign-id reproduction
+  --analyze --out ../study-runs --campaign-id reproduction
 ```
 
 The launcher pins code provenance, verifies completed-run checksums and skips
@@ -230,47 +130,45 @@ verified runs. `--run-index` selects a scheduler-array task. The committed
 completed campaign is
 [`fixed_density_pi099_v2`](output/melt/fixed_density_size/fixed_density_pi099_v2/).
 
-Regenerate the paper figures from the committed final source tables, reproduce
-the RPA audit and run the repository checks:
+Run the code checks and regenerate the README's model and structure figures:
 
 ```bash
-python3 scripts/paper/figures.py --out output/paper_figures
-python3 -m scripts.submission_rpa_audit \
-  --source-data analysis/paper/source_data --output /tmp/impaging-rpa
 python3 -m pytest tests/ -q
+python3 scripts/render_schematic_figures.py --export
+python3 scripts/render_potential_figure.py
+python3 scripts/render_structure_figure.py
 ```
 
-The [final source tables](analysis/paper/README.md) are extracted from the
-checksum-verified supplementary archive. The plotting script and analytical
-audit need NumPy, SciPy, pandas and Matplotlib; they do not need OpenMM or a GPU.
-[Figure provenance and regeneration](docs/figures/README.md) documents the
-README schematics and exact manuscript exports. Paper-era AWS launch tools
-are described in [`aws/README.md`](aws/README.md).
+[Figure documentation](docs/figures/README.md) describes the data inputs and
+rendering dependencies. [AWS instructions](aws/README.md) cover the static
+parameter suite and fixed-density campaign.
+
+## Repository layout
+
+| Location | Contents |
+|---|---|
+| `melt/` | Simulation engine, sequence generation, observables and RPA implementation |
+| `output/melt/fixed_density_size/fixed_density_pi099_v2/` | Completed 30-run campaign and measured summaries |
+| `scripts/` | README figure renderers and archive download/upload tools |
+| `aws/` | Campaign launchers and dataset manifest |
+| `tests/` | Simulation and numerical regression checks |
+| `docs/figures/` | README model and measured-structure figures |
 
 ## Data availability
 
-The paper's data are archived at
+Large study datasets are archived at
 [10.5281/zenodo.20499120](https://doi.org/10.5281/zenodo.20499120).
-Use the following files for the manuscript and its RPA correction:
+The [campaign manifest](aws/RESULTS_MANIFEST.md) identifies the relevant runs.
 
-| Archive file | Paper content |
+| Archive file | Study data |
 |---|---|
-| `heteropolymer_microphase_data.tar` | Production run metadata, stored spectra, snapshots and available trajectories |
-| `fixed_density_campaign.tar` | Completed 30-run size comparison and the earlier execution retained for provenance |
-| `Supplementary_Data_1_source_tables.zip` | Figure source and sensitivity tables, selected validation trajectories and analysis scripts |
-| `Scientific_Reports_RPA_correction.zip` | Revised manuscript/supplementary sources and PDFs, corrected Fig. 4, reviewer response and numerical audit |
+| `heteropolymer_microphase_data.tar` | Production metadata, stored spectra, snapshots and available trajectories |
+| `fixed_density_campaign.tar` | Completed 30-run size comparison and earlier execution provenance |
+| `Supplementary_Data_1_source_tables.zip` | Numerical source and sensitivity tables, selected validation trajectories and historical analysis scripts |
 
-Download and checksum-verify only these paper files:
+Download and checksum-verify the simulation archives:
 
 ```bash
 python3 scripts/fetch_zenodo.py --dest output/zenodo --only \
-  heteropolymer_microphase_data.tar fixed_density_campaign.tar \
-  Supplementary_Data_1_source_tables.zip Scientific_Reports_RPA_correction.zip
+  heteropolymer_microphase_data.tar fixed_density_campaign.tar
 ```
-
-The source-table archive supplies the article-wide plotting scripts; the
-portable copy under `scripts/paper/` reads the committed final tables.
-The historical full data-rebuild script requires its original input
-directories. Exact figure PDFs and corrected clean/review manuscript and
-supplementary PDFs are also committed under
-[`docs/corrections/scientific_reports_rpa/`](docs/corrections/scientific_reports_rpa/).

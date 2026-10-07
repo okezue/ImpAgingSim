@@ -1,4 +1,0 @@
-kappa,pi,f_A_target,f_A_realized,seed,n_chains,chain_length,n_beads,box_size,grid_size_for_CIC,prequench_preparation_steps,postquench_total_steps,late_frames_used,first_frame_step,last_frame_step,bond_k,T_quench_star,eps_AA,eps_BB,eps_AB,n_reciprocal_modes,n_shells,q_max,scope_note
-0,0.99,0.5,0.495138888888889,1,144,40,5760,22,56,100000000,250000,25,202000,250000,100,0.7,1,1,0.1,1418,42,1.99919532501169,representative single-seed late post-quench spectrum; not aging evidence
-0.5,0.99,0.5,0.493055555555556,1,144,40,5760,22,56,100000000,250000,25,202000,250000,100,0.7,1,1,0.1,1418,42,1.99919532501169,representative single-seed late post-quench spectrum; not aging evidence
-1,0.99,0.5,0.521006944444444,1,144,40,5760,22,56,100000000,250000,25,202000,250000,100,0.7,1,1,0.1,1418,42,1.99919532501169,representative single-seed late post-quench spectrum; not aging evidence

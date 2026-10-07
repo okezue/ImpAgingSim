@@ -1,9 +1,7 @@
-# Run the paper's static simulations on AWS
+# Run the static simulations on AWS
 
-These scripts run the parameter sweeps and fixed-density validation used in
-the manuscript, *Independent control of sequence-correlation amplitude tunes
-post-quench composition fluctuations in A/B heteropolymer melts*.
-The run-to-figure mapping and archived inputs are in
+These scripts run the study's static parameter sweeps and fixed-density
+validation. The campaign designs and archived inputs are in
 [RESULTS_MANIFEST.md](RESULTS_MANIFEST.md).
 
 ## Run in an existing environment
@@ -38,7 +36,7 @@ export AMI_ID=your-regional-ubuntu-gpu-ami
 export KEY_NAME=your-ec2-key-name
 export KEY_FILE=/path/to/your-key.pem
 export SECURITY_GROUP=your-security-group
-export S3_BUCKET=your-paper-results-bucket
+export S3_BUCKET=your-study-results-bucket
 export GIT_REF=your-reviewed-commit-or-tag
 export SCAN_KIND=rerun
 bash aws/launch.sh
@@ -67,11 +65,11 @@ aws ec2 terminate-instances --instance-ids YOUR_INSTANCE_ID --region "$REGION"
 
 ## Retrieve and analyse results
 
-Select a prefix containing the paper campaign you need:
+Select a prefix containing the study campaign you need:
 
 ```bash
-S3_BUCKET=your-paper-results-bucket S3_PREFIX=your-campaign-prefix \
-  LOCAL_DIR=output/aws/paper bash aws/sync_back.sh
+S3_BUCKET=your-study-results-bucket S3_PREFIX=your-campaign-prefix \
+  LOCAL_DIR=output/aws/study bash aws/sync_back.sh
 
 python -m melt.analyze output/melt/scans_corrected/fig1_baseline
 python -m melt.fixed_density_size_scan --analyze \
@@ -80,6 +78,7 @@ python -m melt.fixed_density_size_scan --analyze \
 
 The checked-in completed fixed-density data are under
 `output/melt/fixed_density_size/fixed_density_pi099_v2/`; preserve them when
-running a new campaign. Rebuild the submission figures from the retained source
-tables with `python scripts/paper/figures.py --out output/paper_figures`.
-The RPA correction instructions are under [`docs/corrections/scientific_reports_rpa/`](../docs/corrections/scientific_reports_rpa/).
+running a new campaign. Regenerate the measured-structure plot from these
+retained data with `python scripts/render_structure_figure.py`. The
+[study-data manifest](RESULTS_MANIFEST.md) lists the simulation families and
+archived datasets.

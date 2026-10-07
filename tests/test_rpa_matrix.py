@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-
 import numpy as np
 import pytest
 
@@ -9,7 +7,6 @@ from melt.rpa import single_chain_composition_form_factor
 from melt.rpa_matrix import (balanced_intrachain_matrix, balanced_melt_rpa,
                              density_form_factor, force_equivalent_tail_transform,
                              matrix_rpa)
-from scripts.submission_rpa_audit import main
 
 
 def test_zero_interactions_recover_independent_chain_normalizations():
@@ -107,16 +104,3 @@ def test_invalid_physical_inputs():
             balanced_melt_rpa(0.1, **{**args, key: value})
     with pytest.raises(ValueError):
         force_equivalent_tail_transform(0, cutoff=1)
-
-
-def test_original_submission_audit(tmp_path):
-    main(["--output", str(tmp_path)])
-    audit = json.loads((tmp_path / "audit.json").read_text())
-    assert len(audit["modes"]) == 8
-    assert np.isclose(audit["chi_bare_zero"], 9.49925635653972)
-    assert audit["density_prediction"] is None
-    assert audit["reference_packing_stiffness"] is None
-    for mode in audit["modes"]:
-        assert mode["total_bare_composition_stiffness"] < 0
-        assert mode["S_psipsi_if_density_stable"] is None
-    assert (tmp_path / "rpa_modes.csv").exists()

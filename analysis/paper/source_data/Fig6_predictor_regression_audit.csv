@@ -1,5 +1,0 @@
-dataset,predictor,r_squared,slope,intercept,n_group_means,provenance
-available archived balanced estimator; active interior primary,finite q=k_star,0.89559784792469,0.198801691287414,-0.000440073063268563,35,recomputed from processed per-run CSV
-available archived balanced estimator; active interior primary,q=0,0.683436967672136,0.198677010783875,0.0116295660173236,35,recomputed from processed per-run CSV
-collapsed inactive-boundary baseline sensitivity,finite q=k_star,0.910620852214111,0.196814273775947,-7.12679769262758e-05,36,one collapsed inactive boundary plus 35 active conditions
-collapsed inactive-boundary baseline sensitivity,q=0,0.727874451113097,0.192279507200449,0.0126032554947043,36,one collapsed inactive boundary plus 35 active conditions
